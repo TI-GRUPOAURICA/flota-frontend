@@ -351,7 +351,7 @@
         };
 
         try {
-            const res = await fetch('http://localhost:8000/actualizar-vehiculo', {
+            const res = await fetch('https://flota-backend-xecu.onrender.com/actualizar-vehiculo', {
                 method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
             });
             if (res.ok) {
