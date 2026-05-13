@@ -225,7 +225,7 @@
     async function cargarDashboard() {
         const panel = document.getElementById('panelVehiculos');
         try {
-            const res = await fetch('http://localhost:8000/estado-flota');
+            const res = await fetch('https://flota-backend-xecu.onrender.com/estado-flota');
             const data = await res.json();
             flotaData = data.data; 
             panel.innerHTML = '';
