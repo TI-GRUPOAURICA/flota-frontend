@@ -160,7 +160,7 @@
         const payload = { movimiento_id: viaje_id, tipo_gasto: parseInt(tipo_gasto), monto: monto, url_comprobante: url_comprobante };
 
         try {
-            const respuesta = await fetch('http://localhost:8000/registrar-gasto', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            const respuesta = await fetch('https://flota-backend-xecu.onrender.com/registrar-gasto', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
             if (respuesta.ok) { alert("✅ Registrado."); document.getElementById('formReembolso').reset(); document.getElementById('viaje_id').value = ""; cargarAlertas(); 
             } else { alert("❌ Error en Dataverse."); }
         } catch (error) { alert("❌ Error de conexión."); } finally { btn.innerText = "Guardar y Reembolsar"; }
