@@ -110,11 +110,17 @@
     <!-- 2. CONFIGURACIÓN DE MSAL (SSO) Y PERMISOS -->
     <script>
         // ¡IMPORTANTE! Llena estos datos con los de tu entorno de Azure
+        // 2. CONFIGURACIÓN DE MSAL (SSO) Y PERMISOS
         const msalConfig = {
             auth: {
-                clientId: "TU_CLIENT_ID_FRONTEND", // Reemplaza por el ID de Aplicación de Azure
-                authority: "https://login.microsoftonline.com/TU_TENANT_ID", // Reemplaza tu Tenant ID
-                redirectUri: "https://flota-backend-xecu.onrender.com" // O la URL de tu producción
+                // Reemplaza esto con tu ID de Aplicación (cliente) real de Azure
+                clientId: "e0067a91-7c99-4c69-8ded-462444192826", 
+                
+                // Reemplaza TU_TENANT_ID con tu ID de inquilino real
+                authority: "https://login.microsoftonline.com/104ca696-0629-4bad-9210-a7233a858def", 
+                
+                // ¡ESTE ERA EL ERROR! Debe ser exactamente tu URL de Vercel (con el slash "/" al final)
+                redirectUri: "https://flota-frontend-zeta.vercel.app/" 
             }
         };
 
