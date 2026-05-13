@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tesorería - Grupo Aurica</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --aurica-blue: #305da0;
+            --aurica-bg: #eceded;
+            --text-dark: #2c3e50;
+            --warn-color: #f39c12;
+        }
+        body { font-family: 'Montserrat', sans-serif; background: var(--aurica-bg); margin: 0; padding: 20px; color: var(--text-dark); }
+        .container { display: grid; grid-template-columns: 1.2fr 2fr; gap: 25px; max-width: 1200px; margin: auto; }
+        
+        .top-bar { display: flex; align-items: center; gap: 15px; background: var(--aurica-blue); color: white; padding: 20px 30px; border-radius: 12px; margin-bottom: 25px; max-width: 1200px; margin-left: auto; margin-right: auto; box-shadow: 0 4px 10px rgba(48, 93, 160, 0.2);}
+        .top-bar h2 { margin: 0; font-size: 24px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px;}
+        .top-bar p { margin: 3px 0 0 0; font-size: 13px; font-weight: 400; opacity: 0.9;}
+
+        .card { background: white; padding: 25px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); }
+        .card h3 { margin-top: 0; color: var(--aurica-blue); border-bottom: 2px solid #f0f0f0; padding-bottom: 15px; font-weight: 900;}
+        
+        /* ALERTAS */
+        .alerta-item { background: #fff; border: 2px solid #eee; padding: 15px; margin-bottom: 15px; border-radius: 12px; cursor: pointer; transition: 0.2s; border-left: 5px solid var(--warn-color);}
+        .alerta-item:hover { transform: translateX(5px); border-color: var(--aurica-blue);}
+        .alerta-item.selected { border-color: var(--aurica-blue); background: #f8fbff; box-shadow: 0 4px 10px rgba(48,93,160,0.1);}
+        .alerta-placa { font-size: 16px; font-weight: 900; color: var(--text-dark); display: flex; justify-content: space-between; align-items: center;}
+        .alerta-badge { font-size: 10px; background: var(--warn-color); color: white; padding: 3px 10px; border-radius: 12px; font-weight: 800; text-transform: uppercase;}
+        .alerta-fecha { font-size: 12px; color: #666; margin: 5px 0; font-weight: 600;}
+        .alerta-detalle { font-size: 13px; color: #444; background: #f8f9fa; padding: 12px; border-radius: 8px; margin-top: 10px; font-style: italic;}
+
+        /* FORMULARIOS */
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: 800; color: var(--text-dark); font-size: 13px;}
+        input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-family: 'Montserrat', sans-serif; font-size: 14px;}
+        input:focus, select:focus { border-color: var(--aurica-blue); outline: none;}
+        
+        button { background: var(--aurica-blue); color: white; border: none; padding: 15px; width: 100%; font-size: 15px; font-weight: 800; border-radius: 8px; cursor: pointer; margin-top: 10px; transition: 0.2s;}
+        button:hover { background: #264b82; }
+        .btn-secundario { background: #6c757d; padding: 12px; font-size: 13px; margin-bottom: 20px;}
+        .btn-secundario:hover { background: #5a6268; }
+        
+        .empty-state { text-align: center; color: #888; padding: 30px; font-weight: 600;}
+    </style>
+</head>
+<body>
+
+<div class="top-bar">
+    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
+    <div>
+        <h2>Panel de Tesorería</h2>
+        <p>Módulo de Reembolsos de Flota</p>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Columna Izquierda: Alertas -->
+    <div class="card">
+        <h3>🚨 Reembolsos Pendientes</h3>
+        <button class="btn-secundario" onclick="cargarDatos()">Actualizar Lista</button>
+        <div id="listaAlertas"><div class="empty-state">Buscando alertas...</div></div>
+    </div>
+
+    <!-- Columna Derecha: Formulario -->
+    <div class="card">
+        <h3>💵 Registrar Reembolso</h3>
+        <form id="formReembolso">
+            <div class="form-group">
+                <label>Viaje Vinculado</label>
+                <input type="text" id="viaje_seleccionado" readonly placeholder="Seleccione una alerta..." required style="background: #f0f4f8; font-weight: 800; color: var(--aurica-blue);">
+                <input type="hidden" id="viaje_id">
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="form-group">
+                    <label>Tipo de Gasto</label>
+                    <select id="tipo_gasto" required>
+                        <option value="">Seleccione...</option>
+                        <option value="144280000">Combustible</option>
+                        <option value="144280001">Peaje (PEX)</option>
+                        <option value="144280002">Mantenimiento / Otros</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Monto a Reembolsar (S/)</label>
+                    <input type="number" id="monto" step="0.01" placeholder="Ej. 150.50" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>URL del Comprobante (SharePoint / Drive)</label>
+                <input type="url" id="url_comprobante" placeholder="https://...">
+            </div>
+
+            <button type="button" id="btnGuardarGasto">Guardar y Reembolsar</button>
+        </form>
+    </div>
+</div>
+
+<!-- ================== SCRIPT INTACTO ================== -->
+<script>
+    let memoriaFlota = {};
+
+    async function cargarDatos() {
+        const lista = document.getElementById('listaAlertas');
+        lista.innerHTML = '<div class="empty-state">Sincronizando...</div>';
+        try {
+            const resVeh = await fetch('http://localhost:8000/vehiculos-activos');
+            const dataVeh = await resVeh.json();
+            dataVeh.data.forEach(v => { memoriaFlota[v.cr596_flota_vehiculoid] = v.cr596_placa || "N/A"; });
+            cargarAlertas();
+        } catch(e) { lista.innerHTML = '<div class="empty-state" style="color: red;">Error conectando a la flota.</div>'; }
+    }
+
+    async function cargarAlertas() {
+        const lista = document.getElementById('listaAlertas');
+        try {
+            const res = await fetch('http://localhost:8000/viajes-con-gastos');
+            const data = await res.json();
+            
+            if(data.data.length === 0) { lista.innerHTML = '<div class="empty-state">✅ Tesorería al día.</div>'; return; }
+
+            lista.innerHTML = '';
+            data.data.forEach(v => {
+                let fecha = v.cr596_fechahoraretorno ? new Date(v.cr596_fechahoraretorno).toLocaleString() : 'Reciente';
+                let vehiculoId = v._cr596_vehiculo_value;
+                let placa = memoriaFlota[vehiculoId] ? `[${memoriaFlota[vehiculoId]}]` : '🚗';
+                let detalle = v.cr596_observacionesretorno || "No se detalló el gasto.";
+
+                lista.innerHTML += `
+                    <div class="alerta-item" onclick="seleccionarViaje('${v.cr596_flota_movimientoid}', '${placa} - ${fecha}', this)">
+                        <div class="alerta-placa">${placa} <span class="alerta-badge">Pendiente</span></div>
+                        <div class="alerta-fecha">Retornó: ${fecha}</div>
+                        <div class="alerta-detalle">"${detalle}"</div>
+                    </div>
+                `;
+            });
+        } catch(e) {}
+    }
+
+    function seleccionarViaje(id, nombreVisual, element) {
+        document.querySelectorAll('.alerta-item').forEach(c => c.classList.remove('selected'));
+        element.classList.add('selected');
+        document.getElementById('viaje_id').value = id; document.getElementById('viaje_seleccionado').value = nombreVisual;
+    }
+
+    document.getElementById('btnGuardarGasto').addEventListener('click', async () => {
+        const viaje_id = document.getElementById('viaje_id').value;
+        const tipo_gasto = document.getElementById('tipo_gasto').value;
+        const monto = parseFloat(document.getElementById('monto').value);
+        const url_comprobante = document.getElementById('url_comprobante').value;
+
+        if(!viaje_id) { alert("❌ Seleccione una alerta."); return; }
+        if(!tipo_gasto || !monto) { alert("❌ Complete tipo de gasto y monto."); return; }
+
+        const btn = document.getElementById('btnGuardarGasto'); btn.innerText = "Guardando...";
+
+        const payload = { movimiento_id: viaje_id, tipo_gasto: parseInt(tipo_gasto), monto: monto, url_comprobante: url_comprobante };
+
+        try {
+            const respuesta = await fetch('http://localhost:8000/registrar-gasto', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            if (respuesta.ok) { alert("✅ Registrado."); document.getElementById('formReembolso').reset(); document.getElementById('viaje_id').value = ""; cargarAlertas(); 
+            } else { alert("❌ Error en Dataverse."); }
+        } catch (error) { alert("❌ Error de conexión."); } finally { btn.innerText = "Guardar y Reembolsar"; }
+    });
+
+    cargarDatos();
+</script>
+</body>
+</html>

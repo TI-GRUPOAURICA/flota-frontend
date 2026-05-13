@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mantenimiento - Grupo Aurica</title>
+    <!-- Importamos una fuente geométrica similar a Nexa (Montserrat) -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ========================================================
+           1. VARIABLES CORPORATIVAS (GRUPO AURICA)
+           ======================================================== */
+        :root {
+            --aurica-blue: #305da0;
+            --aurica-light-blue: #4478b2;
+            --aurica-bg: #eceded;
+            --text-dark: #2c3e50;
+            --text-gray: #7f8c8d;
+            --ok-color: #2ecc71;
+            --warn-color: #f39c12;
+            --crit-color: #e74c3c;
+            --gray-color: #bdc3c7;
+        }
+
+        body { font-family: 'Montserrat', sans-serif; background: var(--aurica-bg); margin: 0; padding: 20px; color: var(--text-dark);}
+        
+        /* ========================================================
+           2. HEADER CORPORATIVO Y FILTROS
+           ======================================================== */
+        .top-bar { display: flex; justify-content: space-between; align-items: center; background: var(--aurica-blue); color: white; padding: 20px 30px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 4px 10px rgba(48, 93, 160, 0.2);}
+        .header-title { display: flex; align-items: center; gap: 15px;}
+        .header-title h2 { margin: 0; font-size: 26px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px;}
+        .header-title p { margin: 5px 0 0 0; font-size: 13px; font-weight: 400; opacity: 0.9;}
+        
+        .filters { display: flex; gap: 10px; }
+        .btn-filter { background: rgba(255,255,255,0.15); color: white; border: none; padding: 8px 18px; border-radius: 20px; font-weight: 600; font-size: 13px; cursor: pointer; transition: 0.3s; font-family: 'Montserrat', sans-serif;}
+        .btn-filter.active { background: white; color: var(--aurica-blue); }
+        .btn-filter:hover:not(.active) { background: rgba(255,255,255,0.25); }
+
+        /* ========================================================
+           3. DISEÑO DE TARJETAS (Mockup)
+           ======================================================== */
+        .dashboard { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 25px; max-width: 1400px; margin: auto; }
+        
+        .card { background: white; border-radius: 16px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); position: relative; transition: 0.2s; cursor: pointer; border-bottom: 5px solid transparent; display: flex; flex-direction: column;}
+        .card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.08); border-bottom-color: var(--aurica-blue);}
+        
+        /* Cabecera de la tarjeta */
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 2px solid var(--aurica-blue); padding-bottom: 15px;}
+        .v-title { font-size: 24px; font-weight: 900; color: var(--text-dark); margin: 0;}
+        .v-placa { font-size: 12px; background: #f0f4f8; padding: 5px 12px; border-radius: 20px; color: var(--aurica-blue); font-weight: 800; display: flex; align-items: center; gap: 5px;}
+        
+        /* Caja gris de KM y Combustible */
+        .info-box { background: #f8f9fa; border-radius: 12px; padding: 15px; display: grid; grid-template-columns: 1fr 1.2fr; gap: 15px; align-items: center; margin-bottom: 20px;}
+        .info-item { display: flex; flex-direction: column; gap: 4px; }
+        .info-label { font-size: 13px; font-weight: 800; color: var(--text-dark); display: flex; align-items: center; gap: 6px;}
+        .info-val { font-size: 18px; font-weight: 900; color: var(--text-dark);}
+        
+        /* Barra de combustible mini */
+        .fuel-row { display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 10px;}
+        .fuel-bar-bg { flex-grow: 1; height: 6px; background: #e0e0e0; border-radius: 4px; overflow: hidden;}
+        .fuel-fill { height: 100%; transition: width 0.5s ease-in-out;}
+        .fuel-pct { font-size: 14px; font-weight: 600; color: var(--text-gray); min-width: 30px; text-align: right;}
+
+        /* Lista de Métricas y Etiquetas Outlined */
+        .metrics-list { display: flex; flex-direction: column; gap: 12px; flex-grow: 1;}
+        .metric { display: flex; justify-content: space-between; align-items: center; font-size: 13px; border-bottom: 1px dashed #eee; padding-bottom: 8px;}
+        .metric:last-child { border-bottom: none; }
+        .metric-label { font-weight: 600; color: var(--aurica-light-blue); font-size: 14px;}
+        
+        .status { padding: 4px 14px; border-radius: 20px; font-size: 12px; font-weight: 800; text-align: center;}
+        .status.green { color: var(--ok-color); border: 2px solid var(--ok-color); background: transparent; }   
+        .status.yellow { color: var(--warn-color); border: 2px solid var(--warn-color); background: transparent; }  
+        .status.red { color: var(--crit-color); border: 2px solid var(--crit-color); background: transparent; }    
+        .status.gray { color: #888; background: #e9ecef; border: 2px solid #e9ecef; }
+
+        /* Etiqueta de Estado Operativo flotante (Inoperativo/En Ruta) */
+        .op-badge { position: absolute; top: -10px; left: 20px; padding: 4px 12px; border-radius: 12px; color: white; font-size: 11px; font-weight: 800; text-transform: uppercase; box-shadow: 0 2px 5px rgba(0,0,0,0.15);}
+
+        .card-footer { margin-top: 15px; text-align: center; font-size: 11px; color: #aaa; font-weight: 600;}
+
+        /* ========================================================
+           4. MODAL (Se mantiene la funcionalidad técnica)
+           ======================================================== */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(3px);}
+        .modal { background: white; width: 100%; max-width: 550px; border-radius: 16px; padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); max-height: 90vh; overflow-y: auto;}
+        .modal h3 { margin-top: 0; color: var(--aurica-blue); border-bottom: 2px solid #eee; padding-bottom: 10px; font-weight: 900;}
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 800; color: var(--text-dark); margin-bottom: 5px;}
+        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-family: 'Montserrat', sans-serif;}
+        .btn-guardar { background: var(--aurica-blue); color: white; border: none; padding: 14px; width: 100%; font-size: 15px; font-weight: 800; border-radius: 8px; cursor: pointer; margin-top: 10px;}
+        .btn-cancelar { background: var(--gray-color); color: white; border: none; padding: 10px; width: 100%; font-size: 14px; font-weight: 600; border-radius: 8px; cursor: pointer; margin-top: 10px;}
+        .mante-box { background: #f0f4ff; border: 1px solid #cce0ff; padding: 15px; border-radius: 12px; margin-bottom: 15px;}
+    </style>
+</head>
+<body>
+
+<div style="max-width: 1400px; margin: auto;">
+    <div class="top-bar">
+        <div class="header-title">
+            <!-- Icono corporativo en SVG -->
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            <div>
+                <h2>Gestión Integral de Flota</h2>
+                <p>Haz clic en un vehículo para actualizar fechas o cambiar estado operativo</p>
+            </div>
+        </div>
+        <div class="filters">
+            <button class="btn-filter active" onclick="aplicarFiltro('todos', this)">Todos</button>
+            <button class="btn-filter" onclick="aplicarFiltro('vencer', this)">Por vencer</button>
+            <button class="btn-filter" onclick="aplicarFiltro('criticos', this)">Críticos</button>
+        </div>
+    </div>
+
+    <div class="dashboard" id="panelVehiculos">
+        <h3 style="text-align: center; width: 100%; color: var(--text-gray);">Cargando telemetría...</h3>
+    </div>
+</div>
+
+<!-- MODAL DE EDICIÓN -->
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+        <h3 id="modalTitle">Gestionar Vehículo</h3>
+        <form id="formMantenimiento">
+            <input type="hidden" id="edit_id">
+            <div class="form-group">
+                <label>Estado Operativo</label>
+                <select id="edit_estado">
+                    <option value="144280000">✅ Disponible (Listo para salir)</option>
+                    <option value="144280002">🛠️ Inoperativo (En taller)</option>
+                    <option value="144280001" disabled>🚚 En Ruta (Solo Garita puede cambiarlo)</option>
+                </select>
+            </div>
+            <div class="mante-box">
+                <h4 style="margin: 0 0 10px 0; color: var(--aurica-blue); font-size: 14px;">⚙️ Programación de Mantenimiento</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div class="form-group" style="margin: 0;">
+                        <label>Frecuencia (Km)</label>
+                        <input type="number" id="edit_freq" onkeyup="calcularProximo()">
+                    </div>
+                    <div class="form-group" style="margin: 0;">
+                        <label>Último Servicio (Km)</label>
+                        <input type="number" id="edit_ultimo" onkeyup="calcularProximo()">
+                    </div>
+                </div>
+                <div style="margin-top: 10px; font-size: 13px; font-weight: bold; color: var(--text-dark); text-align: center; background: white; padding: 8px; border-radius: 8px;">
+                    Próximo servicio: <span id="lbl_proximo" style="color: var(--aurica-blue);">---</span> Km
+                </div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="form-group"><label>Vencimiento SOAT</label><input type="date" id="edit_soat"></div>
+                <div class="form-group"><label>Revisión Técnica</label><input type="date" id="edit_rt"></div>
+                <div class="form-group"><label>Seguro Vehicular</label><input type="date" id="edit_seguro"></div>
+                <div class="form-group"><label>Servicio GPS</label><input type="date" id="edit_gps"></div>
+                <div class="form-group">
+                    <label>Lunas Polarizadas</label>
+                    <select id="edit_lunas">
+                        <option value="">Seleccione...</option>
+                        <option value="144280000">Sí</option>
+                        <option value="144280001">No</option>
+                        <option value="144280002">No Aplica</option>
+                    </select>
+                </div>
+            </div>
+            <button type="submit" class="btn-guardar" id="btnGuardar">Guardar Actualización</button>
+            <button type="button" class="btn-cancelar" onclick="cerrarModal()">Cancelar</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    let flotaData = [];
+    // SVGs reutilizables para limpieza de código
+    const iconTag = `<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82zM7 9a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"></path></svg>`;
+    const iconSpeed = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+    const iconGas = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 22v-8c0-1.1.9-2 2-2h4a2 2 0 0 1 2 2v8"></path><path d="M11 22H3"></path><path d="M11 9.5V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v4.5"></path><path d="M11 6h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2"></path><circle cx="17" cy="18" r="2"></circle></svg>`;
+
+    // --- FUNCIONES DE EVALUACIÓN ---
+    function evaluarFecha(fechaStr) {
+        if (!fechaStr) return { clase: 'gray', texto: 'Sin registro' };
+        const fechaVencimiento = new Date(fechaStr);
+        const hoy = new Date();
+        const diasFaltantes = Math.ceil((fechaVencimiento - hoy) / (1000 * 60 * 60 * 24));
+
+        if (diasFaltantes < 0) return { clase: 'red', texto: `Vencido (${Math.abs(diasFaltantes)} d)` };
+        if (diasFaltantes <= 15) return { clase: 'yellow', texto: `Vence en ${diasFaltantes} d` };
+        return { clase: 'green', texto: `Ok (${diasFaltantes} d)` };
+    }
+
+    function evaluarKm(kmActual, kmMeta) {
+        if (!kmActual || !kmMeta) return { clase: 'gray', texto: 'Sin registro' };
+        const faltan = kmMeta - kmActual;
+        if (faltan <= 0) return { clase: 'red', texto: `¡Vencido! (${Math.abs(faltan)} km)` };
+        if (faltan <= 1000) return { clase: 'yellow', texto: `Próximo (${faltan} km)` };
+        return { clase: 'green', texto: `Ok (${faltan} km)` };
+    }
+
+    // --- LÓGICA DE FILTROS ---
+    function aplicarFiltro(tipo, btnElement) {
+        // Estilos del botón
+        document.querySelectorAll('.btn-filter').forEach(b => b.classList.remove('active'));
+        btnElement.classList.add('active');
+
+        const tarjetas = document.querySelectorAll('.card');
+        tarjetas.forEach(t => {
+            // Buscamos si la tarjeta tiene clases de alerta en su HTML
+            const html = t.innerHTML;
+            const tieneRojo = html.includes('status red') || html.includes('bg-red');
+            const tieneAmarillo = html.includes('status yellow') || html.includes('bg-yellow');
+
+            if (tipo === 'todos') {
+                t.style.display = 'flex';
+            } else if (tipo === 'vencer') {
+                // Muestra si tiene amarillo (o rojo, por si acaso)
+                t.style.display = (tieneAmarillo || tieneRojo) ? 'flex' : 'none';
+            } else if (tipo === 'criticos') {
+                // Muestra solo si hay rojo o si el auto está inoperativo
+                t.style.display = (tieneRojo || html.includes('INOPERATIVO')) ? 'flex' : 'none';
+            }
+        });
+    }
+
+    // --- RENDERIZADO DEL DASHBOARD ---
+    async function cargarDashboard() {
+        const panel = document.getElementById('panelVehiculos');
+        try {
+            const res = await fetch('http://localhost:8000/estado-flota');
+            const data = await res.json();
+            flotaData = data.data; 
+            panel.innerHTML = '';
+            
+            flotaData.forEach(v => {
+                const estSOAT = evaluarFecha(v.cr596_vencimientosoat);
+                const estRT = evaluarFecha(v.cr596_vencimientorevisiontecnica);
+                const estSeguro = evaluarFecha(v.cr596_vencimientoseguro);
+                const estGPS = evaluarFecha(v.cr596_vencimientogps);
+                const estMante = evaluarKm(v.cr596_kilometrajeactual, v.cr596_proximomantenimientokm);
+                
+                let estLunas = { clase: 'gray', texto: 'Sin registro' };
+                if (v.cr596_lunaspolarizadas === 144280000) estLunas = { clase: 'green', texto: 'Sí' };
+                else if (v.cr596_lunaspolarizadas === 144280001) estLunas = { clase: 'gray', texto: 'No' }; // Gris como en la imagen
+                else if (v.cr596_lunaspolarizadas === 144280002) estLunas = { clase: 'gray', texto: 'No Aplica' };
+                
+                let badgeHTML = ""; 
+                if(v.cr596_estadooperativo === 144280001) badgeHTML = `<div class="op-badge" style="background:#f39c12">En Ruta</div>`;
+                if(v.cr596_estadooperativo === 144280002) badgeHTML = `<div class="op-badge" style="background:#e74c3c">Inoperativo</div>`;
+
+                const fuelNivel = v.cr596_nivelcombustible || 0; 
+                const fuelTipo = v.cr596_tipocombustible || "Gasolina"; 
+                let fuelColor = "var(--aurica-blue)"; // Color principal
+                if(fuelNivel <= 50) fuelColor = "var(--warn-color)"; 
+                if(fuelNivel <= 5) fuelColor = "var(--crit-color)"; 
+
+                panel.innerHTML += `
+                    <div class="card" onclick="abrirModal('${v.cr596_flota_vehiculoid}')">
+                        ${badgeHTML}
+                        <div class="card-header">
+                            <h3 class="v-title">${v.cr596_nombre}</h3>
+                            <span class="v-placa">${iconTag} ${v.cr596_placa || "S/P"}</span>
+                        </div>
+                        
+                        <div class="info-box">
+                            <div class="info-item">
+                                <span class="info-label">${iconSpeed} Km Actual:</span>
+                                <span class="info-val">${v.cr596_kilometrajeactual || 0} <span style="font-size:12px; font-weight:600">km</span></span>
+                            </div>
+                            <div class="info-item" style="border-left: 1px solid #ddd; padding-left: 15px;">
+                                <div class="fuel-row">
+                                    <span class="info-label">${iconGas} ${fuelTipo}</span>
+                                    <span class="fuel-pct">${fuelNivel}%</span>
+                                </div>
+                                <div class="fuel-bar-bg">
+                                    <div class="fuel-fill" style="width: ${fuelNivel}%; background: ${fuelColor};"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="metrics-list">
+                            <div class="metric"><span class="metric-label">Mantenimiento (Km)</span><span class="status ${estMante.clase}">${estMante.texto}</span></div>
+                            <div class="metric"><span class="metric-label">SOAT</span><span class="status ${estSOAT.clase}">${estSOAT.texto}</span></div>
+                            <div class="metric"><span class="metric-label">Seguro Vehicular</span><span class="status ${estSeguro.clase}">${estSeguro.texto}</span></div>
+                            <div class="metric"><span class="metric-label">Revisión Técnica</span><span class="status ${estRT.clase}">${estRT.texto}</span></div>
+                            <div class="metric"><span class="metric-label">Servicio GPS</span><span class="status ${estGPS.clase}">${estGPS.texto}</span></div>
+                            <div class="metric"><span class="metric-label">Lunas Polarizadas</span><span class="status ${estLunas.clase}">${estLunas.texto}</span></div>
+                        </div>
+
+                        <div class="card-footer">
+                            👆 Click en tarjeta para gestionar fechas
+                        </div>
+                    </div>
+                `;
+            });
+        } catch(e) {
+            panel.innerHTML = '<h3 style="text-align: center; color: var(--crit-color);">Error de conexión. Verifique Dataverse.</h3>';
+        }
+    }
+
+    // --- LÓGICA DEL MODAL ---
+    function formatInputDate(isoString) { return isoString ? isoString.split('T')[0] : ""; }
+
+    function calcularProximo() {
+        const freq = parseInt(document.getElementById('edit_freq').value) || 0;
+        const ultimo = parseInt(document.getElementById('edit_ultimo').value) || 0;
+        const proximo = freq + ultimo;
+        document.getElementById('lbl_proximo').innerText = proximo > 0 ? proximo : '---';
+    }
+
+    function abrirModal(vehiculoId) {
+        const v = flotaData.find(x => x.cr596_flota_vehiculoid === vehiculoId);
+        if(!v) return;
+
+        document.getElementById('modalTitle').innerText = `Gestión: ${v.cr596_nombre} [${v.cr596_placa}]`;
+        document.getElementById('edit_id').value = v.cr596_flota_vehiculoid;
+        document.getElementById('edit_estado').value = v.cr596_estadooperativo || "";
+        
+        document.getElementById('edit_freq').value = v.cr596_frecuenciamantenimiento || "";
+        document.getElementById('edit_ultimo').value = v.cr596_ultimomantenimientokm || "";
+        calcularProximo(); 
+        
+        document.getElementById('edit_soat').value = formatInputDate(v.cr596_vencimientosoat);
+        document.getElementById('edit_rt').value = formatInputDate(v.cr596_vencimientorevisiontecnica);
+        document.getElementById('edit_seguro').value = formatInputDate(v.cr596_vencimientoseguro);
+        document.getElementById('edit_gps').value = formatInputDate(v.cr596_vencimientogps);
+        document.getElementById('edit_lunas').value = v.cr596_lunaspolarizadas || "";
+
+        document.getElementById('modalOverlay').style.display = 'flex';
+    }
+
+    function cerrarModal() { document.getElementById('modalOverlay').style.display = 'none'; }
+
+    // --- ENVÍO DE DATOS ---
+    document.getElementById('formMantenimiento').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('btnGuardar');
+        btn.innerText = "Guardando...";
+
+        const lunasVal = document.getElementById('edit_lunas').value;
+        const lunasInt = lunasVal ? parseInt(lunasVal) : null;
+
+        const payload = {
+            vehiculo_id: document.getElementById('edit_id').value,
+            estado_operativo: parseInt(document.getElementById('edit_estado').value),
+            frecuencia_mantenimiento: parseInt(document.getElementById('edit_freq').value) || null,
+            ultimo_mantenimiento_km: parseInt(document.getElementById('edit_ultimo').value) || null,
+            vencimiento_soat: document.getElementById('edit_soat').value || null,
+            vencimiento_rt: document.getElementById('edit_rt').value || null,
+            vencimiento_seguro: document.getElementById('edit_seguro').value || null,
+            vencimiento_gps: document.getElementById('edit_gps').value || null,
+            lunas_polarizadas: lunasInt
+        };
+
+        try {
+            const res = await fetch('http://localhost:8000/actualizar-vehiculo', {
+                method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+            });
+            if (res.ok) {
+                cerrarModal();
+                cargarDashboard(); 
+                // Reinicia los filtros a "Todos" después de guardar
+                document.querySelectorAll('.btn-filter')[0].click();
+            } else { alert("Error al guardar en Dataverse."); }
+        } catch (error) { alert("Error de conexión."); }
+        finally { btn.innerText = "Guardar Actualización"; }
+    });
+
+    cargarDashboard();
+</script>
+
+</body>
+</html>

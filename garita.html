@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Garita de Control - Grupo Aurica</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --aurica-blue: #305da0;
+            --aurica-bg: #eceded;
+            --text-dark: #2c3e50;
+            --ok-color: #28a745;
+        }
+        body { font-family: 'Montserrat', sans-serif; background: var(--aurica-bg); margin: 0; padding: 20px; color: var(--text-dark); }
+        .container { max-width: 700px; background: white; padding: 30px; border-radius: 16px; margin: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        
+        /* HEADER CORPORATIVO */
+        .top-bar { display: flex; align-items: center; gap: 15px; background: var(--aurica-blue); color: white; padding: 20px 25px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 4px 10px rgba(48, 93, 160, 0.2);}
+        .top-bar h2 { margin: 0; font-size: 22px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px;}
+        .top-bar p { margin: 3px 0 0 0; font-size: 13px; font-weight: 400; opacity: 0.9;}
+
+        /* PESTAÑAS */
+        .tabs { display: flex; margin-bottom: 25px; border-bottom: 2px solid #e0e0e0; }
+        .tab { flex: 1; padding: 15px; text-align: center; cursor: pointer; font-weight: 800; color: #888; transition: 0.3s; font-size: 14px;}
+        .tab.active { color: var(--aurica-blue); border-bottom: 3px solid var(--aurica-blue); background: #f8fbff; border-radius: 8px 8px 0 0;}
+        .tab:hover:not(.active) { background: #f8f9fa; }
+        
+        .panel { display: none; }
+        .panel.active { display: block; }
+        
+        /* FORMULARIOS */
+        .form-group { margin-bottom: 20px; }
+        label.section-title { display: block; margin-bottom: 8px; font-weight: 800; color: var(--text-dark); font-size: 13px;}
+        select, input[type="number"], textarea { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 14px; font-family: 'Montserrat', sans-serif;}
+        select:focus, input:focus, textarea:focus { border-color: var(--aurica-blue); outline: none; box-shadow: 0 0 5px rgba(48, 93, 160, 0.2);}
+        
+        button { background: var(--aurica-blue); color: white; border: none; padding: 15px; width: 100%; font-size: 15px; font-weight: 800; border-radius: 8px; cursor: pointer; margin-top: 10px; transition: 0.2s;}
+        button:hover { background: #264b82; transform: translateY(-2px);}
+        .btn-salida { background: var(--ok-color); }
+        .btn-salida:hover { background: #218838; }
+        
+        /* Cajas de alerta */
+        .gastos-box { background: #fffdf5; padding: 15px; border-radius: 8px; border: 1px solid #ffeeba; margin-top: 15px;}
+        .gastos-box label { color: #856404; display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 800; font-size: 13px; margin-bottom: 5px;}
+        .estado-box { background: #f0f4ff; padding: 15px; border-radius: 8px; border: 1px solid #cce0ff; margin-top: 15px;}
+        .mensaje { margin-top: 15px; text-align: center; font-weight: 800; font-size: 14px;}
+
+        /* TARJETAS MINI (Vehículos) */
+        .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; margin-bottom: 10px; }
+        .v-card { background: white; border: 2px solid #eee; border-radius: 12px; padding: 12px; text-align: center; cursor: pointer; transition: 0.2s; position: relative; }
+        .v-card:hover:not(.disabled) { border-color: var(--aurica-blue); background: #f8fbff; transform: translateY(-3px);}
+        .v-card.selected { border-color: var(--aurica-blue); background: #e6f0ff; box-shadow: 0 4px 10px rgba(48, 93, 160, 0.15); }
+        .v-card.disabled { opacity: 0.5; cursor: not-allowed; background: #f5f5f5; filter: grayscale(100%);}
+        .v-card .placa { font-weight: 900; font-size: 16px; margin-bottom: 5px; color: var(--text-dark); letter-spacing: 0.5px;}
+        .v-card .modelo { font-size: 11px; color: #666; margin-bottom: 8px; font-weight: 600;}
+        .v-badge { font-size: 10px; padding: 4px 8px; border-radius: 12px; color: white; display: inline-block; font-weight: 800; text-transform: uppercase;}
+        
+        .bg-green { background: #28a745; }
+        .bg-red { background: #dc3545; }
+        .bg-yellow { background: #ffc107; color: #000; }
+        .bg-gray { background: #6c757d; }
+
+        /* CHECKLIST & COMBUSTIBLE */
+        .checklist-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #e9ecef;}
+        .checklist-grid label { font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 8px; margin: 0; cursor: pointer; background: white; padding: 10px; border: 1px solid #ddd; border-radius: 6px; transition: 0.2s;}
+        .checklist-grid label:hover { border-color: var(--aurica-blue); }
+        
+        .fuel-gauge { display: flex; width: 100%; border-radius: 8px; overflow: hidden; border: 1px solid #ccc; margin-top: 5px; }
+        .fuel-gauge input[type="radio"] { display: none; }
+        .fuel-btn { flex: 1; text-align: center; padding: 10px 0; font-weight: 800; color: #666; background: #f8f9fa; cursor: pointer; transition: 0.2s; border-right: 1px solid #ddd; font-size: 12px;}
+        .fuel-btn:last-child { border-right: none; }
+        .fuel-gauge input[type="radio"]:checked + .fuel-btn[for$="_5"] { background: #dc3545; color: white; border-color: #dc3545;} 
+        .fuel-gauge input[type="radio"]:checked + .fuel-btn[for$="_25"] { background: #fd7e14; color: white; border-color: #fd7e14;} 
+        .fuel-gauge input[type="radio"]:checked + .fuel-btn[for$="_50"] { background: #ffc107; color: black; border-color: #ffc107;} 
+        .fuel-gauge input[type="radio"]:checked + .fuel-btn[for$="_75"] { background: #8bc34a; color: white; border-color: #8bc34a;} 
+        .fuel-gauge input[type="radio"]:checked + .fuel-btn[for$="_100"] { background: #28a745; color: white; border-color: #28a745;} 
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="top-bar">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+        <div>
+            <h2>Control de Garita</h2>
+            <p>Registro de Accesos de Flota</p>
+        </div>
+    </div>
+    
+    <div class="tabs">
+        <div class="tab active" onclick="cambiarTab('salida')">🚘 Registrar Salida</div>
+        <div class="tab" onclick="cambiarTab('retorno')">🔙 Registrar Retorno</div>
+    </div>
+
+    <!-- PANEL SALIDA -->
+    <div id="panel-salida" class="panel active">
+        <form id="formSalida">
+            <div class="form-group">
+                <label class="section-title">Seleccionar Vehículo en Base</label>
+                <div id="grid-vehiculos" class="cards-grid"><p style="font-size:12px;">Cargando flota...</p></div>
+                <input type="hidden" id="vehiculo_salida_id" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="section-title">Kilometraje de Salida</label>
+                <input type="number" id="kmsalida" placeholder="Seleccione un vehículo arriba..." required>
+            </div>
+
+            <div class="form-group">
+                <label class="section-title">⛽ Nivel de Combustible (Al Salir)</label>
+                <div class="fuel-gauge">
+                    <input type="radio" name="fuel_salida" id="s_5" value="5"><label for="s_5" class="fuel-btn">E (Res)</label>
+                    <input type="radio" name="fuel_salida" id="s_25" value="25"><label for="s_25" class="fuel-btn">1/4</label>
+                    <input type="radio" name="fuel_salida" id="s_50" value="50"><label for="s_50" class="fuel-btn">1/2</label>
+                    <input type="radio" name="fuel_salida" id="s_75" value="75"><label for="s_75" class="fuel-btn">3/4</label>
+                    <input type="radio" name="fuel_salida" id="s_100" value="100" checked><label for="s_100" class="fuel-btn">F (Lleno)</label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="section-title">Checklist de Estado Físico</label>
+                <div class="checklist-grid">
+                    <label><input type="checkbox" id="chk_brisas"> Parabrisas</label>
+                    <label><input type="checkbox" id="chk_parachoques"> Parachoques</label>
+                    <label><input type="checkbox" id="chk_llantas"> Llantas</label>
+                    <label><input type="checkbox" id="chk_puertas"> Puertas</label>
+                    <label><input type="checkbox" id="chk_luces"> Luces</label>
+                    <label><input type="checkbox" id="chk_bocina"> Bocina</label>
+                    <label><input type="checkbox" id="chk_maletero"> Maletero</label>
+                    <label><input type="checkbox" id="chk_lunas"> Lunas</label>
+                    <label><input type="checkbox" id="chk_limpieza"> Limpieza</label>
+                    <label><input type="checkbox" id="chk_guardafangos"> Guardafangos</label>
+                    <label><input type="checkbox" id="chk_capo"> Capó</label>
+                    <label><input type="checkbox" id="chk_cinturon"> Cinturón</label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="section-title">Observaciones Adicionales</label>
+                <textarea id="observaciones" rows="2" placeholder="Detalle raspones, abolladuras..."></textarea>
+            </div>
+
+            <button type="submit" class="btn-salida" id="btnGuardarSalida">Registrar Salida y Abrir Tranquera</button>
+            <div id="msjSalida" class="mensaje"></div>
+        </form>
+    </div>
+
+    <!-- PANEL RETORNO -->
+    <div id="panel-retorno" class="panel">
+        <form id="formRetorno">
+            <div class="form-group">
+                <label class="section-title">Vehículo Retornando (En Ruta)</label>
+                <div id="grid-retornos" class="cards-grid"><p style="font-size:12px;">Buscando...</p></div>
+                <input type="hidden" id="viaje_retorno_id" required>
+                <input type="hidden" id="vehiculo_retorno_id" required>
+            </div>
+
+            <div class="form-group">
+                <label class="section-title">Kilometraje de Llegada</label>
+                <input type="number" id="kmretorno" placeholder="Ej. 145050" required>
+            </div>
+
+            <div class="form-group">
+                <label class="section-title">⛽ Nivel de Combustible (Al Retornar)</label>
+                <div class="fuel-gauge">
+                    <input type="radio" name="fuel_retorno" id="r_5" value="5"><label for="r_5" class="fuel-btn">E (Res)</label>
+                    <input type="radio" name="fuel_retorno" id="r_25" value="25"><label for="r_25" class="fuel-btn">1/4</label>
+                    <input type="radio" name="fuel_retorno" id="r_50" value="50"><label for="r_50" class="fuel-btn">1/2</label>
+                    <input type="radio" name="fuel_retorno" id="r_75" value="75"><label for="r_75" class="fuel-btn">3/4</label>
+                    <input type="radio" name="fuel_retorno" id="r_100" value="100" checked><label for="r_100" class="fuel-btn">F (Lleno)</label>
+                </div>
+            </div>
+
+            <div class="estado-box">
+                <label class="section-title" style="color: var(--aurica-blue);">Estado al Llegar</label>
+                <select id="estado_llegada" required onchange="toggleTaller()">
+                    <option value="144280000">✅ Operativo (A flota Disponible)</option>
+                    <option value="144280002">🛠️ Requiere Taller Mecánico</option>
+                </select>
+                <div id="box-taller" style="display: none; margin-top: 10px;">
+                    <textarea id="detalle_taller" rows="2" placeholder="Detalle la falla mecánica..."></textarea>
+                </div>
+            </div>
+
+            <div class="gastos-box">
+                <label><input type="checkbox" id="chkGastos" onchange="toggleObservaciones()"> ¿Reporta Combustible, PEX o Gastos?</label>
+                <div id="box-observaciones" style="display: none; margin-top: 10px;">
+                    <textarea id="observaciones_retorno" rows="2" placeholder="Describa el gasto..."></textarea>
+                </div>
+            </div>
+
+            <button type="submit" id="btnGuardarRetorno">Registrar Llegada</button>
+            <div id="msjRetorno" class="mensaje"></div>
+        </form>
+    </div>
+</div>
+
+<!-- ================== SCRIPT INTACTO (Sin modificar tu lógica) ================== -->
+<script>
+    window.memoriaFlota = {};
+
+    function cambiarTab(tab) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        if(tab === 'salida') {
+            document.querySelectorAll('.tab')[0].classList.add('active');
+            document.getElementById('panel-salida').classList.add('active');
+            cargarVehiculosAbiertos();
+        } else {
+            document.querySelectorAll('.tab')[1].classList.add('active');
+            document.getElementById('panel-retorno').classList.add('active');
+            cargarViajesAbiertos();
+        }
+    }
+
+    function toggleTaller() {
+        const box = document.getElementById('box-taller');
+        if(document.getElementById('estado_llegada').value === '144280002') { box.style.display = 'block'; } 
+        else { box.style.display = 'none'; document.getElementById('detalle_taller').value = ''; }
+    }
+
+    function toggleObservaciones() {
+        const box = document.getElementById('box-observaciones');
+        if(document.getElementById('chkGastos').checked) { box.style.display = 'block'; } 
+        else { box.style.display = 'none'; document.getElementById('observaciones_retorno').value = ''; }
+    }
+
+    async function cargarVehiculosAbiertos() {
+        try {
+            const res = await fetch('http://localhost:8000/vehiculos-activos');
+            const data = await res.json();
+            let grid = document.getElementById('grid-vehiculos');
+            grid.innerHTML = ''; document.getElementById('vehiculo_salida_id').value = ''; document.getElementById('kmsalida').value = '';
+
+            data.data.forEach(v => {
+                window.memoriaFlota[v.cr596_flota_vehiculoid] = { placa: v.cr596_placa || "N/A", nombre: v.cr596_nombre };
+                const placa = v.cr596_placa || "SIN PLACA"; const km = v.cr596_kilometrajeactual || 0; const estado = v.cr596_estadooperativo;
+                let estadoStr = "Configurar"; let badgeClass = "bg-gray"; let isDisabled = true;
+
+                if(estado === 144280000) { estadoStr = "Disponible"; badgeClass = "bg-green"; isDisabled = false; }
+                else if(estado === 144280001) { estadoStr = "En Ruta"; badgeClass = "bg-red"; }
+                else if(estado === 144280002) { estadoStr = "Inoperativo"; badgeClass = "bg-gray"; }
+
+                const cardClass = isDisabled ? "v-card disabled" : "v-card";
+                const clickAction = isDisabled ? "" : `onclick="seleccionarVehiculo('${v.cr596_flota_vehiculoid}', ${km}, this)"`;
+
+                grid.innerHTML += `<div class="${cardClass}" ${clickAction}><div class="placa">${placa}</div><div class="modelo">${v.cr596_nombre}</div><div class="v-badge ${badgeClass}">${estadoStr}</div></div>`;
+            });
+        } catch(e) {}
+    }
+
+    async function cargarViajesAbiertos() {
+        try {
+            if(Object.keys(window.memoriaFlota).length === 0) await cargarVehiculosAbiertos();
+            const res = await fetch('http://localhost:8000/viajes-abiertos');
+            const data = await res.json();
+            let grid = document.getElementById('grid-retornos');
+            grid.innerHTML = ''; document.getElementById('viaje_retorno_id').value = ''; document.getElementById('vehiculo_retorno_id').value = '';
+            
+            if(data.data.length === 0) { grid.innerHTML = '<p style="font-size:13px;">No hay vehículos en ruta.</p>'; return; }
+            
+            data.data.forEach(v => {
+                const vehiculoId = v._cr596_vehiculo_value; 
+                const infoAuto = window.memoriaFlota[vehiculoId] || { placa: '???', nombre: 'Desconocido' };
+                grid.innerHTML += `<div class="v-card" onclick="seleccionarViaje('${v.cr596_flota_movimientoid}', '${vehiculoId}', this)"><div class="placa">${infoAuto.placa}</div><div class="modelo">${infoAuto.nombre}</div><div class="v-badge bg-yellow" style="margin-top: 5px;">Salió: ${v.cr596_kmsalida} Km</div></div>`;
+            });
+        } catch(e) {}
+    }
+
+    function seleccionarVehiculo(id, km, element) {
+        document.querySelectorAll('#grid-vehiculos .v-card').forEach(c => c.classList.remove('selected'));
+        element.classList.add('selected');
+        document.getElementById('vehiculo_salida_id').value = id;
+        document.getElementById('kmsalida').value = km;
+    }
+
+    function seleccionarViaje(viajeId, vehiculoId, element) {
+        document.querySelectorAll('#grid-retornos .v-card').forEach(c => c.classList.remove('selected'));
+        element.classList.add('selected');
+        document.getElementById('viaje_retorno_id').value = viajeId;
+        document.getElementById('vehiculo_retorno_id').value = vehiculoId;
+    }
+
+    cargarVehiculosAbiertos();
+
+    document.getElementById('formSalida').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const vehiculoId = document.getElementById('vehiculo_salida_id').value;
+        if(!vehiculoId) { alert("⚠️ Seleccione un vehículo Disponible."); return; }
+        const radioSalida = document.querySelector('input[name="fuel_salida"]:checked');
+        if(!radioSalida) { alert("⚠️ Seleccione el nivel de combustible."); return; }
+
+        const msj = document.getElementById('msjSalida'); msj.innerText = "Guardando..."; msj.style.color = "black";
+        
+        const payload = {
+            vehiculo_id: vehiculoId, km_salida: parseInt(document.getElementById('kmsalida').value), combustible_salida: parseInt(radioSalida.value),
+            observaciones: document.getElementById('observaciones').value, chk_brisas: document.getElementById('chk_brisas').checked, chk_parachoques: document.getElementById('chk_parachoques').checked,
+            chk_llantas: document.getElementById('chk_llantas').checked, chk_puertas: document.getElementById('chk_puertas').checked, chk_luces: document.getElementById('chk_luces').checked, chk_bocina: document.getElementById('chk_bocina').checked,
+            chk_maletero: document.getElementById('chk_maletero').checked, chk_lunas: document.getElementById('chk_lunas').checked, chk_limpieza: document.getElementById('chk_limpieza').checked, chk_guardafangos: document.getElementById('chk_guardafangos').checked,
+            chk_capo: document.getElementById('chk_capo').checked, chk_cinturon: document.getElementById('chk_cinturon').checked
+        };
+
+        try {
+            const res = await fetch('http://localhost:8000/registrar-salida', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            if (res.ok) { msj.innerText = "✅ Salida registrada."; msj.style.color = "green"; document.getElementById('formSalida').reset(); cargarVehiculosAbiertos(); 
+            } else { msj.innerText = "❌ Error en el servidor."; msj.style.color = "red"; }
+        } catch (error) { msj.innerText = "❌ Error de conexión."; msj.style.color = "red"; }
+    });
+
+    document.getElementById('formRetorno').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const viajeId = document.getElementById('viaje_retorno_id').value; const vehiculoId = document.getElementById('vehiculo_retorno_id').value;
+        if(!viajeId) { alert("⚠️ Seleccione un vehículo en ruta."); return; }
+        const radioRetorno = document.querySelector('input[name="fuel_retorno"]:checked');
+        if(!radioRetorno) { alert("⚠️ Seleccione el nivel de combustible al retornar."); return; }
+
+        const msj = document.getElementById('msjRetorno'); msj.innerText = "Finalizando viaje..."; msj.style.color = "black";
+        
+        const payload = {
+            movimiento_id: viajeId, vehiculo_id: vehiculoId, km_retorno: parseInt(document.getElementById('kmretorno').value),
+            combustible_retorno: parseInt(radioRetorno.value), estado_llegada: parseInt(document.getElementById('estado_llegada').value),
+            reporta_gastos: document.getElementById('chkGastos').checked, observaciones_retorno: document.getElementById('observaciones_retorno').value, detalle_taller: document.getElementById('detalle_taller').value
+        };
+
+        try {
+            const res = await fetch('http://localhost:8000/registrar-retorno', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            if (res.ok) { msj.innerText = "✅ Llegada registrada."; msj.style.color = "green"; document.getElementById('formRetorno').reset();
+                document.getElementById('box-observaciones').style.display = 'none'; document.getElementById('box-taller').style.display = 'none'; cargarViajesAbiertos();
+            } else { msj.innerText = "❌ Error en el servidor."; msj.style.color = "red"; }
+        } catch (error) { msj.innerText = "❌ Error de conexión."; msj.style.color = "red"; }
+    });
+</script>
+</body>
+</html>

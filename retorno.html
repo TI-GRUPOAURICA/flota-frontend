@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Garita de Control - Retorno</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #e9ecef; margin: 0; padding: 20px; }
+        .container { max-width: 500px; background: white; padding: 30px; border-radius: 10px; margin: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-top: 5px solid #007bff; }
+        h2 { color: #333; margin-top: 0; text-align: center;}
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: bold; color: #555; }
+        select, input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; font-size: 16px; }
+        .gastos-box { background: #fff3cd; padding: 15px; border-radius: 5px; border: 1px solid #ffeeba; margin-top: 15px;}
+        .gastos-box label { color: #856404; display: flex; align-items: center; gap: 10px; cursor: pointer;}
+        button { background: #007bff; color: white; border: none; padding: 15px; width: 100%; font-size: 18px; font-weight: bold; border-radius: 5px; cursor: pointer; margin-top: 10px;}
+        button:hover { background: #0056b3; }
+        #mensaje { margin-top: 15px; text-align: center; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>🔙 Registro de Retorno</h2>
+    <form id="formRetorno">
+        
+        <div class="form-group">
+            <label>Seleccionar Viaje en Ruta</label>
+            <select id="viaje" required>
+                <option value="">Cargando viajes pendientes...</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Kilometraje de Llegada</label>
+            <input type="number" id="kmretorno" placeholder="Ej. 145050" required>
+        </div>
+
+        <div class="gastos-box">
+            <label>
+                <input type="checkbox" id="chkGastos" style="width: 25px; height: 25px;">
+                ¿El conductor reporta recarga de combustible o peaje (PEX)?
+            </label>
+            <small style="display:block; margin-left:35px; color:#666;">Al marcar esto, se enviará una alerta automática a Tesorería.</small>
+        </div>
+
+        <button type="submit" id="btnGuardar">Registrar Llegada</button>
+        <div id="mensaje"></div>
+    </form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        const selectViaje = document.getElementById('viaje');
+        try {
+            const res = await fetch('http://localhost:8000/viajes-abiertos');
+            const data = await res.json();
+            
+            selectViaje.innerHTML = '<option value="">-- Seleccione el Viaje --</option>';
+            if(data.data.length === 0) {
+                selectViaje.innerHTML = '<option value="">No hay vehículos en ruta</option>';
+            } else {
+                data.data.forEach(v => {
+                    selectViaje.innerHTML += `<option value="${v.cr596_flota_movimientoid}">${v.cr596_nombre} (Salió con Km: ${v.cr596_kmsalida})</option>`;
+                });
+            }
+        } catch(e) {
+            selectViaje.innerHTML = '<option value="">Error al conectar con la API</option>';
+        }
+    });
+
+    document.getElementById('formRetorno').addEventListener('submit', async (e) => {
+        e.preventDefault(); 
+        
+        const btn = document.getElementById('btnGuardar');
+        const mensaje = document.getElementById('mensaje');
+        
+        btn.innerText = "Actualizando Dataverse...";
+        mensaje.innerText = "";
+
+        const payload = {
+            movimiento_id: document.getElementById('viaje').value,
+            km_retorno: parseInt(document.getElementById('kmretorno').value),
+            reporta_gastos: document.getElementById('chkGastos').checked
+        };
+
+        // Validación simple
+        const selectElement = document.getElementById('viaje');
+        const textSelected = selectElement.options[selectElement.selectedIndex].text;
+        const kmSalida = parseInt(textSelected.match(/Km: (\d+)/)[1]);
+        
+        if (payload.km_retorno < kmSalida) {
+            mensaje.innerText = "❌ Error: El Km de llegada no puede ser menor al de salida.";
+            mensaje.style.color = "red";
+            btn.innerText = "Registrar Llegada";
+            return;
+        }
+
+        try {
+            const respuesta = await fetch('http://localhost:8000/registrar-retorno', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (respuesta.ok) {
+                mensaje.innerText = "✅ ¡Retorno registrado exitosamente!";
+                mensaje.style.color = "green";
+                document.getElementById('formRetorno').reset();
+                // Opcional: Recargar la lista quitando el que ya llegó
+                setTimeout(() => location.reload(), 2000); 
+            } else {
+                const errData = await respuesta.json();
+                mensaje.innerText = "❌ Error: " + errData.detail;
+                mensaje.style.color = "red";
+            }
+        } catch (error) {
+            mensaje.innerText = "❌ Error de conexión con Python.";
+            mensaje.style.color = "red";
+        } finally {
+            if(btn.innerText !== "Registrar Llegada") btn.innerText = "Registrar Llegada";
+        }
+    });
+</script>
+
+</body>
+</html>
