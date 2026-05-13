@@ -107,7 +107,7 @@
         const lista = document.getElementById('listaAlertas');
         lista.innerHTML = '<div class="empty-state">Sincronizando...</div>';
         try {
-            const resVeh = await fetch('http://localhost:8000/vehiculos-activos');
+            const resVeh = await fetch('https://flota-backend-xecu.onrender.com/vehiculos-activos');
             const dataVeh = await resVeh.json();
             dataVeh.data.forEach(v => { memoriaFlota[v.cr596_flota_vehiculoid] = v.cr596_placa || "N/A"; });
             cargarAlertas();
@@ -117,7 +117,7 @@
     async function cargarAlertas() {
         const lista = document.getElementById('listaAlertas');
         try {
-            const res = await fetch('http://localhost:8000/viajes-con-gastos');
+            const res = await fetch('https://flota-backend-xecu.onrender.com/viajes-con-gastos');
             const data = await res.json();
             
             if(data.data.length === 0) { lista.innerHTML = '<div class="empty-state">✅ Tesorería al día.</div>'; return; }
