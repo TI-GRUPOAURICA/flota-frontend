@@ -324,7 +324,7 @@
         };
 
         try {
-            const res = await fetch('http://localhost:8000/registrar-retorno', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            const res = await fetch('https://flota-backend-xecu.onrender.com/registrar-retorno', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
             if (res.ok) { msj.innerText = "✅ Llegada registrada."; msj.style.color = "green"; document.getElementById('formRetorno').reset();
                 document.getElementById('box-observaciones').style.display = 'none'; document.getElementById('box-taller').style.display = 'none'; cargarViajesAbiertos();
             } else { msj.innerText = "❌ Error en el servidor."; msj.style.color = "red"; }
