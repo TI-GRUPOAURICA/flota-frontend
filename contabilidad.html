@@ -143,7 +143,7 @@
         };
 
         try {
-            const res = await fetch('http://localhost:8000/contabilizar-gasto', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            const res = await fetch('https://flota-backend-xecu.onrender.com/contabilizar-gasto', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
             if (res.ok) { msj.innerText = "✅ Gasto contabilizado."; msj.style.color = "green"; document.getElementById('formContabilidad').reset(); cargarGastosPendientes();
             } else { msj.innerText = "❌ Error en el servidor."; msj.style.color = "red"; }
         } catch (error) { msj.innerText = "❌ Error de conexión."; msj.style.color = "red"; }
