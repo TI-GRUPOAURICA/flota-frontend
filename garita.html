@@ -228,7 +228,7 @@
 
     async function cargarVehiculosAbiertos() {
         try {
-            const res = await fetch('http://localhost:8000/vehiculos-activos');
+            const res = await fetch('https://flota-backend-xecu.onrender.com/vehiculos-activos');
             const data = await res.json();
             let grid = document.getElementById('grid-vehiculos');
             grid.innerHTML = ''; document.getElementById('vehiculo_salida_id').value = ''; document.getElementById('kmsalida').value = '';
@@ -253,7 +253,7 @@
     async function cargarViajesAbiertos() {
         try {
             if(Object.keys(window.memoriaFlota).length === 0) await cargarVehiculosAbiertos();
-            const res = await fetch('http://localhost:8000/viajes-abiertos');
+            const res = await fetch('https://flota-backend-xecu.onrender.com/viajes-abiertos');
             const data = await res.json();
             let grid = document.getElementById('grid-retornos');
             grid.innerHTML = ''; document.getElementById('viaje_retorno_id').value = ''; document.getElementById('vehiculo_retorno_id').value = '';
@@ -302,7 +302,7 @@
         };
 
         try {
-            const res = await fetch('http://localhost:8000/registrar-salida', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            const res = await fetch('https://flota-backend-xecu.onrender.com/registrar-salida', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
             if (res.ok) { msj.innerText = "✅ Salida registrada."; msj.style.color = "green"; document.getElementById('formSalida').reset(); cargarVehiculosAbiertos(); 
             } else { msj.innerText = "❌ Error en el servidor."; msj.style.color = "red"; }
         } catch (error) { msj.innerText = "❌ Error de conexión."; msj.style.color = "red"; }
