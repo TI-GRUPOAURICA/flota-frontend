@@ -96,7 +96,7 @@
         const lista = document.getElementById('listaGastos');
         lista.innerHTML = '<div class="empty-state">Cargando...</div>';
         try {
-            const res = await fetch('http://localhost:8000/gastos-pendientes');
+            const res = await fetch('https://flota-backend-xecu.onrender.com/gastos-pendientes');
             const data = await res.json();
             
             if(data.data.length === 0) { lista.innerHTML = '<div class="empty-state">✅ Todo validado.</div>'; return; }
