@@ -6,43 +6,51 @@
     <title>Tesorería - Grupo Aurica</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800;900&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --aurica-blue: #305da0;
-            --aurica-bg: #eceded;
-            --text-dark: #2c3e50;
-            --warn-color: #f39c12;
-        }
+        :root { --aurica-blue: #305da0; --aurica-bg: #eceded; --text-dark: #2c3e50; --warn-color: #f39c12; }
         body { font-family: 'Montserrat', sans-serif; background: var(--aurica-bg); margin: 0; padding: 20px; color: var(--text-dark); }
-        .container { display: grid; grid-template-columns: 1.2fr 2fr; gap: 25px; max-width: 1200px; margin: auto; }
         
-        .top-bar { display: flex; align-items: center; gap: 15px; background: var(--aurica-blue); color: white; padding: 20px 30px; border-radius: 12px; margin-bottom: 25px; max-width: 1200px; margin-left: auto; margin-right: auto; box-shadow: 0 4px 10px rgba(48, 93, 160, 0.2);}
-        .top-bar h2 { margin: 0; font-size: 24px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px;}
-        .top-bar p { margin: 3px 0 0 0; font-size: 13px; font-weight: 400; opacity: 0.9;}
+        .top-bar { display: flex; align-items: center; gap: 15px; background: var(--aurica-blue); color: white; padding: 20px 30px; border-radius: 12px; margin-bottom: 25px; max-width: 1400px; margin: 0 auto 25px auto; box-shadow: 0 4px 10px rgba(48, 93, 160, 0.2);}
+        .top-bar h2 { margin: 0; font-size: 24px; font-weight: 900; text-transform: uppercase;}
+        .top-bar p { margin: 3px 0 0 0; font-size: 13px; opacity: 0.9;}
 
-        .card { background: white; padding: 25px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); }
+        .tabs { display: flex; max-width: 1400px; margin: 0 auto 20px auto; border-bottom: 2px solid #ccc; }
+        .tab { padding: 12px 25px; cursor: pointer; font-weight: 800; color: #777; transition: 0.3s; font-size: 15px; border-radius: 8px 8px 0 0;}
+        .tab.active { background: white; color: var(--aurica-blue); border-bottom: 4px solid var(--aurica-blue); box-shadow: 0 -4px 10px rgba(0,0,0,0.02);}
+        
+        .panel { display: none; max-width: 1400px; margin: auto; }
+        .panel.active { display: block; }
+
+        .grid-layout { display: grid; grid-template-columns: 1fr 2fr; gap: 25px; }
+        .card { background: white; padding: 30px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); }
         .card h3 { margin-top: 0; color: var(--aurica-blue); border-bottom: 2px solid #f0f0f0; padding-bottom: 15px; font-weight: 900;}
-        
-        /* ALERTAS */
-        .alerta-item { background: #fff; border: 2px solid #eee; padding: 15px; margin-bottom: 15px; border-radius: 12px; cursor: pointer; transition: 0.2s; border-left: 5px solid var(--warn-color);}
-        .alerta-item:hover { transform: translateX(5px); border-color: var(--aurica-blue);}
-        .alerta-item.selected { border-color: var(--aurica-blue); background: #f8fbff; box-shadow: 0 4px 10px rgba(48,93,160,0.1);}
-        .alerta-placa { font-size: 16px; font-weight: 900; color: var(--text-dark); display: flex; justify-content: space-between; align-items: center;}
-        .alerta-badge { font-size: 10px; background: var(--warn-color); color: white; padding: 3px 10px; border-radius: 12px; font-weight: 800; text-transform: uppercase;}
-        .alerta-fecha { font-size: 12px; color: #666; margin: 5px 0; font-weight: 600;}
-        .alerta-detalle { font-size: 13px; color: #444; background: #f8f9fa; padding: 12px; border-radius: 8px; margin-top: 10px; font-style: italic;}
 
-        /* FORMULARIOS */
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: 800; color: var(--text-dark); font-size: 13px;}
-        input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-family: 'Montserrat', sans-serif; font-size: 14px;}
+        /* Estilos del Formulario */
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 800; color: var(--text-dark); font-size: 12px; text-transform: uppercase;}
+        input, select, textarea { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-family: 'Montserrat', sans-serif; font-size: 14px;}
         input:focus, select:focus { border-color: var(--aurica-blue); outline: none;}
+        input:disabled { background: #f0f4f8; color: #888; font-weight: 800; }
         
-        button { background: var(--aurica-blue); color: white; border: none; padding: 15px; width: 100%; font-size: 15px; font-weight: 800; border-radius: 8px; cursor: pointer; margin-top: 10px; transition: 0.2s;}
+        button { background: var(--aurica-blue); color: white; border: none; padding: 15px; width: 100%; font-size: 15px; font-weight: 800; border-radius: 8px; cursor: pointer; transition: 0.2s;}
         button:hover { background: #264b82; }
-        .btn-secundario { background: #6c757d; padding: 12px; font-size: 13px; margin-bottom: 20px;}
-        .btn-secundario:hover { background: #5a6268; }
-        
-        .empty-state { text-align: center; color: #888; padding: 30px; font-weight: 600;}
+        .btn-excel { background: #27ae60; margin-top: 25px; display: flex; align-items: center; justify-content: center; gap: 10px;}
+        .btn-excel:hover { background: #219653; }
+
+        /* Tarjeta didáctica del Vehículo */
+        .vehiculo-preview { background: #f8fbff; border: 2px dashed var(--aurica-blue); border-radius: 12px; padding: 15px; margin-bottom: 20px; display: flex; align-items: center; gap: 15px;}
+        .vehiculo-preview.empty { border-color: #ccc; background: #fafafa; color: #888; justify-content: center; font-weight: 600;}
+        .v-icon { font-size: 30px; }
+        .v-data h4 { margin: 0 0 5px 0; font-size: 18px; font-weight: 900; color: var(--text-dark);}
+        .v-data p { margin: 0; font-size: 12px; font-weight: 600; color: #666; display: flex; gap: 10px;}
+        .v-tag { background: white; padding: 3px 8px; border-radius: 4px; border: 1px solid #ddd;}
+
+        /* Alertas */
+        .alerta-item { background: #fff; border: 2px solid #eee; padding: 15px; margin-bottom: 15px; border-radius: 12px; cursor: pointer; border-left: 5px solid var(--warn-color);}
+        .alerta-item:hover { border-color: var(--aurica-blue); }
+        .alerta-placa { font-size: 15px; font-weight: 900; }
+        .alerta-detalle { font-size: 12px; background: #f8f9fa; padding: 8px; border-radius: 6px; margin-top: 8px; font-style: italic;}
+
+        .checkbox-container { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 800; color: #e74c3c; margin-top: 5px; cursor: pointer;}
     </style>
 </head>
 <body>
@@ -51,122 +59,326 @@
     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
     <div>
         <h2>Panel de Tesorería</h2>
-        <p>Módulo de Reembolsos de Flota</p>
+        <p>Centro de Costos y Gastos Vehiculares</p>
     </div>
 </div>
 
-<div class="container">
-    <!-- Columna Izquierda: Alertas -->
-    <div class="card">
-        <h3>🚨 Reembolsos Pendientes</h3>
-        <button class="btn-secundario" onclick="cargarDatos()">Actualizar Lista</button>
-        <div id="listaAlertas"><div class="empty-state">Buscando alertas...</div></div>
-    </div>
+<div class="tabs">
+    <div class="tab active" onclick="cambiarTab('registro')">💳 Registro de Gastos</div>
+    <div class="tab" onclick="cambiarTab('reportes')">📊 Reportes y Exportación</div>
+</div>
 
-    <!-- Columna Derecha: Formulario -->
-    <div class="card">
-        <h3>💵 Registrar Reembolso</h3>
-        <form id="formReembolso">
-            <div class="form-group">
-                <label>Viaje Vinculado</label>
-                <input type="text" id="viaje_seleccionado" readonly placeholder="Seleccione una alerta..." required style="background: #f0f4f8; font-weight: 800; color: var(--aurica-blue);">
-                <input type="hidden" id="viaje_id">
-            </div>
-            
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                <div class="form-group">
-                    <label>Tipo de Gasto</label>
-                    <select id="tipo_gasto" required>
-                        <option value="">Seleccione...</option>
-                        <option value="144280000">Combustible</option>
-                        <option value="144280001">Peaje (PEX)</option>
-                        <option value="144280002">Mantenimiento / Otros</option>
-                    </select>
+<!-- PESTAÑA: REGISTRO -->
+<div id="panel-registro" class="panel active">
+    <div class="grid-layout">
+        <!-- Columna Izquierda: Reembolsos de Garita -->
+        <div class="card">
+            <h3>🚨 Reembolsos de Garita</h3>
+            <p style="font-size: 12px; color: #666;">Seleccione una alerta para procesar el pago del conductor.</p>
+            <div id="listaAlertas"><div style="text-align: center; padding: 20px; color: #888;">Buscando alertas...</div></div>
+        </div>
+
+        <!-- Columna Derecha: Formulario Maestro -->
+        <div class="card">
+            <h3>💵 Detalle del Gasto</h3>
+            <form id="formGasto">
+                <input type="hidden" id="viaje_id"> <!-- Solo se llena si viene de Garita -->
+
+                <!-- Selección de Vehículo Didáctica -->
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label>1. Seleccione el Vehículo</label>
+                    <select id="select_vehiculo" required onchange="actualizarTarjetaVehiculo()"></select>
                 </div>
-                <div class="form-group">
-                    <label>Monto a Reembolsar (S/)</label>
-                    <input type="number" id="monto" step="0.01" placeholder="Ej. 150.50" required>
+                
+                <div id="vehiculo_card" class="vehiculo-preview empty">
+                    Seleccione un vehículo arriba para ver sus datos
                 </div>
-            </div>
 
-            <div class="form-group">
-                <label>URL del Comprobante (SharePoint / Drive)</label>
-                <input type="url" id="url_comprobante" placeholder="https://...">
-            </div>
+                <!-- Formulario de Datos -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Tipo de Gasto</label>
+                        <select id="tipo_gasto" required>
+                            <option value="">Seleccione...</option>
+                            <!-- REEMPLAZAR CON IDS REALES -->
+                            <option value="144280000">Combustible</option>
+                            <option value="144280001">Mant. Preventivo</option>
+                            <option value="144280002">Mant. Correctivo</option>
+                            <option value="144280003">Peaje / PEX</option>
+                            <option value="144280004">Lavado</option>
+                            <option value="144280005">Documentos (SOAT/Seguro)</option>
+                            <option value="144280006">Multas / Estacionamiento</option>
+                            <option value="144280007">Otros</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Fecha del Gasto</label>
+                        <input type="date" id="fecha" required>
+                    </div>
+                </div>
 
-            <button type="button" id="btnGuardarGasto">Guardar y Reembolsar</button>
-        </form>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Empresa a facturar (Propietario)</label>
+                        <select id="empresa" required>
+                            <option value="">Seleccione...</option>
+                            <!-- REEMPLAZAR CON IDS REALES -->
+                            <option value="144280000">Propio</option>
+                            <option value="144280001">Tercero</option>
+                            <option value="144280002">Aurica SAC</option>
+                            <option value="144280003">Metalab SAC</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Proveedor (Taller, Grifo, etc.)</label>
+                        <input type="text" id="proveedor" placeholder="Ej. Grifos Primax" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>N° Factura / Boleta</label>
+                        <input type="text" id="comprobante" placeholder="Ej. F001-000456" required>
+                        <label class="checkbox-container">
+                            <input type="checkbox" id="chk_sin_comprobante" onchange="toggleComprobante()"> 
+                            Gasto sin comprobante (Recibo Interno)
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>Monto Total (S/)</label>
+                        <input type="number" id="monto" step="0.01" placeholder="0.00" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Método de Pago</label>
+                        <select id="metodo_pago" required>
+                            <option value="144280000">Efectivo</option>
+                            <option value="144280001">Transferencia</option>
+                            <option value="144280002">Tarjeta Corporativa</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label>Observaciones Adicionales</label>
+                    <textarea id="observacion" rows="2" placeholder="Detalles del mantenimiento, justificación del gasto..."></textarea>
+                </div>
+
+                <button type="submit" id="btnGuardar">Registrar Gasto Vehicular</button>
+            </form>
+        </div>
     </div>
 </div>
 
-<!-- ================== SCRIPT INTACTO ================== -->
+<!-- PESTAÑA: REPORTES -->
+<div id="panel-reportes" class="panel">
+    <div class="card" style="max-width: 600px; margin: auto;">
+        <h3>📊 Exportar Gastos a Excel (CSV)</h3>
+        <p style="font-size: 13px; color: #666;">Seleccione el rango de fechas para generar el reporte de costos.</p>
+        
+        <div class="form-row" style="margin-top: 20px;">
+            <div class="form-group">
+                <label>Fecha Inicio</label>
+                <input type="date" id="rep_inicio">
+            </div>
+            <div class="form-group">
+                <label>Fecha Fin</label>
+                <input type="date" id="rep_fin">
+            </div>
+        </div>
+        
+        <button class="btn-excel" onclick="generarReporte()" id="btnExcel">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            Descargar Reporte
+        </button>
+    </div>
+</div>
+
 <script>
-    let memoriaFlota = {};
+    // IMPORTANTE: Cambia esta URL por la de tu Render
+    const API_URL = "https://flota-backend-xecu.onrender.com"; 
+    let memoriaFlota = [];
 
-    async function cargarDatos() {
-        const lista = document.getElementById('listaAlertas');
-        lista.innerHTML = '<div class="empty-state">Sincronizando...</div>';
+    function cambiarTab(tab) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        if(tab === 'registro') {
+            document.querySelectorAll('.tab')[0].classList.add('active');
+            document.getElementById('panel-registro').classList.add('active');
+        } else {
+            document.querySelectorAll('.tab')[1].classList.add('active');
+            document.getElementById('panel-reportes').classList.add('active');
+        }
+    }
+
+    function toggleComprobante() {
+        const txt = document.getElementById('comprobante');
+        const chk = document.getElementById('chk_sin_comprobante');
+        if (chk.checked) {
+            txt.value = "S/C - RECIBO INTERNO";
+            txt.disabled = true;
+        } else {
+            txt.value = "";
+            txt.disabled = false;
+        }
+    }
+
+    // --- CARGA INICIAL ---
+    async function inicializar() {
+        // 1. Cargar selector de autos
         try {
-            const resVeh = await fetch('https://flota-backend-xecu.onrender.com/vehiculos-activos');
-            const dataVeh = await resVeh.json();
-            dataVeh.data.forEach(v => { memoriaFlota[v.cr596_flota_vehiculoid] = v.cr596_placa || "N/A"; });
-            cargarAlertas();
-        } catch(e) { lista.innerHTML = '<div class="empty-state" style="color: red;">Error conectando a la flota.</div>'; }
+            const res = await fetch(`${API_URL}/estado-flota`);
+            const data = await res.json();
+            memoriaFlota = data.data;
+            
+            const select = document.getElementById('select_vehiculo');
+            select.innerHTML = '<option value="">Seleccione un vehículo de la flota...</option>';
+            memoriaFlota.forEach(v => {
+                select.innerHTML += `<option value="${v.cr596_flota_vehiculoid}">${v.cr596_placa} - ${v.cr596_nombre}</option>`;
+            });
+        } catch(e) { console.error("Error cargando flota"); }
+
+        // 2. Cargar Alertas de Garita
+        cargarAlertas();
+    }
+
+    function actualizarTarjetaVehiculo() {
+        const id = document.getElementById('select_vehiculo').value;
+        const card = document.getElementById('vehiculo_card');
+        if (!id) {
+            card.className = "vehiculo-preview empty";
+            card.innerHTML = "Seleccione un vehículo arriba para ver sus datos";
+            return;
+        }
+
+        const v = memoriaFlota.find(x => x.cr596_flota_vehiculoid === id);
+        card.className = "vehiculo-preview";
+        card.innerHTML = `
+            <div class="v-icon">🚐</div>
+            <div class="v-data">
+                <h4>${v.cr596_nombre} [${v.cr596_placa}]</h4>
+                <p>
+                    <span class="v-tag">Mod: ${v.cr596_modelo || 'N/A'}</span>
+                    <span class="v-tag">Año: ${v.cr596_ano || 'N/A'}</span>
+                </p>
+            </div>
+        `;
     }
 
     async function cargarAlertas() {
         const lista = document.getElementById('listaAlertas');
         try {
-            const res = await fetch('https://flota-backend-xecu.onrender.com/viajes-con-gastos');
+            const res = await fetch(`${API_URL}/viajes-con-gastos`);
             const data = await res.json();
-            
-            if(data.data.length === 0) { lista.innerHTML = '<div class="empty-state">✅ Tesorería al día.</div>'; return; }
+            if(data.data.length === 0) { lista.innerHTML = '<div style="text-align:center; padding:20px; color:#27ae60; font-weight:800;">✅ Tesorería al día.</div>'; return; }
 
             lista.innerHTML = '';
             data.data.forEach(v => {
-                let fecha = v.cr596_fechahoraretorno ? new Date(v.cr596_fechahoraretorno).toLocaleString() : 'Reciente';
                 let vehiculoId = v._cr596_vehiculo_value;
-                let placa = memoriaFlota[vehiculoId] ? `[${memoriaFlota[vehiculoId]}]` : '🚗';
-                let detalle = v.cr596_observacionesretorno || "No se detalló el gasto.";
-
+                let auto = memoriaFlota.find(x => x.cr596_flota_vehiculoid === vehiculoId);
+                let placa = auto ? auto.cr596_placa : '🚗';
+                
                 lista.innerHTML += `
-                    <div class="alerta-item" onclick="seleccionarViaje('${v.cr596_flota_movimientoid}', '${placa} - ${fecha}', this)">
-                        <div class="alerta-placa">${placa} <span class="alerta-badge">Pendiente</span></div>
-                        <div class="alerta-fecha">Retornó: ${fecha}</div>
-                        <div class="alerta-detalle">"${detalle}"</div>
+                    <div class="alerta-item" onclick="seleccionarAlerta('${v.cr596_flota_movimientoid}', '${vehiculoId}', '${v.cr596_observacionesretorno}')">
+                        <div class="alerta-placa">[${placa}] <span style="font-size:10px; background:var(--warn-color); color:white; padding:3px 8px; border-radius:10px;">Pendiente</span></div>
+                        <div class="alerta-detalle">"Reporte de Garita: ${v.cr596_observacionesretorno || "Gastos sin detallar"}"</div>
                     </div>
                 `;
             });
-        } catch(e) {}
+        } catch(e) { lista.innerHTML = "Error al conectar."; }
     }
 
-    function seleccionarViaje(id, nombreVisual, element) {
-        document.querySelectorAll('.alerta-item').forEach(c => c.classList.remove('selected'));
-        element.classList.add('selected');
-        document.getElementById('viaje_id').value = id; document.getElementById('viaje_seleccionado').value = nombreVisual;
+    function seleccionarAlerta(movimientoId, vehiculoId, observacion) {
+        document.getElementById('viaje_id').value = movimientoId;
+        document.getElementById('select_vehiculo').value = vehiculoId;
+        actualizarTarjetaVehiculo();
+        document.getElementById('observacion').value = "REF GARITA: " + observacion;
+        alert("Alerta vinculada. Complete los montos y guarde.");
     }
 
-    document.getElementById('btnGuardarGasto').addEventListener('click', async () => {
-        const viaje_id = document.getElementById('viaje_id').value;
-        const tipo_gasto = document.getElementById('tipo_gasto').value;
-        const monto = parseFloat(document.getElementById('monto').value);
-        const url_comprobante = document.getElementById('url_comprobante').value;
+    // --- GUARDAR GASTO ---
+    document.getElementById('formGasto').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('btnGuardar');
+        btn.innerText = "Guardando...";
 
-        if(!viaje_id) { alert("❌ Seleccione una alerta."); return; }
-        if(!tipo_gasto || !monto) { alert("❌ Complete tipo de gasto y monto."); return; }
-
-        const btn = document.getElementById('btnGuardarGasto'); btn.innerText = "Guardando...";
-
-        const payload = { movimiento_id: viaje_id, tipo_gasto: parseInt(tipo_gasto), monto: monto, url_comprobante: url_comprobante };
+        const payload = {
+            movimiento_id: document.getElementById('viaje_id').value || null,
+            vehiculo_id: document.getElementById('select_vehiculo').value,
+            tipo_gasto: parseInt(document.getElementById('tipo_gasto').value),
+            fecha: document.getElementById('fecha').value,
+            empresa: parseInt(document.getElementById('empresa').value),
+            proveedor: document.getElementById('proveedor').value,
+            comprobante: document.getElementById('comprobante').value,
+            monto: parseFloat(document.getElementById('monto').value),
+            metodo_pago: parseInt(document.getElementById('metodo_pago').value),
+            observacion: document.getElementById('observacion').value
+        };
 
         try {
-            const respuesta = await fetch('https://flota-backend-xecu.onrender.com/registrar-gasto', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-            if (respuesta.ok) { alert("✅ Registrado."); document.getElementById('formReembolso').reset(); document.getElementById('viaje_id').value = ""; cargarAlertas(); 
-            } else { alert("❌ Error en Dataverse."); }
-        } catch (error) { alert("❌ Error de conexión."); } finally { btn.innerText = "Guardar y Reembolsar"; }
+            const res = await fetch(`${API_URL}/registrar-gasto`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            if (res.ok) { 
+                alert("✅ Gasto registrado correctamente."); 
+                document.getElementById('formGasto').reset(); 
+                document.getElementById('viaje_id').value = "";
+                document.getElementById('chk_sin_comprobante').checked = false;
+                toggleComprobante();
+                actualizarTarjetaVehiculo();
+                cargarAlertas(); 
+            } else { alert("❌ Error al guardar en Dataverse."); }
+        } catch (error) { alert("❌ Error de conexión."); } 
+        finally { btn.innerText = "Registrar Gasto Vehicular"; }
     });
 
-    cargarDatos();
+    // --- REPORTE EXCEL (CSV) ---
+    async function generarReporte() {
+        const inicio = document.getElementById('rep_inicio').value;
+        const fin = document.getElementById('rep_fin').value;
+        const btn = document.getElementById('btnExcel');
+
+        if(!inicio || !fin) { alert("Seleccione el rango de fechas."); return; }
+
+        btn.innerText = "Generando...";
+        try {
+            const res = await fetch(`${API_URL}/reporte-gastos?inicio=${inicio}&fin=${fin}`);
+            const data = await res.json();
+            
+            if(data.data.length === 0) { alert("No hay gastos en estas fechas."); btn.innerHTML = "Descargar Reporte"; return; }
+
+            // Crear el CSV
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "Vehiculo,Placa,Fecha,Proveedor,Comprobante,Monto,Observacion\n"; // Cabeceras
+
+            data.data.forEach(row => {
+                let vehiculoName = row.cr596_Vehiculo ? row.cr596_Vehiculo.cr596_nombre : "Desconocido";
+                let placa = row.cr596_Vehiculo ? row.cr596_Vehiculo.cr596_placa : "S/P";
+                let fechaFormateada = row.cr596_fecha ? row.cr596_fecha.split('T')[0] : "";
+                
+                // Limpiar textos para evitar que rompan el Excel
+                let obs = (row.cr596_observacion || "").replace(/,/g, " "); 
+                let prov = (row.cr596_proveedor || "").replace(/,/g, " ");
+                let comp = (row.cr596_comprobante || "").replace(/,/g, " ");
+
+                let line = `${vehiculoName},${placa},${fechaFormateada},${prov},${comp},${row.cr596_monto},${obs}`;
+                csvContent += line + "\n";
+            });
+
+            // Descargar el archivo
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Reporte_Gastos_${inicio}_al_${fin}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+        } catch(e) { alert("Error al generar el reporte."); }
+        finally { btn.innerHTML = "Descargar Reporte"; }
+    }
+
+    inicializar();
 </script>
 </body>
 </html>
