@@ -94,10 +94,6 @@
                 <h3>Combustible</h3><p>Registro de cargas, costos y análisis automático de rendimiento.</p>
             </a>
 
-            <a href="contabilidad.html" class="module-card" id="card-conta">
-                <div class="module-icon"><svg width="55" height="55" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 14h-3v2h-2v-2H8v-2h4v-2H9v-4h3V6h2v2h2v2h-4v2h3v4z"></path></svg></div>
-                <h3>Auditoría SUNAT</h3><p>Validación de gastos en ruta y comprobantes fiscales.</p>
-            </a>
 
             <a href="tesoreria.html" class="module-card" id="card-teso">
                 <div class="module-icon"><svg width="55" height="55" viewBox="0 0 24 24" fill="currentColor"><path d="M21.18 10.59L17 14.77v-2.27c-3.93 0-7.39 2.25-8.95 5.5.47-4.16 3.69-7.58 7.82-8.31V7.41l5.31 3.18zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"></path></svg></div>
@@ -149,7 +145,7 @@
             document.getElementById('userEmailDisplay').innerText = email;
 
             // Ocultar todo
-            const cards = ['card-mante', 'card-garita', 'card-combus', 'card-conta', 'card-teso', 'card-dash', 'card-admin'];
+            const cards = ['card-mante', 'card-garita', 'card-combus', 'card-teso', 'card-dash', 'card-admin'];
             cards.forEach(c => document.getElementById(c).style.display = 'none');
 
             // 1. TI / GERENCIA: ACCESO TOTAL (7 MÓDULOS)
@@ -166,9 +162,7 @@
             if (email === 'seguridadchala@mineralabsac.com' || email.includes('garita')) {
                 document.getElementById('card-garita').style.display = 'flex';
             }
-            if (email === 'asistentecontable@metalabsac.com') {
-                document.getElementById('card-conta').style.display = 'flex';
-            }
+           
             if (email === 'tesoreria@metalabsac.com' || email.includes('finanzas')) {
                 document.getElementById('card-teso').style.display = 'flex';
                 document.getElementById('card-combus').style.display = 'flex';
