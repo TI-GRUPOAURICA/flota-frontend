@@ -1,1 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administración de Personal - Grupo Aurica</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root { --aurica-blue: #305da0; --aurica-bg: #eceded; --text-dark: #2c3e50; --ok-color: #27ae60; --crit-color: #e74c3c; }
+        body { font-family: 'Montserrat', sans-serif; background: var(--aurica-bg); margin: 0; padding: 20px; color: var(--text-dark); }
+        
+        .top-bar { display: flex; align-items: center; gap: 15px; background: var(--aurica-blue); color: white; padding: 20px 30px; border-radius: 12px; margin-bottom: 25px; max-width: 1200px; margin: 0 auto 25px auto; box-shadow: 0 4px 10px rgba(48, 93, 160, 0.2);}
+        .top-bar h2 { margin: 0; font-size: 24px; font-weight: 900; text-transform: uppercase;}
+        .top-bar p { margin: 3px 0 0 0; font-size: 13px; opacity: 0.9;}
 
+        .grid-layout { display: grid; grid-template-columns: 1fr 2fr; gap: 25px; max-width: 1200px; margin: auto; }
+        
+        .card { background: white; padding: 30px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); }
+        .card h3 { margin-top: 0; color: var(--aurica-blue); border-bottom: 2px solid #f0f0f0; padding-bottom: 15px; font-weight: 900; display: flex; align-items: center; gap: 10px;}
+        
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 800; color: var(--text-dark); font-size: 12px; text-transform: uppercase;}
+        input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-family: 'Montserrat', sans-serif; font-size: 14px;}
+        input:focus { border-color: var(--aurica-blue); outline: none;}
+
+        button { background: var(--aurica-blue); color: white; border: none; padding: 15px; width: 100%; font-size: 15px; font-weight: 800; border-radius: 8px; cursor: pointer; transition: 0.2s;}
+        button:hover { background: #264b82; }
+
+        /* Estilos de la Tabla */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { background: #f8fbff; color: var(--aurica-blue); font-weight: 800; text-align: left; padding: 15px; font-size: 13px; text-transform: uppercase; border-bottom: 2px solid #cce0ff;}
+        td { padding: 15px; border-bottom: 1px solid #eee; font-size: 14px; font-weight: 600;}
+        tr:hover { background: #fafafa; }
+
+        .badge { padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 800; text-transform: uppercase;}
+        .badge.vigente { background: #e8f8f5; color: var(--ok-color); border: 1px solid #a3e4d7;}
+        .badge.vencido { background: #fdeaea; color: var(--crit-color); border: 1px solid #f5b7b1;}
+        
+        .btn-delete { background: transparent; border: 1px solid var(--crit-color); color: var(--crit-color); padding: 8px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; transition: 0.2s;}
+        .btn-delete:hover { background: var(--crit-color); color: white;}
+    </style>
+</head>
+<body>
+
+<div class="top-bar">
+    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+    <div>
+        <h2>Administración de Personal</h2>
+        <p>Gestión de Conductores y Vigencia de Brevetes</p>
+    </div>
+</div>
+
+<div class="grid-layout">
+    
+    <div class="card">
+        <h3>➕ Nuevo Conductor</h3>
+        <form id="formConductor">
+            <div class="form-group">
+                <label>Nombres y Apellidos</label>
+                <input type="text" id="c_nombre" required placeholder="Ej. Carlos Mendoza">
+            </div>
+            <div class="form-group">
+                <label>Número de Brevete</label>
+                <input type="text" id="c_brevete" required placeholder="Ej. Q45218796">
+            </div>
+            <div class="form-group" style="margin-bottom: 25px;">
+                <label>Fecha de Vencimiento</label>
+                <input type="date" id="c_vencimiento" required>
+            </div>
+            <button type="submit" id="btnGuardar">Guardar Conductor</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h3>📋 Planilla de Conductores Autorizados</h3>
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Conductor</th>
+                        <th>Brevete</th>
+                        <th>Vencimiento</th>
+                        <th>Estado</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaConductores">
+                    <tr><td colspan="5" style="text-align: center;">Cargando base de datos...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const API_URL = "https://flota-backend-xecu.onrender.com";
+
+    async function cargarConductores() {
+        try {
+            const res = await fetch(`${API_URL}/conductores-autorizados`);
+            const data = await res.json();
+            const tbody = document.getElementById('tablaConductores');
+            tbody.innerHTML = '';
+
+            const hoy = new Date();
+
+            data.data.forEach(c => {
+                const vencimiento = new Date(c.vencimiento_brevete);
+                // Ajuste de zona horaria para evitar que reste un día visualmente
+                vencimiento.setMinutes(vencimiento.getMinutes() + vencimiento.getTimezoneOffset());
+                
+                const esVigente = vencimiento >= hoy;
+                const badge = esVigente ? `<span class="badge vigente">Vigente</span>` : `<span class="badge vencido">Vencido</span>`;
+                
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${c.nombre}</td>
+                        <td>${c.brevete}</td>
+                        <td>${c.vencimiento_brevete}</td>
+                        <td>${badge}</td>
+                        <td>
+                            <button class="btn-delete" onclick="eliminarConductor('${c.id}', '${c.nombre}')">Eliminar</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        } catch(e) { 
+            console.error(e); 
+            document.getElementById('tablaConductores').innerHTML = '<tr><td colspan="5" style="text-align:center; color:red;">Error de conexión.</td></tr>';
+        }
+    }
+
+    document.getElementById('formConductor').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('btnGuardar');
+        btn.innerText = "Guardando...";
+
+        const payload = {
+            nombre: document.getElementById('c_nombre').value,
+            brevete: document.getElementById('c_brevete').value,
+            vencimiento_brevete: document.getElementById('c_vencimiento').value
+        };
+
+        try {
+            const res = await fetch(`${API_URL}/conductores`, { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify(payload) 
+            });
+            
+            if (res.ok) {
+                document.getElementById('formConductor').reset();
+                cargarConductores();
+                alert("Conductor registrado exitosamente.");
+            } else {
+                const error = await res.json();
+                alert("Error: " + (error.detail || "No se pudo registrar."));
+            }
+        } catch (error) { 
+            alert("Error de conexión al servidor."); 
+        } finally { 
+            btn.innerText = "Guardar Conductor"; 
+        }
+    });
+
+    async function eliminarConductor(id, nombre) {
+        if(confirm(`¿Estás seguro de que deseas eliminar permanentemente al conductor ${nombre}? Esta acción no se puede deshacer.`)) {
+            try {
+                const res = await fetch(`${API_URL}/conductores/${id}`, { method: 'DELETE' });
+                if(res.ok) {
+                    cargarConductores();
+                } else {
+                    alert("Error al eliminar el conductor.");
+                }
+            } catch(e) {
+                alert("Error de conexión.");
+            }
+        }
+    }
+
+    // Inicializar
+    cargarConductores();
+</script>
+
+</body>
+</html>
