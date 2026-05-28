@@ -115,7 +115,7 @@
                         <th>Conductor</th>
                         <th>Distancia (Km)</th>
                         <th>Consumo (%)</th>
-                        <th>Destino</th>
+                        <th>Ruta (Origen ➔ Destino)</th>
                         <th>Auditoría / Novedades</th>
                     </tr>
                 </thead>
@@ -209,10 +209,18 @@ function renderizarHistorial(lista) {
                 fechaTexto = f.toLocaleDateString() + ' ' + f.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
             }
 
-            // 2. Datos Cruzados
+            // Datos Cruzados e Inteligencia de Ruta
             const placa = viaje.vehiculos ? viaje.vehiculos.placa : 'N/A';
             const conductor = viaje.conductores ? viaje.conductores.nombre : 'Desconocido';
             const destino = viaje.destino || 'No registrado';
+            
+            // Lógica para mostrar Sede u Origen Detallado
+            let origenReal = viaje.origen || 'No registrado';
+            if(origenReal === 'Otros' && viaje.origen_detalle) {
+                origenReal = `🏠 ${viaje.origen_detalle}`;
+            }
+            
+            const rutaCompleta = `<span style="font-size:11px; color:#7f8c8d;">${origenReal}</span><br>➔ <strong>${destino}</strong>`;
             
             // 3. Cálculos de Kilometraje con TOOLTIP (Tu idea)
             const kmSalida = viaje.km_salida || 0;
@@ -255,7 +263,7 @@ function renderizarHistorial(lista) {
                     <td>${conductor}</td>
                     <td title="${tooltipKm}" style="cursor: help; border-bottom: 1px dashed #ccc;">${kmRecorridos} Km</td>
                     <td title="${tooltipComb}" style="cursor: help; border-bottom: 1px dashed #ccc; ${colorConsumo}">${consumoTexto}</td>
-                    <td>${destino}</td>
+                    <td>${rutaCompleta}</td>
                     <td style="font-size: 11px; max-width: 250px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;" title="${textoAuditoria}">${textoAuditoria}</td>
                 </tr>
             `;
