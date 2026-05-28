@@ -28,7 +28,7 @@
         .btn-retorno { background: #27ae60 !important; }
         .btn-retorno:hover { background: #219653 !important; }
 
-        /* NUEVO ESTILO DE CHECKLIST INTERACTIVO */
+        /* ESTILO DE CHECKLIST INTERACTIVO */
         .checklist-box { background: #f8fbff; border: 1px solid #cce0ff; padding: 15px; border-radius: 12px; margin-bottom: 15px; }
         .checklist-box h4 { margin: 0 0 10px 0; font-size: 13px; color: var(--aurica-blue); font-weight: 800;}
         .checklist-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
@@ -72,7 +72,7 @@
             <div class="form-row">
                 <div class="form-group">
                     <label>Kilometraje Actual</label>
-                    <input type="number" id="s_km" required placeholder="Seleccione auto..." title="Puede editar si hay desfase por cochera">
+                    <input type="number" id="s_km" required placeholder="Seleccione auto..." title="Puede editar si hay desfase">
                 </div>
                 <div class="form-group">
                     <label>Nivel de Combustible</label>
@@ -101,24 +101,35 @@
                         <option value="Sede Olavide">Sede Olavide</option>
                         <option value="Sede Trapiche">Sede Trapiche</option>
                         <option value="Planta Chala">Planta Chala</option>
-                        <option value="Otros">⚠️ OTROS (Especificar dirección)</option>
+                        <option value="Otros">⚠️ OTROS (Especificar)</option>
                     </select>
                 </div>
                 <div class="form-group" id="caja_origen_detalle" style="display: none;">
-                    <label style="color: var(--warn-color);">Especificar Dirección de Origen</label>
-                    <input type="text" id="s_origen_detalle" placeholder="Ej. Casa Conductor / Taller X">
+                    <label style="color: var(--warn-color);">Dirección de Origen</label>
+                    <input type="text" id="s_origen_detalle" placeholder="Ej. Casa Conductor">
                 </div>
             </div>
 
             <div class="form-row">
                 <div class="form-group">
                     <label>Destino Autorizado</label>
-                    <input type="text" id="s_destino" required placeholder="Ej. Planta Chala, Banco...">
+                    <input type="text" id="s_destino" required placeholder="Ej. Banco, Mina...">
                 </div>
                 <div class="form-group">
                     <label>Observaciones (Opcional)</label>
                     <input type="text" id="s_obs" placeholder="Novedades menores...">
                 </div>
+            </div>
+
+            <button type="submit" class="btn-submit" id="btnSalida">Dar Salida de Garita</button>
+        </form>
+    </div> <div class="card">
+        <h3>🏁 Registrar Retorno</h3>
+        <form id="formRetorno">
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label>Seleccione el Viaje Abierto</label>
+                <select id="r_viaje" required onchange="vincularVehiculoRetorno()"><option value="">Cargando...</option></select>
+                <input type="hidden" id="r_vehiculo_id">
             </div>
 
             <div class="form-row">
@@ -147,7 +158,7 @@
 
             <div class="form-group" style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px; background: #fff5e6; padding: 15px; border-radius: 8px; border: 1px solid #ffd8a8;">
                 <input type="checkbox" id="r_gastos" onchange="toggleGastos()" style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--warn-color);">
-                <label style="margin:0; font-size: 13px; color: #d35400;">¿El conductor trajo boletas de gastos? (Peaje, cochera, etc.)</label>
+                <label style="margin:0; font-size: 13px; color: #d35400;">¿Trajo boletas de gastos? (Peaje, cochera)</label>
             </div>
 
             <div class="form-row">
@@ -157,7 +168,7 @@
                 </div>
                 <div class="form-group">
                     <label>Novedades del Vehículo</label>
-                    <input type="text" id="r_obs" placeholder="Problemas mecánicos, multas...">
+                    <input type="text" id="r_obs" placeholder="Problemas, multas...">
                 </div>
             </div>
 
@@ -172,7 +183,7 @@
     let memoriaVehiculos = [];
     let viajesAbiertos = [];
 
-    // --- GENERADOR DE CHECKLIST INTERACTIVO ---
+    // --- CHECKLIST INTERACTIVO ---
     const partesVehiculo = [
         { id: 'brisas', nombre: 'Parabrisas' }, { id: 'parachoques', nombre: 'Parachoques' },
         { id: 'llantas', nombre: 'Llantas' }, { id: 'puertas', nombre: 'Puertas' },
@@ -214,6 +225,19 @@
         document.getElementById('caja_gastos').style.display = check ? 'block' : 'none';
     }
 
+    function toggleOrigenEspecifico() {
+        const origenSeleccionado = document.getElementById('s_origen').value;
+        const cajaDetalle = document.getElementById('caja_origen_detalle');
+        if(origenSeleccionado === 'Otros') {
+            cajaDetalle.style.display = 'block';
+            document.getElementById('s_origen_detalle').required = true;
+        } else {
+            cajaDetalle.style.display = 'none';
+            document.getElementById('s_origen_detalle').required = false;
+            document.getElementById('s_origen_detalle').value = '';
+        }
+    }
+
     // --- CARGA DE DATOS ---
     async function cargarConductores() {
         try {
@@ -221,9 +245,7 @@
             const data = await res.json();
             const select = document.getElementById('s_conductor');
             select.innerHTML = '<option value="">Seleccione al conductor...</option>';
-            data.data.forEach(c => {
-                select.innerHTML += `<option value="${c.id}">${c.nombre} (Brevete: ${c.brevete})</option>`;
-            });
+            data.data.forEach(c => { select.innerHTML += `<option value="${c.id}">${c.nombre} (Brevete: ${c.brevete})</option>`; });
         } catch(e) { console.error("Error conductores"); }
     }
 
@@ -231,26 +253,20 @@
         try {
             const res = await fetch(`${API_URL}/vehiculos-activos`);
             const data = await res.json();
-            memoriaVehiculos = data.data; // Guardamos en memoria para el autocompletado
+            memoriaVehiculos = data.data; 
             const select = document.getElementById('s_vehiculo');
             select.innerHTML = '<option value="">Seleccione vehículo en base...</option>';
             memoriaVehiculos.forEach(v => {
-                if(v.cr596_estadooperativo == 144280000) {
-                    select.innerHTML += `<option value="${v.cr596_flota_vehiculoid}">[${v.cr596_placa}] - ${v.cr596_nombre}</option>`;
-                }
+                if(v.cr596_estadooperativo == 144280000) { select.innerHTML += `<option value="${v.cr596_flota_vehiculoid}">[${v.cr596_placa}] - ${v.cr596_nombre}</option>`; }
             });
         } catch(e) { console.error("Error vehículos"); }
     }
 
-    // AUTOCOMPLETADO INTELIGENTE DE KM
     function autocompletarKilometraje() {
         const idSeleccionado = document.getElementById('s_vehiculo').value;
         const auto = memoriaVehiculos.find(v => v.cr596_flota_vehiculoid === idSeleccionado);
-        if(auto) {
-            document.getElementById('s_km').value = auto.cr596_kilometrajeactual;
-        } else {
-            document.getElementById('s_km').value = "";
-        }
+        if(auto) { document.getElementById('s_km').value = auto.cr596_kilometrajeactual; } 
+        else { document.getElementById('s_km').value = ""; }
     }
 
     async function cargarViajes() {
@@ -260,9 +276,7 @@
             viajesAbiertos = data.data;
             const select = document.getElementById('r_viaje');
             select.innerHTML = '<option value="">Seleccione viaje en curso...</option>';
-            viajesAbiertos.forEach(v => {
-                select.innerHTML += `<option value="${v.cr596_flota_movimientoid}">${v.cr596_nombre} (Salió con: ${v.cr596_kmsalida} km)</option>`;
-            });
+            viajesAbiertos.forEach(v => { select.innerHTML += `<option value="${v.cr596_flota_movimientoid}">${v.cr596_nombre} (Salió con: ${v.cr596_kmsalida} km)</option>`; });
         } catch(e) { console.error("Error viajes"); }
     }
 
@@ -277,19 +291,17 @@
         e.preventDefault();
         const btn = document.getElementById('btnSalida');
         const alerta = document.getElementById('alerta-salida');
-        btn.innerText = "Procesando...";
-        alerta.style.display = 'none';
+        btn.innerText = "Procesando..."; alerta.style.display = 'none';
 
         const payload = {
             vehiculo_id: document.getElementById('s_vehiculo').value,
             conductor_id: document.getElementById('s_conductor').value,
             km_salida: parseInt(document.getElementById('s_km').value),
             combustible_salida: parseInt(document.getElementById('s_combustible').value),
+            origen: document.getElementById('s_origen').value,
+            origen_detalle: document.getElementById('s_origen_detalle').value,
             destino: document.getElementById('s_destino').value,
-            origen: document.getElementById('s_origen').value,                      // <-- NUEVO
-            origen_detalle: document.getElementById('s_origen_detalle').value,      // <-- NUEVO
             observaciones: document.getElementById('s_obs').value,
-            // Leer estado de los botones interactivos
             chk_brisas: document.getElementById('chk_s_brisas').dataset.estado === 'true',
             chk_parachoques: document.getElementById('chk_s_parachoques').dataset.estado === 'true',
             chk_llantas: document.getElementById('chk_s_llantas').dataset.estado === 'true',
@@ -309,7 +321,8 @@
             if (res.ok) {
                 alert("✅ Vehículo despachado exitosamente.");
                 document.getElementById('formSalida').reset();
-                generarGridChecklist('grid_salida', 's'); // Resetear botones
+                document.getElementById('caja_origen_detalle').style.display = 'none';
+                generarGridChecklist('grid_salida', 's'); 
                 cargarVehiculos(); cargarViajes();
             } else {
                 const errorData = await res.json();
@@ -323,8 +336,7 @@
     // --- ENVIAR RETORNO ---
     document.getElementById('formRetorno').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const btn = document.getElementById('btnRetorno');
-        btn.innerText = "Procesando...";
+        const btn = document.getElementById('btnRetorno'); btn.innerText = "Procesando...";
 
         const payload = {
             movimiento_id: document.getElementById('r_viaje').value,
@@ -335,7 +347,6 @@
             detalle_gastos: document.getElementById('r_detalle_gastos').value,
             observaciones_retorno: document.getElementById('r_obs').value,
             estado_llegada: 144280000, 
-            // Leer estado de los botones interactivos
             chk_brisas: document.getElementById('chk_r_brisas').dataset.estado === 'true',
             chk_parachoques: document.getElementById('chk_r_parachoques').dataset.estado === 'true',
             chk_llantas: document.getElementById('chk_r_llantas').dataset.estado === 'true',
@@ -350,39 +361,22 @@
             chk_cinturon: document.getElementById('chk_r_cinturon').dataset.estado === 'true'
         };
 
-        if (!payload.chk_brisas || !payload.chk_llantas || !payload.chk_luces || !payload.chk_bocina) {
-            payload.estado_llegada = 144280002; 
-        }
+        if (!payload.chk_brisas || !payload.chk_llantas || !payload.chk_luces || !payload.chk_bocina) { payload.estado_llegada = 144280002; }
 
         try {
             const res = await fetch(`${API_URL}/registrar-retorno`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
             if (res.ok) {
-                alert("🏁 Retorno registrado. Incidentes automáticos generados si hubo desmarques.");
+                alert("🏁 Retorno registrado.");
                 document.getElementById('formRetorno').reset();
                 document.getElementById('caja_gastos').style.display = 'none';
-                generarGridChecklist('grid_retorno', 'r'); // Resetear botones
+                generarGridChecklist('grid_retorno', 'r'); 
                 cargarVehiculos(); cargarViajes();
             } else { alert("Error al registrar retorno"); }
         } catch (error) { alert("Error de conexión"); }
         finally { btn.innerText = "Registrar Retorno a Base"; }
     });
 
-    cargarVehiculos();
-    cargarViajes();
-    cargarConductores();
-    
-function toggleOrigenEspecifico() {
-        const origenSeleccionado = document.getElementById('s_origen').value;
-        const cajaDetalle = document.getElementById('caja_origen_detalle');
-        if(origenSeleccionado === 'Otros') {
-            cajaDetalle.style.display = 'block';
-            document.getElementById('s_origen_detalle').required = true;
-        } else {
-            cajaDetalle.style.display = 'none';
-            document.getElementById('s_origen_detalle').required = false;
-            document.getElementById('s_origen_detalle').value = '';
-        }
-    }
+    cargarVehiculos(); cargarViajes(); cargarConductores();
 </script>
 
 </body>
