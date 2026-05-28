@@ -6,7 +6,7 @@
     <title>Garita de Control - Grupo Aurica</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800;900&display=swap" rel="stylesheet">
     <style>
-        :root { --aurica-blue: #305da0; --aurica-bg: #eceded; --text-dark: #2c3e50; --ok-color: #2ecc71; --crit-color: #e74c3c; }
+        :root { --aurica-blue: #305da0; --aurica-bg: #eceded; --text-dark: #2c3e50; --ok-color: #27ae60; --crit-color: #e74c3c; --warn-color: #f39c12; }
         body { font-family: 'Montserrat', sans-serif; background: var(--aurica-bg); margin: 0; padding: 20px; color: var(--text-dark); }
         
         .top-bar { display: flex; align-items: center; gap: 15px; background: var(--aurica-blue); color: white; padding: 20px 30px; border-radius: 12px; margin-bottom: 25px; max-width: 1200px; margin: 0 auto 25px auto; box-shadow: 0 4px 10px rgba(48, 93, 160, 0.2);}
@@ -23,20 +23,21 @@
         input, select, textarea { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-family: 'Montserrat', sans-serif; font-size: 14px;}
         input:focus, select:focus { border-color: var(--aurica-blue); outline: none;}
 
-        button { background: var(--aurica-blue); color: white; border: none; padding: 15px; width: 100%; font-size: 15px; font-weight: 800; border-radius: 8px; cursor: pointer; transition: 0.2s; margin-top: 15px;}
-        button:hover { background: #264b82; }
-        .btn-retorno { background: #27ae60; }
-        .btn-retorno:hover { background: #219653; }
+        button.btn-submit { background: var(--aurica-blue); color: white; border: none; padding: 15px; width: 100%; font-size: 15px; font-weight: 800; border-radius: 8px; cursor: pointer; transition: 0.2s; margin-top: 15px;}
+        button.btn-submit:hover { background: #264b82; }
+        .btn-retorno { background: #27ae60 !important; }
+        .btn-retorno:hover { background: #219653 !important; }
 
-        /* Estilos del Checklist */
+        /* NUEVO ESTILO DE CHECKLIST INTERACTIVO */
         .checklist-box { background: #f8fbff; border: 1px solid #cce0ff; padding: 15px; border-radius: 12px; margin-bottom: 15px; }
         .checklist-box h4 { margin: 0 0 10px 0; font-size: 13px; color: var(--aurica-blue); font-weight: 800;}
-        .checklist-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
-        .check-item { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; cursor: pointer; background: white; padding: 8px; border-radius: 6px; border: 1px solid #eee; transition: 0.2s;}
-        .check-item:hover { border-color: var(--aurica-blue); }
-        .check-item input[type="checkbox"] { width: auto; margin: 0; accent-color: var(--aurica-blue); transform: scale(1.2);}
+        .checklist-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+        
+        .check-item { display: flex; align-items: center; justify-content: center; padding: 10px; font-size: 12px; font-weight: 700; border-radius: 6px; cursor: pointer; transition: 0.2s; user-select: none; text-align: center; border: 2px solid transparent;}
+        .check-item.ok { background: #e8f8f5; color: var(--ok-color); border-color: #a3e4d7; }
+        .check-item.falla { background: #fdeaea; color: var(--crit-color); border-color: #f5b7b1; }
+        .check-item:active { transform: scale(0.95); }
 
-        /* Alerta de Error */
         .alerta-error { display: none; background: #fdeaea; color: var(--crit-color); padding: 15px; border-radius: 8px; font-weight: 800; font-size: 13px; margin-bottom: 15px; border-left: 5px solid var(--crit-color);}
     </style>
 </head>
@@ -60,7 +61,7 @@
         <form id="formSalida">
             <div class="form-group" style="margin-bottom: 15px;">
                 <label>Vehículo a despachar</label>
-                <select id="s_vehiculo" required><option value="">Cargando...</option></select>
+                <select id="s_vehiculo" required onchange="autocompletarKilometraje()"><option value="">Cargando...</option></select>
             </div>
             
             <div class="form-group" style="margin-bottom: 15px;">
@@ -71,38 +72,39 @@
             <div class="form-row">
                 <div class="form-group">
                     <label>Kilometraje Actual</label>
-                    <input type="number" id="s_km" required placeholder="Ej. 125000">
+                    <input type="number" id="s_km" required placeholder="Seleccione auto..." title="Puede editar si hay desfase por cochera">
                 </div>
                 <div class="form-group">
-                    <label>Combustible (%)</label>
-                    <input type="number" id="s_combustible" required placeholder="Ej. 100" min="0" max="100">
+                    <label>Nivel de Combustible</label>
+                    <select id="s_combustible" required>
+                        <option value="">Seleccione...</option>
+                        <option value="10">🔴 Reserva (10%)</option>
+                        <option value="25">🟠 1/4 Tanque (25%)</option>
+                        <option value="50">🟡 Medio Tanque (50%)</option>
+                        <option value="75">🟢 3/4 Tanque (75%)</option>
+                        <option value="100">🟢 Tanque Lleno (100%)</option>
+                    </select>
                 </div>
             </div>
 
             <div class="checklist-box">
-                <h4>📋 Checklist de Inspección (Desmarcar si hay daños)</h4>
-                <div class="checklist-grid" id="checklist_salida">
-                    <label class="check-item"><input type="checkbox" id="chk_s_brisas" checked> Parabrisas</label>
-                    <label class="check-item"><input type="checkbox" id="chk_s_parachoques" checked> Parachoques</label>
-                    <label class="check-item"><input type="checkbox" id="chk_s_llantas" checked> Llantas</label>
-                    <label class="check-item"><input type="checkbox" id="chk_s_puertas" checked> Puertas</label>
-                    <label class="check-item"><input type="checkbox" id="chk_s_luces" checked> Luces</label>
-                    <label class="check-item"><input type="checkbox" id="chk_s_bocina" checked> Bocina</label>
-                    <label class="check-item"><input type="checkbox" id="chk_s_maletero" checked> Maletero</label>
-                    <label class="check-item"><input type="checkbox" id="chk_s_lunas" checked> Lunas</label>
-                    <label class="check-item"><input type="checkbox" id="chk_s_limpieza" checked> Limpieza</label>
-                    <label class="check-item"><input type="checkbox" id="chk_s_guardafangos" checked> Guardafangos</label>
-                    <label class="check-item"><input type="checkbox" id="chk_s_capo" checked> Capó</label>
-                    <label class="check-item"><input type="checkbox" id="chk_s_cinturon" checked> Cinturones</label>
+                <h4>📋 Checklist de Inspección (Clic para marcar falla)</h4>
+                <div class="checklist-grid" id="grid_salida">
+                    </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Destino Autorizado</label>
+                    <input type="text" id="s_destino" required placeholder="Ej. Planta Chala, Banco...">
+                </div>
+                <div class="form-group">
+                    <label>Observaciones (Opcional)</label>
+                    <input type="text" id="s_obs" placeholder="Novedades menores...">
                 </div>
             </div>
 
-            <div class="form-group">
-                <label>Observaciones o destino</label>
-                <textarea id="s_obs" rows="2" placeholder="Destino, motivo del viaje, etc."></textarea>
-            </div>
-
-            <button type="submit" id="btnSalida">Dar Salida de Garita</button>
+            <button type="submit" class="btn-submit" id="btnSalida">Dar Salida de Garita</button>
         </form>
     </div>
 
@@ -121,49 +123,94 @@
                     <input type="number" id="r_km" required placeholder="Ej. 125150">
                 </div>
                 <div class="form-group">
-                    <label>Combustible a la llegada (%)</label>
-                    <input type="number" id="r_combustible" required placeholder="Ej. 85" min="0" max="100">
+                    <label>Combustible a la llegada</label>
+                    <select id="r_combustible" required>
+                        <option value="">Seleccione...</option>
+                        <option value="10">🔴 Reserva (10%)</option>
+                        <option value="25">🟠 1/4 Tanque (25%)</option>
+                        <option value="50">🟡 Medio Tanque (50%)</option>
+                        <option value="75">🟢 3/4 Tanque (75%)</option>
+                        <option value="100">🟢 Tanque Lleno (100%)</option>
+                    </select>
                 </div>
             </div>
 
             <div class="checklist-box" style="background: #fff8f8; border-color: #ffcccc;">
-                <h4 style="color: var(--crit-color);">🚨 Reporte de Novedades (Desmarcar si hubo daños en ruta)</h4>
-                <div class="checklist-grid" id="checklist_retorno">
-                    <label class="check-item"><input type="checkbox" id="chk_r_brisas" checked> Parabrisas</label>
-                    <label class="check-item"><input type="checkbox" id="chk_r_parachoques" checked> Parachoques</label>
-                    <label class="check-item"><input type="checkbox" id="chk_r_llantas" checked> Llantas</label>
-                    <label class="check-item"><input type="checkbox" id="chk_r_puertas" checked> Puertas</label>
-                    <label class="check-item"><input type="checkbox" id="chk_r_luces" checked> Luces</label>
-                    <label class="check-item"><input type="checkbox" id="chk_r_bocina" checked> Bocina</label>
-                    <label class="check-item"><input type="checkbox" id="chk_r_maletero" checked> Maletero</label>
-                    <label class="check-item"><input type="checkbox" id="chk_r_lunas" checked> Lunas</label>
-                    <label class="check-item"><input type="checkbox" id="chk_r_limpieza" checked> Limpieza</label>
-                    <label class="check-item"><input type="checkbox" id="chk_r_guardafangos" checked> Guardafangos</label>
-                    <label class="check-item"><input type="checkbox" id="chk_r_capo" checked> Capó</label>
-                    <label class="check-item"><input type="checkbox" id="chk_r_cinturon" checked> Cinturones</label>
-                </div>
+                <h4 style="color: var(--crit-color);">🚨 Reporte de Daños (Clic si llegó con fallas)</h4>
+                <div class="checklist-grid" id="grid_retorno">
+                    </div>
             </div>
 
             <div class="form-group" style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px; background: #fff5e6; padding: 15px; border-radius: 8px; border: 1px solid #ffd8a8;">
-                <input type="checkbox" id="r_gastos" style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--warn-color);">
+                <input type="checkbox" id="r_gastos" onchange="toggleGastos()" style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--warn-color);">
                 <label style="margin:0; font-size: 13px; color: #d35400;">¿El conductor trajo boletas de gastos? (Peaje, cochera, etc.)</label>
             </div>
 
-            <div class="form-group">
-                <label>Observaciones de Llegada (Novedades)</label>
-                <textarea id="r_obs" rows="2" placeholder="Detalle fallas, problemas en ruta o motivos del gasto..."></textarea>
+            <div class="form-row">
+                <div class="form-group" id="caja_gastos" style="display: none;">
+                    <label style="color: var(--warn-color);">Detalle del Gasto</label>
+                    <input type="text" id="r_detalle_gastos" placeholder="Ej. Peaje S/16.00">
+                </div>
+                <div class="form-group">
+                    <label>Novedades del Vehículo</label>
+                    <input type="text" id="r_obs" placeholder="Problemas mecánicos, multas...">
+                </div>
             </div>
 
-            <button type="submit" class="btn-retorno" id="btnRetorno">Registrar Retorno a Base</button>
+            <button type="submit" class="btn-submit btn-retorno" id="btnRetorno">Registrar Retorno a Base</button>
         </form>
     </div>
 
 </div>
 
 <script>
-    const API_URL = "https://flota-backend-xecu.onrender.com"; // Asegúrate de que esta sea la de Render
+    const API_URL = "https://flota-backend-xecu.onrender.com";
+    let memoriaVehiculos = [];
     let viajesAbiertos = [];
 
+    // --- GENERADOR DE CHECKLIST INTERACTIVO ---
+    const partesVehiculo = [
+        { id: 'brisas', nombre: 'Parabrisas' }, { id: 'parachoques', nombre: 'Parachoques' },
+        { id: 'llantas', nombre: 'Llantas' }, { id: 'puertas', nombre: 'Puertas' },
+        { id: 'luces', nombre: 'Luces' }, { id: 'bocina', nombre: 'Bocina' },
+        { id: 'maletero', nombre: 'Maletero' }, { id: 'lunas', nombre: 'Lunas' },
+        { id: 'limpieza', nombre: 'Limpieza' }, { id: 'guardafangos', nombre: 'Guardafangos' },
+        { id: 'capo', nombre: 'Capó' }, { id: 'cinturon', nombre: 'Cinturones' }
+    ];
+
+    function generarGridChecklist(contenedorId, prefijo) {
+        const contenedor = document.getElementById(contenedorId);
+        contenedor.innerHTML = '';
+        partesVehiculo.forEach(parte => {
+            const div = document.createElement('div');
+            div.className = 'check-item ok';
+            div.id = `chk_${prefijo}_${parte.id}`;
+            div.dataset.estado = 'true';
+            div.innerHTML = `✅ ${parte.nombre}`;
+            div.onclick = function() {
+                if (this.dataset.estado === 'true') {
+                    this.dataset.estado = 'false';
+                    this.className = 'check-item falla';
+                    this.innerHTML = `❌ ${parte.nombre}`;
+                } else {
+                    this.dataset.estado = 'true';
+                    this.className = 'check-item ok';
+                    this.innerHTML = `✅ ${parte.nombre}`;
+                }
+            };
+            contenedor.appendChild(div);
+        });
+    }
+
+    generarGridChecklist('grid_salida', 's');
+    generarGridChecklist('grid_retorno', 'r');
+
+    function toggleGastos() {
+        const check = document.getElementById('r_gastos').checked;
+        document.getElementById('caja_gastos').style.display = check ? 'block' : 'none';
+    }
+
+    // --- CARGA DE DATOS ---
     async function cargarConductores() {
         try {
             const res = await fetch(`${API_URL}/conductores-autorizados`);
@@ -173,22 +220,33 @@
             data.data.forEach(c => {
                 select.innerHTML += `<option value="${c.id}">${c.nombre} (Brevete: ${c.brevete})</option>`;
             });
-        } catch(e) { console.error("Error cargando conductores"); }
+        } catch(e) { console.error("Error conductores"); }
     }
 
     async function cargarVehiculos() {
         try {
             const res = await fetch(`${API_URL}/vehiculos-activos`);
             const data = await res.json();
+            memoriaVehiculos = data.data; // Guardamos en memoria para el autocompletado
             const select = document.getElementById('s_vehiculo');
             select.innerHTML = '<option value="">Seleccione vehículo en base...</option>';
-            data.data.forEach(v => {
-    // Usamos doble igual (==) para evitar problemas de formato de texto/número
-    if(v.cr596_estadooperativo == 144280000) {
-        select.innerHTML += `<option value="${v.cr596_flota_vehiculoid}">[${v.cr596_placa}] - ${v.cr596_nombre}</option>`;
-    }
-})
+            memoriaVehiculos.forEach(v => {
+                if(v.cr596_estadooperativo == 144280000) {
+                    select.innerHTML += `<option value="${v.cr596_flota_vehiculoid}">[${v.cr596_placa}] - ${v.cr596_nombre}</option>`;
+                }
+            });
         } catch(e) { console.error("Error vehículos"); }
+    }
+
+    // AUTOCOMPLETADO INTELIGENTE DE KM
+    function autocompletarKilometraje() {
+        const idSeleccionado = document.getElementById('s_vehiculo').value;
+        const auto = memoriaVehiculos.find(v => v.cr596_flota_vehiculoid === idSeleccionado);
+        if(auto) {
+            document.getElementById('s_km').value = auto.cr596_kilometrajeactual;
+        } else {
+            document.getElementById('s_km').value = "";
+        }
     }
 
     async function cargarViajes() {
@@ -223,31 +281,31 @@
             conductor_id: document.getElementById('s_conductor').value,
             km_salida: parseInt(document.getElementById('s_km').value),
             combustible_salida: parseInt(document.getElementById('s_combustible').value),
+            destino: document.getElementById('s_destino').value,
             observaciones: document.getElementById('s_obs').value,
-            // Lectura del checklist
-            chk_brisas: document.getElementById('chk_s_brisas').checked,
-            chk_parachoques: document.getElementById('chk_s_parachoques').checked,
-            chk_llantas: document.getElementById('chk_s_llantas').checked,
-            chk_puertas: document.getElementById('chk_s_puertas').checked,
-            chk_luces: document.getElementById('chk_s_luces').checked,
-            chk_bocina: document.getElementById('chk_s_bocina').checked,
-            chk_maletero: document.getElementById('chk_s_maletero').checked,
-            chk_lunas: document.getElementById('chk_s_lunas').checked,
-            chk_limpieza: document.getElementById('chk_s_limpieza').checked,
-            chk_guardafangos: document.getElementById('chk_s_guardafangos').checked,
-            chk_capo: document.getElementById('chk_s_capo').checked,
-            chk_cinturon: document.getElementById('chk_s_cinturon').checked
+            // Leer estado de los botones interactivos
+            chk_brisas: document.getElementById('chk_s_brisas').dataset.estado === 'true',
+            chk_parachoques: document.getElementById('chk_s_parachoques').dataset.estado === 'true',
+            chk_llantas: document.getElementById('chk_s_llantas').dataset.estado === 'true',
+            chk_puertas: document.getElementById('chk_s_puertas').dataset.estado === 'true',
+            chk_luces: document.getElementById('chk_s_luces').dataset.estado === 'true',
+            chk_bocina: document.getElementById('chk_s_bocina').dataset.estado === 'true',
+            chk_maletero: document.getElementById('chk_s_maletero').dataset.estado === 'true',
+            chk_lunas: document.getElementById('chk_s_lunas').dataset.estado === 'true',
+            chk_limpieza: document.getElementById('chk_s_limpieza').dataset.estado === 'true',
+            chk_guardafangos: document.getElementById('chk_s_guardafangos').dataset.estado === 'true',
+            chk_capo: document.getElementById('chk_s_capo').dataset.estado === 'true',
+            chk_cinturon: document.getElementById('chk_s_cinturon').dataset.estado === 'true'
         };
 
         try {
             const res = await fetch(`${API_URL}/registrar-salida`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-            
             if (res.ok) {
                 alert("✅ Vehículo despachado exitosamente.");
                 document.getElementById('formSalida').reset();
+                generarGridChecklist('grid_salida', 's'); // Resetear botones
                 cargarVehiculos(); cargarViajes();
             } else {
-                // Manejar la alerta del brevete vencido o errores del backend
                 const errorData = await res.json();
                 alerta.innerText = errorData.detail || "Error en el servidor";
                 alerta.style.display = 'block';
@@ -268,26 +326,26 @@
             km_retorno: parseInt(document.getElementById('r_km').value),
             combustible_retorno: parseInt(document.getElementById('r_combustible').value),
             reporta_gastos: document.getElementById('r_gastos').checked,
+            detalle_gastos: document.getElementById('r_detalle_gastos').value,
             observaciones_retorno: document.getElementById('r_obs').value,
-            estado_llegada: 144280000, // Por defecto asume que llega Disponible
-            // Lectura del checklist
-            chk_brisas: document.getElementById('chk_r_brisas').checked,
-            chk_parachoques: document.getElementById('chk_r_parachoques').checked,
-            chk_llantas: document.getElementById('chk_r_llantas').checked,
-            chk_puertas: document.getElementById('chk_r_puertas').checked,
-            chk_luces: document.getElementById('chk_r_luces').checked,
-            chk_bocina: document.getElementById('chk_r_bocina').checked,
-            chk_maletero: document.getElementById('chk_r_maletero').checked,
-            chk_lunas: document.getElementById('chk_r_lunas').checked,
-            chk_limpieza: document.getElementById('chk_r_limpieza').checked,
-            chk_guardafangos: document.getElementById('chk_r_guardafangos').checked,
-            chk_capo: document.getElementById('chk_r_capo').checked,
-            chk_cinturon: document.getElementById('chk_r_cinturon').checked
+            estado_llegada: 144280000, 
+            // Leer estado de los botones interactivos
+            chk_brisas: document.getElementById('chk_r_brisas').dataset.estado === 'true',
+            chk_parachoques: document.getElementById('chk_r_parachoques').dataset.estado === 'true',
+            chk_llantas: document.getElementById('chk_r_llantas').dataset.estado === 'true',
+            chk_puertas: document.getElementById('chk_r_puertas').dataset.estado === 'true',
+            chk_luces: document.getElementById('chk_r_luces').dataset.estado === 'true',
+            chk_bocina: document.getElementById('chk_r_bocina').dataset.estado === 'true',
+            chk_maletero: document.getElementById('chk_r_maletero').dataset.estado === 'true',
+            chk_lunas: document.getElementById('chk_r_lunas').dataset.estado === 'true',
+            chk_limpieza: document.getElementById('chk_r_limpieza').dataset.estado === 'true',
+            chk_guardafangos: document.getElementById('chk_r_guardafangos').dataset.estado === 'true',
+            chk_capo: document.getElementById('chk_r_capo').dataset.estado === 'true',
+            chk_cinturon: document.getElementById('chk_r_cinturon').dataset.estado === 'true'
         };
 
-        // Si el vigilante desmarca cualquier cosa, el sistema asume que llegó Inoperativo (Para que Mantenimiento revise)
         if (!payload.chk_brisas || !payload.chk_llantas || !payload.chk_luces || !payload.chk_bocina) {
-            payload.estado_llegada = 144280002; // Inoperativo / Taller
+            payload.estado_llegada = 144280002; 
         }
 
         try {
@@ -295,13 +353,14 @@
             if (res.ok) {
                 alert("🏁 Retorno registrado. Incidentes automáticos generados si hubo desmarques.");
                 document.getElementById('formRetorno').reset();
+                document.getElementById('caja_gastos').style.display = 'none';
+                generarGridChecklist('grid_retorno', 'r'); // Resetear botones
                 cargarVehiculos(); cargarViajes();
             } else { alert("Error al registrar retorno"); }
         } catch (error) { alert("Error de conexión"); }
         finally { btn.innerText = "Registrar Retorno a Base"; }
     });
 
-    // Iniciar
     cargarVehiculos();
     cargarViajes();
     cargarConductores();
