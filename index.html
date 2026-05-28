@@ -88,10 +88,15 @@
                 <div class="module-icon"><svg width="55" height="55" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"></path></svg></div>
                 <h3>Control de Garita</h3><p>Registro de salidas, checklist vehicular interactivo y niveles de tanque.</p>
             </a>
-            
+
             <a href="tesoreria.html" class="module-card" id="card-teso">
                 <div class="module-icon"><svg width="55" height="55" viewBox="0 0 24 24" fill="currentColor"><path d="M21.18 10.59L17 14.77v-2.27c-3.93 0-7.39 2.25-8.95 5.5.47-4.16 3.69-7.58 7.82-8.31V7.41l5.31 3.18zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"></path></svg></div>
-                <h3>Control de Gastos</h3><p>Gestión de reembolsos y centros de costos operativos.</p>
+                <h3>Control de Gastos</h3><p>Gestión de reembolsos, combustible y centros de costos operativos.</p>
+            </a>
+
+            <a href="contabilidad.html" class="module-card" id="card-conta">
+                <div class="module-icon"><svg width="55" height="55" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 14h-3v2h-2v-2H8v-2h4v-2H9v-4h3V6h2v2h2v2h-4v2h3v4z"></path></svg></div>
+                <h3>Auditoría SUNAT</h3><p>Validación de gastos en ruta y comprobantes fiscales.</p>
             </a>
 
             <a href="admin.html" class="module-card" id="card-admin" style="border-bottom-color: var(--accent-admin);">
@@ -138,32 +143,45 @@
             document.getElementById('portal-view').style.display = 'block';
             document.getElementById('userEmailDisplay').innerText = email;
 
-            // Ocultar todo
-            const cards = ['card-mante', 'card-garita', 'card-combus', 'card-teso', 'card-dash', 'card-admin'];
-            cards.forEach(c => document.getElementById(c).style.display = 'none');
+            // 1. LA NUEVA LISTA OFICIAL DE 6 MÓDULOS (Sin Combustible)
+            const cards = ['card-mante', 'card-garita', 'card-conta', 'card-teso', 'card-dash', 'card-admin'];
+            
+            // 2. Ocultar todo con validación de seguridad
+            cards.forEach(c => {
+                const elemento = document.getElementById(c);
+                if (elemento) elemento.style.display = 'none';
+            });
 
-            // 1. TI / GERENCIA: ACCESO TOTAL (7 MÓDULOS)
+            // 3. TI / GERENCIA: ACCESO TOTAL (Los 6 módulos)
             if (email === 'ti@metalabsac.com' || email === 'mpalva@metalabsac.com') {
-                cards.forEach(c => document.getElementById(c).style.display = 'flex');
+                cards.forEach(c => {
+                    const elemento = document.getElementById(c);
+                    if (elemento) elemento.style.display = 'flex';
+                });
                 return; 
             }
 
-            // 2. OTROS ROLES (Restringidos sin Dashboard ni Admin)
+            // 4. OTROS ROLES 
             if (email === 'mantenimiento@auricasac.com' || email.includes('flota')) {
-                document.getElementById('card-mante').style.display = 'flex';
-                document.getElementById('card-combus').style.display = 'flex';
+                if(document.getElementById('card-mante')) document.getElementById('card-mante').style.display = 'flex';
+                // Ahora Mantenimiento también ve Tesorería para poder registrar el combustible
+                if(document.getElementById('card-teso')) document.getElementById('card-teso').style.display = 'flex';
             }
             if (email === 'seguridadchala@mineralabsac.com' || email.includes('garita')) {
-                document.getElementById('card-garita').style.display = 'flex';
+                if(document.getElementById('card-garita')) document.getElementById('card-garita').style.display = 'flex';
             }
-           
+            if (email === 'asistentecontable@metalabsac.com') {
+                if(document.getElementById('card-conta')) document.getElementById('card-conta').style.display = 'flex';
+            }
             if (email === 'tesoreria@metalabsac.com' || email.includes('finanzas')) {
-                document.getElementById('card-teso').style.display = 'flex';
-                document.getElementById('card-combus').style.display = 'flex';
+                if(document.getElementById('card-teso')) document.getElementById('card-teso').style.display = 'flex';
             }
 
+            // Validar si la cuenta tiene al menos un módulo asignado
             const tarjetasVisibles = document.querySelectorAll('.module-card[style="display: flex;"]');
-            if(tarjetasVisibles.length === 0) { alert("Su cuenta corporativa no tiene módulos asignados."); }
+            if(tarjetasVisibles.length === 0) { 
+                alert("Su cuenta corporativa no tiene módulos asignados. Contacte al administrador IT."); 
+            }
         }
     </script>
 </body>
