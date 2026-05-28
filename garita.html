@@ -123,7 +123,7 @@
 
             <button type="submit" class="btn-submit" id="btnSalida">Dar Salida de Garita</button>
         </form>
-    </div> <div class="card">
+    <div class="card">
         <h3>🏁 Registrar Retorno</h3>
         <form id="formRetorno">
             <div class="form-group" style="margin-bottom: 15px;">
@@ -155,10 +155,12 @@
                 <div class="checklist-grid" id="grid_retorno">
                     </div>
             </div>
-<div class="form-group" style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px; background: #fdeaea; padding: 15px; border-radius: 8px; border: 1px solid #f5b7b1;">
+
+            <div class="form-group" style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px; background: #fdeaea; padding: 15px; border-radius: 8px; border: 1px solid #f5b7b1;">
                 <input type="checkbox" id="r_taller" style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--crit-color);">
-                <label style="margin:0; font-size: 13px; color: var(--crit-color); font-weight: 900;">⚠️ ENVIAR A TALLER (Reportar avería y bloquear vehículo)</label>
+                <label style="margin:0; font-size: 13px; color: var(--crit-color); font-weight: 900;">⚠️ ENVIAR A TALLER (Reportar avería mecánica y bloquear vehículo)</label>
             </div>
+
             <div class="form-group" style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px; background: #fff5e6; padding: 15px; border-radius: 8px; border: 1px solid #ffd8a8;">
                 <input type="checkbox" id="r_gastos" onchange="toggleGastos()" style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--warn-color);">
                 <label style="margin:0; font-size: 13px; color: #d35400;">¿Trajo boletas de gastos? (Peaje, cochera)</label>
@@ -178,8 +180,6 @@
             <button type="submit" class="btn-submit btn-retorno" id="btnRetorno">Registrar Retorno a Base</button>
         </form>
     </div>
-
-</div>
 <div class="form-row">
                 <div class="form-group" id="caja_gastos" style="display: none;">
                     <label style="color: var(--warn-color);">Detalle del Gasto</label>
