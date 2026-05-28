@@ -123,6 +123,8 @@
 
             <button type="submit" class="btn-submit" id="btnSalida">Dar Salida de Garita</button>
         </form>
+    </div>
+
     <div class="card">
         <h3>🏁 Registrar Retorno</h3>
         <form id="formRetorno">
@@ -180,22 +182,8 @@
             <button type="submit" class="btn-submit btn-retorno" id="btnRetorno">Registrar Retorno a Base</button>
         </form>
     </div>
-<div class="form-row">
-                <div class="form-group" id="caja_gastos" style="display: none;">
-                    <label style="color: var(--warn-color);">Detalle del Gasto</label>
-                    <input type="text" id="r_detalle_gastos" placeholder="Ej. Peaje S/16.00">
-                </div>
-                <div class="form-group">
-                    <label>Novedades del Vehículo</label>
-                    <input type="text" id="r_obs" placeholder="Problemas, multas...">
-                </div>
-            </div>
+</div>
 
-            <!-- NUEVO BOTÓN DE AVERÍA -->
-            <div class="form-group" style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px; background: #fdeaea; padding: 15px; border-radius: 8px; border: 1px solid #f5b7b1;">
-                <input type="checkbox" id="r_taller" style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--crit-color);">
-                <label style="margin:0; font-size: 13px; color: var(--crit-color); font-weight: 900;">⚠️ ENVIAR A TALLER (Reportar avería mecánica y bloquear vehículo)</label>
-            </div>
 <script>
     const API_URL = "https://flota-backend-xecu.onrender.com";
     let memoriaVehiculos = [];
@@ -287,7 +275,7 @@
         else { document.getElementById('s_km').value = ""; }
     }
 
-  async function cargarViajes() {
+    async function cargarViajes() {
         try {
             const res = await fetch(`${API_URL}/viajes-abiertos`);
             const data = await res.json();
@@ -301,6 +289,7 @@
             });
         } catch(e) { console.error("Error viajes"); }
     }
+
     function vincularVehiculoRetorno() {
         const viajeId = document.getElementById('r_viaje').value;
         const viaje = viajesAbiertos.find(v => v.cr596_flota_movimientoid === viajeId);
