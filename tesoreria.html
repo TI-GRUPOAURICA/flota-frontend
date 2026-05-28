@@ -6,7 +6,7 @@
     <title>Tesorería - Grupo Aurica</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800;900&display=swap" rel="stylesheet">
     <style>
-        :root { --aurica-blue: #305da0; --aurica-bg: #eceded; --text-dark: #2c3e50; --warn-color: #f39c12; }
+        :root { --aurica-blue: #305da0; --aurica-bg: #eceded; --text-dark: #2c3e50; --warn-color: #f39c12; --comb-color: #3498db; }
         body { font-family: 'Montserrat', sans-serif; background: var(--aurica-bg); margin: 0; padding: 20px; color: var(--text-dark); }
         
         .top-bar { display: flex; align-items: center; gap: 15px; background: var(--aurica-blue); color: white; padding: 20px 30px; border-radius: 12px; margin-bottom: 25px; max-width: 1400px; margin: 0 auto 25px auto; box-shadow: 0 4px 10px rgba(48, 93, 160, 0.2);}
@@ -24,7 +24,6 @@
         .card { background: white; padding: 30px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); }
         .card h3 { margin-top: 0; color: var(--aurica-blue); border-bottom: 2px solid #f0f0f0; padding-bottom: 15px; font-weight: 900;}
 
-        /* Estilos del Formulario */
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
         .form-group label { display: block; margin-bottom: 5px; font-weight: 800; color: var(--text-dark); font-size: 12px; text-transform: uppercase;}
         input, select, textarea { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-family: 'Montserrat', sans-serif; font-size: 14px;}
@@ -36,7 +35,6 @@
         .btn-excel { background: #27ae60; margin-top: 25px; display: flex; align-items: center; justify-content: center; gap: 10px;}
         .btn-excel:hover { background: #219653; }
 
-        /* Tarjeta didáctica del Vehículo */
         .vehiculo-preview { background: #f8fbff; border: 2px dashed var(--aurica-blue); border-radius: 12px; padding: 15px; margin-bottom: 20px; display: flex; align-items: center; gap: 15px;}
         .vehiculo-preview.empty { border-color: #ccc; background: #fafafa; color: #888; justify-content: center; font-weight: 600;}
         .v-icon { font-size: 30px; }
@@ -44,19 +42,17 @@
         .v-data p { margin: 0; font-size: 12px; font-weight: 600; color: #666; display: flex; gap: 10px;}
         .v-tag { background: white; padding: 3px 8px; border-radius: 4px; border: 1px solid #ddd;}
 
-        /* Alertas */
         .alerta-item { background: #fff; border: 2px solid #eee; padding: 15px; margin-bottom: 15px; border-radius: 12px; cursor: pointer; border-left: 5px solid var(--warn-color);}
         .alerta-item:hover { border-color: var(--aurica-blue); }
         .alerta-placa { font-size: 15px; font-weight: 900; }
         .alerta-detalle { font-size: 12px; background: #f8f9fa; padding: 8px; border-radius: 6px; margin-top: 8px; font-style: italic;}
 
         .checkbox-container { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 800; color: #e74c3c; margin-top: 5px; cursor: pointer;}
-        /* Corrección para que el checkbox no ocupe el 100% del ancho */
-.checkbox-container input[type="checkbox"] {
-    width: auto;
-    margin: 0;
-    cursor: pointer;
-}
+        .checkbox-container input[type="checkbox"] { width: auto; margin: 0; cursor: pointer;}
+
+        /* ESTILO NUEVO PARA CAMPOS DE COMBUSTIBLE */
+        .caja-combustible { display: none; background: #ebf5fb; padding: 20px; border-radius: 10px; border: 1px solid #a9cce3; margin-bottom: 20px;}
+        .caja-combustible h4 { margin: 0 0 15px 0; color: var(--comb-color); font-size: 14px; font-weight: 900; display: flex; align-items: center; gap: 8px;}
     </style>
 </head>
 <body>
@@ -74,23 +70,19 @@
     <div class="tab" onclick="cambiarTab('reportes')">📊 Reportes y Exportación</div>
 </div>
 
-<!-- PESTAÑA: REGISTRO -->
 <div id="panel-registro" class="panel active">
     <div class="grid-layout">
-        <!-- Columna Izquierda: Reembolsos de Garita -->
         <div class="card">
             <h3>🚨 Reembolsos de Garita</h3>
             <p style="font-size: 12px; color: #666;">Seleccione una alerta para procesar el pago del conductor.</p>
             <div id="listaAlertas"><div style="text-align: center; padding: 20px; color: #888;">Buscando alertas...</div></div>
         </div>
 
-        <!-- Columna Derecha: Formulario Maestro -->
         <div class="card">
             <h3>💵 Detalle del Gasto</h3>
             <form id="formGasto">
-                <input type="hidden" id="viaje_id"> <!-- Solo se llena si viene de Garita -->
+                <input type="hidden" id="viaje_id"> 
 
-                <!-- Selección de Vehículo Didáctica -->
                 <div class="form-group" style="margin-bottom: 15px;">
                     <label>1. Seleccione el Vehículo</label>
                     <select id="select_vehiculo" required onchange="actualizarTarjetaVehiculo()"></select>
@@ -100,13 +92,11 @@
                     Seleccione un vehículo arriba para ver sus datos
                 </div>
 
-                <!-- Formulario de Datos -->
                 <div class="form-row">
                     <div class="form-group">
                         <label>Tipo de Gasto</label>
-                        <select id="tipo_gasto" required>
+                        <select id="tipo_gasto" required onchange="toggleCombustible()">
                             <option value="">Seleccione...</option>
-                            <!-- REEMPLAZAR CON IDS REALES -->
                             <option value="144280000">Combustible</option>
                             <option value="144280001">Mant. Preventivo</option>
                             <option value="144280002">Mant. Correctivo</option>
@@ -123,20 +113,44 @@
                     </div>
                 </div>
 
+                <div class="caja-combustible" id="caja_combustible">
+                    <h4>⛽ Parámetros de Combustible y Rendimiento</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Kilometraje Actual (Odómetro)</label>
+                            <input type="number" id="c_km" placeholder="Ej. 125300">
+                        </div>
+                        <div class="form-group">
+                            <label>Tipo de Combustible</label>
+                            <select id="c_tipo">
+                                <option value="">Seleccione...</option>
+                                <option value="Gasolina 90">Gasolina 90</option>
+                                <option value="Gasolina 95">Gasolina 95</option>
+                                <option value="Diesel (DB5)">Diesel (DB5)</option>
+                                <option value="GLP">GLP</option>
+                                <option value="GNV">GNV</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Volumen Adquirido (Galones / Litros / M3)</label>
+                        <input type="number" id="c_volumen" step="0.01" placeholder="Ej. 15.5">
+                    </div>
+                </div>
                 <div class="form-row">
                     <div class="form-group">
                         <label>Empresa a facturar (Propietario)</label>
                         <select id="empresa" required>
-    <option value="">Seleccione...</option>
-    <option value="144280000">Aurica SAC</option>
-    <option value="144280001">Metalab SAC</option>
-    <option value="144280002">Mineralab SAC</option>
-    <option value="144280003">Minera Gianlu SAC</option>
-    <option value="144280004">Tercero</option>
-</select>
+                            <option value="">Seleccione...</option>
+                            <option value="144280000">Aurica SAC</option>
+                            <option value="144280001">Metalab SAC</option>
+                            <option value="144280002">Mineralab SAC</option>
+                            <option value="144280003">Minera Gianlu SAC</option>
+                            <option value="144280004">Tercero</option>
+                        </select>
                     </div>
                     <div class="form-group">
-                        <label>Proveedor (Taller, Grifo, etc.)</label>
+                        <label>Proveedor (Grifo, Taller, etc.)</label>
                         <input type="text" id="proveedor" placeholder="Ej. Grifos Primax" required>
                     </div>
                 </div>
@@ -178,11 +192,10 @@
     </div>
 </div>
 
-<!-- PESTAÑA: REPORTES -->
 <div id="panel-reportes" class="panel">
     <div class="card" style="max-width: 600px; margin: auto;">
         <h3>📊 Exportar Gastos a Excel (CSV)</h3>
-        <p style="font-size: 13px; color: #666;">Seleccione el rango de fechas para generar el reporte de costos.</p>
+        <p style="font-size: 13px; color: #666;">Seleccione el rango de fechas para generar el reporte de costos y combustible.</p>
         
         <div class="form-row" style="margin-top: 20px;">
             <div class="form-group">
@@ -197,13 +210,12 @@
         
         <button class="btn-excel" onclick="generarReporte()" id="btnExcel">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-            Descargar Reporte
+            Descargar Reporte Financiero
         </button>
     </div>
 </div>
 
 <script>
-    // IMPORTANTE: Cambia esta URL por la de tu Render
     const API_URL = "https://flota-backend-xecu.onrender.com"; 
     let memoriaFlota = [];
 
@@ -231,46 +243,43 @@
         }
     }
 
+    // --- LÓGICA MÁGICA: MOSTRAR/OCULTAR COMBUSTIBLE ---
+    function toggleCombustible() {
+        const tipo = document.getElementById('tipo_gasto').value;
+        const caja = document.getElementById('caja_combustible');
+        if(tipo === "144280000") { // Es Combustible
+            caja.style.display = 'block';
+            document.getElementById('c_km').required = true;
+            document.getElementById('c_tipo').required = true;
+            document.getElementById('c_volumen').required = true;
+        } else {
+            caja.style.display = 'none';
+            document.getElementById('c_km').required = false;
+            document.getElementById('c_tipo').required = false;
+            document.getElementById('c_volumen').required = false;
+        }
+    }
+
     // --- CARGA INICIAL ---
     async function inicializar() {
-        // 1. Cargar selector de autos
         try {
             const res = await fetch(`${API_URL}/estado-flota`);
             const data = await res.json();
             memoriaFlota = data.data;
-            
             const select = document.getElementById('select_vehiculo');
             select.innerHTML = '<option value="">Seleccione un vehículo de la flota...</option>';
-            memoriaFlota.forEach(v => {
-                select.innerHTML += `<option value="${v.cr596_flota_vehiculoid}">${v.cr596_placa} - ${v.cr596_nombre}</option>`;
-            });
+            memoriaFlota.forEach(v => { select.innerHTML += `<option value="${v.cr596_flota_vehiculoid}">${v.cr596_placa} - ${v.cr596_nombre}</option>`; });
         } catch(e) { console.error("Error cargando flota"); }
-
-        // 2. Cargar Alertas de Garita
         cargarAlertas();
     }
 
     function actualizarTarjetaVehiculo() {
         const id = document.getElementById('select_vehiculo').value;
         const card = document.getElementById('vehiculo_card');
-        if (!id) {
-            card.className = "vehiculo-preview empty";
-            card.innerHTML = "Seleccione un vehículo arriba para ver sus datos";
-            return;
-        }
-
+        if (!id) { card.className = "vehiculo-preview empty"; card.innerHTML = "Seleccione un vehículo arriba para ver sus datos"; return; }
         const v = memoriaFlota.find(x => x.cr596_flota_vehiculoid === id);
         card.className = "vehiculo-preview";
-        card.innerHTML = `
-            <div class="v-icon">🚐</div>
-            <div class="v-data">
-                <h4>${v.cr596_nombre} [${v.cr596_placa}]</h4>
-                <p>
-                    <span class="v-tag">Mod: ${v.cr596_modelo || 'N/A'}</span>
-                    <span class="v-tag">Año: ${v.cr596_ano || 'N/A'}</span>
-                </p>
-            </div>
-        `;
+        card.innerHTML = `<div class="v-icon">🚐</div><div class="v-data"><h4>${v.cr596_nombre} [${v.cr596_placa}]</h4><p><span class="v-tag">Mod: ${v.cr596_modelo || 'N/A'}</span><span class="v-tag">Año: ${v.cr596_ano || 'N/A'}</span></p></div>`;
     }
 
     async function cargarAlertas() {
@@ -279,19 +288,12 @@
             const res = await fetch(`${API_URL}/viajes-con-gastos`);
             const data = await res.json();
             if(data.data.length === 0) { lista.innerHTML = '<div style="text-align:center; padding:20px; color:#27ae60; font-weight:800;">✅ Tesorería al día.</div>'; return; }
-
             lista.innerHTML = '';
             data.data.forEach(v => {
                 let vehiculoId = v._cr596_vehiculo_value;
                 let auto = memoriaFlota.find(x => x.cr596_flota_vehiculoid === vehiculoId);
                 let placa = auto ? auto.cr596_placa : '🚗';
-                
-                lista.innerHTML += `
-                    <div class="alerta-item" onclick="seleccionarAlerta('${v.cr596_flota_movimientoid}', '${vehiculoId}', '${v.cr596_observacionesretorno}')">
-                        <div class="alerta-placa">[${placa}] <span style="font-size:10px; background:var(--warn-color); color:white; padding:3px 8px; border-radius:10px;">Pendiente</span></div>
-                        <div class="alerta-detalle">"Reporte de Garita: ${v.cr596_observacionesretorno || "Gastos sin detallar"}"</div>
-                    </div>
-                `;
+                lista.innerHTML += `<div class="alerta-item" onclick="seleccionarAlerta('${v.cr596_flota_movimientoid}', '${vehiculoId}', '${v.cr596_observacionesretorno}')"><div class="alerta-placa">[${placa}] <span style="font-size:10px; background:var(--warn-color); color:white; padding:3px 8px; border-radius:10px;">Pendiente</span></div><div class="alerta-detalle">"Reporte de Garita: ${v.cr596_observacionesretorno || "Gastos sin detallar"}"</div></div>`;
             });
         } catch(e) { lista.innerHTML = "Error al conectar."; }
     }
@@ -301,16 +303,18 @@
         document.getElementById('select_vehiculo').value = vehiculoId;
         actualizarTarjetaVehiculo();
         document.getElementById('observacion').value = "REF GARITA: " + observacion;
-        
     }
 
-    // --- GUARDAR GASTO ---
+    // --- GUARDAR GASTO E INTELIGENCIA DE COMBUSTIBLE ---
     document.getElementById('formGasto').addEventListener('submit', async (e) => {
         e.preventDefault();
         const btn = document.getElementById('btnGuardar');
         btn.innerText = "Guardando...";
 
-        const payload = {
+        const esCombustible = document.getElementById('tipo_gasto').value === "144280000";
+
+        // 1. Guardar el Gasto Financiero
+        const payloadGasto = {
             movimiento_id: document.getElementById('viaje_id').value || null,
             vehiculo_id: document.getElementById('select_vehiculo').value,
             tipo_gasto: parseInt(document.getElementById('tipo_gasto').value),
@@ -324,21 +328,46 @@
         };
 
         try {
-            const res = await fetch(`${API_URL}/registrar-gasto`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-            if (res.ok) { 
-                alert("✅ Gasto registrado correctamente."); 
+            const resGasto = await fetch(`${API_URL}/registrar-gasto`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payloadGasto) });
+            
+            if (resGasto.ok) { 
+                let mensajeExito = "✅ Gasto registrado correctamente en Tesorería.";
+                
+                // 2. Si es combustible, también guardar en mantenimiento en silencio
+                if (esCombustible) {
+                    const payloadComb = {
+                        vehiculo_id: document.getElementById('select_vehiculo').value,
+                        viaje_id: document.getElementById('viaje_id').value || null,
+                        volumen_vol: parseFloat(document.getElementById('c_volumen').value),
+                        tipo_combustible: document.getElementById('c_tipo').value,
+                        costo_total: parseFloat(document.getElementById('monto').value),
+                        estacion: document.getElementById('proveedor').value,
+                        kilometraje_carga: parseInt(document.getElementById('c_km').value)
+                    };
+                    const resComb = await fetch(`${API_URL}/registrar-carga-combustible`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payloadComb)});
+                    const dataComb = await resComb.json();
+                    
+                    if(resComb.ok && dataComb.rendimiento_periodo && dataComb.rendimiento_periodo !== "0.0 Km/Unidad Vol.") {
+                        mensajeExito += `\n\n⛽ Rendimiento calculado: ${dataComb.rendimiento_periodo}`;
+                    } else {
+                        mensajeExito += `\n\n⛽ Primera carga registrada (Aún no se calcula rendimiento).`;
+                    }
+                }
+
+                alert(mensajeExito); 
                 document.getElementById('formGasto').reset(); 
                 document.getElementById('viaje_id').value = "";
                 document.getElementById('chk_sin_comprobante').checked = false;
                 toggleComprobante();
+                toggleCombustible();
                 actualizarTarjetaVehiculo();
                 cargarAlertas(); 
-            } else { alert("❌ Error al guardar en Dataverse."); }
+            } else { alert("❌ Error al guardar."); }
         } catch (error) { alert("❌ Error de conexión."); } 
         finally { btn.innerText = "Registrar Gasto Vehicular"; }
     });
 
-    // --- REPORTE EXCEL (CSV) ---
+    // --- REPORTE EXCEL (CSV) ADAPTADO A SUPABASE ---
     async function generarReporte() {
         const inicio = document.getElementById('rep_inicio').value;
         const fin = document.getElementById('rep_fin').value;
@@ -349,29 +378,27 @@
         btn.innerText = "Generando...";
         try {
             const res = await fetch(`${API_URL}/reporte-gastos?inicio=${inicio}&fin=${fin}`);
+            if(!res.ok) throw new Error("Endpoint no configurado");
             const data = await res.json();
             
-            if(data.data.length === 0) { alert("No hay gastos en estas fechas."); btn.innerHTML = "Descargar Reporte"; return; }
+            if(data.data.length === 0) { alert("No hay gastos en estas fechas."); btn.innerHTML = "Descargar Reporte Financiero"; return; }
 
-            // Crear el CSV
             let csvContent = "data:text/csv;charset=utf-8,";
-            csvContent += "Vehiculo,Placa,Fecha,Proveedor,Comprobante,Monto,Observacion\n"; // Cabeceras
+            csvContent += "Vehiculo,Placa,Fecha,Proveedor,Comprobante,Monto,Observacion\n";
 
             data.data.forEach(row => {
-                let vehiculoName = row.cr596_Vehiculo ? row.cr596_Vehiculo.cr596_nombre : "Desconocido";
-                let placa = row.cr596_Vehiculo ? row.cr596_Vehiculo.cr596_placa : "S/P";
-                let fechaFormateada = row.cr596_fecha ? row.cr596_fecha.split('T')[0] : "";
+                let vehiculoName = row.vehiculos ? row.vehiculos.nombre : "Desconocido";
+                let placa = row.vehiculos ? row.vehiculos.placa : "S/P";
+                let fechaFormateada = row.fecha_gasto ? row.fecha_gasto.split('T')[0] : "";
                 
-                // Limpiar textos para evitar que rompan el Excel
-                let obs = (row.cr596_observacion || "").replace(/,/g, " "); 
-                let prov = (row.cr596_proveedor || "").replace(/,/g, " ");
-                let comp = (row.cr596_comprobante || "").replace(/,/g, " ");
+                let obs = (row.observacion || "").replace(/,/g, " "); 
+                let prov = (row.proveedor || "").replace(/,/g, " ");
+                let comp = (row.comprobante || "").replace(/,/g, " ");
 
-                let line = `${vehiculoName},${placa},${fechaFormateada},${prov},${comp},${row.cr596_monto},${obs}`;
+                let line = `${vehiculoName},${placa},${fechaFormateada},${prov},${comp},${row.monto},${obs}`;
                 csvContent += line + "\n";
             });
 
-            // Descargar el archivo
             const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");
             link.setAttribute("href", encodedUri);
@@ -380,8 +407,9 @@
             link.click();
             document.body.removeChild(link);
 
-        } catch(e) { alert("Error al generar el reporte."); }
-        finally { btn.innerHTML = "Descargar Reporte"; }
+        } catch(e) { 
+            alert("Falta agregar el endpoint de reporte en el backend. Lee las instrucciones."); 
+        } finally { btn.innerHTML = "Descargar Reporte Financiero"; }
     }
 
     inicializar();
