@@ -155,7 +155,10 @@
                 <div class="checklist-grid" id="grid_retorno">
                     </div>
             </div>
-
+<div class="form-group" style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px; background: #fdeaea; padding: 15px; border-radius: 8px; border: 1px solid #f5b7b1;">
+                <input type="checkbox" id="r_taller" style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--crit-color);">
+                <label style="margin:0; font-size: 13px; color: var(--crit-color); font-weight: 900;">⚠️ ENVIAR A TALLER (Reportar avería y bloquear vehículo)</label>
+            </div>
             <div class="form-group" style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px; background: #fff5e6; padding: 15px; border-radius: 8px; border: 1px solid #ffd8a8;">
                 <input type="checkbox" id="r_gastos" onchange="toggleGastos()" style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--warn-color);">
                 <label style="margin:0; font-size: 13px; color: #d35400;">¿Trajo boletas de gastos? (Peaje, cochera)</label>
@@ -284,24 +287,20 @@
         else { document.getElementById('s_km').value = ""; }
     }
 
-   async function cargarViajes() {
+  async function cargarViajes() {
         try {
             const res = await fetch(`${API_URL}/viajes-abiertos`);
             const data = await res.json();
             viajesAbiertos = data.data;
             const select = document.getElementById('r_viaje');
             select.innerHTML = '<option value="">Seleccione viaje en curso...</option>';
-            
-            viajesAbiertos.forEach(v => {
-                // Inteligencia para buscar la placa en la memoria de vehículos
+            viajesAbiertos.forEach(v => { 
                 let auto = memoriaVehiculos.find(x => x.cr596_flota_vehiculoid === v._cr596_vehiculo_value);
                 let placa = auto ? auto.cr596_placa : 'S/P';
-                
                 select.innerHTML += `<option value="${v.cr596_flota_movimientoid}">[${placa}] - ${v.cr596_nombre} (Salió: ${v.cr596_kmsalida} km)</option>`; 
             });
         } catch(e) { console.error("Error viajes"); }
     }
-
     function vincularVehiculoRetorno() {
         const viajeId = document.getElementById('r_viaje').value;
         const viaje = viajesAbiertos.find(v => v.cr596_flota_movimientoid === viajeId);
@@ -384,6 +383,7 @@
         };
 
         if (!payload.chk_brisas || !payload.chk_llantas || !payload.chk_luces || !payload.chk_bocina) { payload.estado_llegada = 144280002; }
+        if (document.getElementById('r_taller').checked) { payload.estado_llegada = 144280002; }
 
         try {
             const res = await fetch(`${API_URL}/registrar-retorno`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
