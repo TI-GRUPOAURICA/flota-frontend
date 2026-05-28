@@ -192,7 +192,7 @@
         }
     }
 
-    function renderizarHistorial(lista) {
+function renderizarHistorial(lista) {
         const tbody = document.getElementById('tablaHistorial');
         tbody.innerHTML = '';
         
@@ -202,38 +202,59 @@
         }
 
         lista.forEach(viaje => {
-            // Formatear Fecha
+            // 1. Formatear Fecha
             let fechaTexto = "N/A";
             if(viaje.fecha_retorno) {
                 const f = new Date(viaje.fecha_retorno);
                 fechaTexto = f.toLocaleDateString() + ' ' + f.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
             }
 
-            // Datos Cruzados
+            // 2. Datos Cruzados
             const placa = viaje.vehiculos ? viaje.vehiculos.placa : 'N/A';
             const conductor = viaje.conductores ? viaje.conductores.nombre : 'Desconocido';
             const destino = viaje.destino || 'No registrado';
             
-            // Cálculos Automáticos
-            const kmRecorridos = (viaje.km_retorno && viaje.km_salida) ? (viaje.km_retorno - viaje.km_salida) : 0;
-            const consumo = (viaje.combustible_salida && viaje.combustible_retorno) ? (viaje.combustible_salida - viaje.combustible_retorno) : 0;
+            // 3. Cálculos de Kilometraje con TOOLTIP (Tu idea)
+            const kmSalida = viaje.km_salida || 0;
+            const kmRetorno = viaje.km_retorno || 0;
+            const kmRecorridos = (kmRetorno && kmSalida) ? (kmRetorno - kmSalida) : 0;
+            const tooltipKm = `Salida: ${kmSalida.toLocaleString()} Km ➔ Llegada: ${kmRetorno.toLocaleString()} Km`;
+
+            // 4. Lógica Profesional de Combustible con TOOLTIP
+            const combSalida = viaje.combustible_salida;
+            const combRetorno = viaje.combustible_retorno;
+            let consumoTexto = "N/A";
+            let colorConsumo = "";
+            let tooltipComb = "Sin datos de combustible";
+
+            if (combSalida !== null && combRetorno !== null) {
+                tooltipComb = `Salió con: ${combSalida}% ➔ Llegó con: ${combRetorno}%`;
+                let diferencia = combSalida - combRetorno;
+                
+                if (diferencia < 0) {
+                    // Si la diferencia es negativa, significa que tanqueó en ruta
+                    consumoTexto = `⛽ Recargó en ruta`;
+                    colorConsumo = "color: var(--route-color); font-weight: 700;";
+                } else {
+                    consumoTexto = `↓ ${diferencia}%`;
+                    colorConsumo = diferencia > 30 ? 'color: var(--crit-color); font-weight: 900;' : '';
+                }
+            }
             
-            // Recopilar Novedades para Auditoría
+            // 5. Recopilar Novedades para Auditoría
             let incidencias = [];
             if(viaje.observaciones_retorno) incidencias.push(`Nota: ${viaje.observaciones_retorno}`);
             if(viaje.detalle_gastos) incidencias.push(`Gastos: ${viaje.detalle_gastos}`);
             const textoAuditoria = incidencias.length > 0 ? incidencias.join(' | ') : 'Sin novedades';
 
-            // Alertas visuales (Ej: Si gasta más del 30% en una sola ruta)
-            let colorConsumo = consumo > 30 ? 'color: var(--crit-color); font-weight: 900;' : '';
-
+            // 6. Inyección de filas con la etiqueta 'title' para el efecto Hover (Tooltip)
             tbody.innerHTML += `
                 <tr>
                     <td style="font-size: 11px; color: #666;">${fechaTexto}</td>
                     <td><strong style="color: var(--aurica-blue);">${placa}</strong></td>
                     <td>${conductor}</td>
-                    <td>${kmRecorridos} Km</td>
-                    <td style="${colorConsumo}">↓ ${consumo}%</td>
+                    <td title="${tooltipKm}" style="cursor: help; border-bottom: 1px dashed #ccc;">${kmRecorridos} Km</td>
+                    <td title="${tooltipComb}" style="cursor: help; border-bottom: 1px dashed #ccc; ${colorConsumo}">${consumoTexto}</td>
                     <td>${destino}</td>
                     <td style="font-size: 11px; max-width: 250px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;" title="${textoAuditoria}">${textoAuditoria}</td>
                 </tr>
