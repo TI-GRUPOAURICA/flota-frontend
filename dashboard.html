@@ -1,1 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Analítico - Grupo Aurica</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root { --aurica-blue: #305da0; --aurica-bg: #eceded; --text-dark: #2c3e50; --ok-color: #27ae60; --route-color: #3498db; --crit-color: #e74c3c; }
+        body { font-family: 'Montserrat', sans-serif; background: var(--aurica-bg); margin: 0; padding: 20px; color: var(--text-dark); }
+        
+        .top-bar { display: flex; align-items: center; gap: 15px; background: var(--aurica-blue); color: white; padding: 20px 30px; border-radius: 12px; margin-bottom: 25px; max-width: 1200px; margin: 0 auto 25px auto;}
+        .top-bar h2 { margin: 0; font-size: 24px; font-weight: 900; text-transform: uppercase;}
+        
+        .kpi-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; max-width: 1200px; margin: 0 auto 25px auto; }
+        .kpi-card { background: white; padding: 20px 25px; border-radius: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border-left: 6px solid var(--aurica-blue); }
+        .kpi-card p { margin: 0; font-size: 11px; text-transform: uppercase; font-weight: 800; color: #888; }
+        .kpi-card h3 { margin: 5px 0 0 0; font-size: 28px; font-weight: 900; color: var(--text-dark); }
+        
+        .dashboard-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 25px; max-width: 1200px; margin: auto; }
+        .card { background: white; padding: 25px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); display: flex; flex-direction: column; }
+        .card h4 { margin-top: 0; border-bottom: 2px solid #f5f5f5; padding-bottom: 12px; font-weight: 900; color: var(--aurica-blue); text-transform: uppercase; font-size: 14px; letter-spacing: 0.5px;}
+        
+        .chart-box { width: 100%; max-width: 280px; margin: auto; padding: 10px 0; }
 
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #f8fbff; color: var(--aurica-blue); font-weight: 800; text-align: left; padding: 12px; font-size: 12px; border-bottom: 2px solid #cce0ff;}
+        td { padding: 12px; border-bottom: 1px solid #eee; font-size: 13px; font-weight: 600;}
+        
+        .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+        .status-0 { background: var(--ok-color); }
+        .status-1 { background: var(--route-color); }
+        .status-2 { background: var(--crit-color); }
+    </style>
+</head>
+<body>
+
+<div class="top-bar">
+    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
+    <div>
+        <h2>Dashboard de Control Gerencial</h2>
+    </div>
+</div>
+
+<div class="kpi-container">
+    <div class="kpi-card" style="border-left-color: #7f8c8d;">
+        <p>Total Flota</p><h3 id="kpi-total">0</h3>
+    </div>
+    <div class="kpi-card" style="border-left-color: var(--ok-color);">
+        <p>Disponibles en Base</p><h3 id="kpi-disp">0</h3>
+    </div>
+    <div class="kpi-card" style="border-left-color: var(--route-color);">
+        <p>Unidades en Ruta</p><h3 id="kpi-ruta">0</h3>
+    </div>
+    <div class="kpi-card" style="border-left-color: var(--crit-color);">
+        <p>Inoperativos / Taller</p><h3 id="kpi-taller">0</h3>
+    </div>
+</div>
+
+<div class="dashboard-grid">
+    <div class="card">
+        <h4>Distribución Operativa</h4>
+        <div class="chart-box">
+            <canvas id="chartEstatus"></canvas>
+        </div>
+    </div>
+
+    <div class="card">
+        <h4>Estatus Detallado de Unidades en Tiempo Real</h4>
+        <div style="overflow-x: auto; flex: 1;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Placa</th>
+                        <th>Vehículo</th>
+                        <th>Kilometraje</th>
+                        <th>Tanque</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaEstatus">
+                    <tr><td colspan="5" style="text-align: center;">Procesando analíticas...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_URL = "https://flota-backend-xecu.onrender.com";
+    let chartInstance = null;
+
+    async function inicializarDashboard() {
+        try {
+            const res = await fetch(`${API_URL}/estado-flota`);
+            const data = await res.json();
+            const lista = data.data;
+
+            let disponible = 0;
+            let enRuta = 0;
+            let taller = 0;
+
+            const tbody = document.getElementById('tablaEstatus');
+            tbody.innerHTML = '';
+
+            lista.forEach(v => {
+                let txtEstado = "";
+                let claseDot = "";
+                
+                // Mapeo exacto de estados relacionales
+                if(v.cr596_estadooperativo == 144280000) { disponible++; txtEstado = "Disponible"; claseDot = "status-0"; }
+                else if(v.cr596_estadooperativo == 144280001) { enRuta++; txtEstado = "En Ruta"; claseDot = "status-1"; }
+                else { taller++; txtEstado = "Taller / Falla"; claseDot = "status-2"; }
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${v.cr596_placa}</strong></td>
+                        <td>${v.cr596_nombre}</td>
+                        <td>${v.cr596_kilometrajeactual.toLocaleString()} Km</td>
+                        <td>${v.cr596_nivelcombustible}%</td>
+                        <td><span class="status-dot ${claseDot}"></span> ${txtEstado}</td>
+                    </tr>
+                `;
+            });
+
+            // Actualizar KPIs de cabecera
+            document.getElementById('kpi-total').innerText = lista.length;
+            document.getElementById('kpi-disp').innerText = disponible;
+            document.getElementById('kpi-ruta').innerText = enRuta;
+            document.getElementById('kpi-taller').innerText = taller;
+
+            // RENDERIZAR GRÁFICO DE CHART.JS
+            const ctx = document.getElementById('chartEstatus').getContext('2d');
+            if(chartInstance) { chartInstance.destroy(); }
+            
+            chartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Disponible', 'En Ruta', 'Taller'],
+                    datasets: [{
+                        data: [disponible, enRuta, taller],
+                        backgroundColor: ['#27ae60', '#3498db', '#e74c3c'],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { position: 'bottom', labels: { font: { family: 'Montserrat', weight: 600 } } } }
+                }
+            });
+
+        } catch (e) {
+            console.error("Error en dashboard: ", e);
+            document.getElementById('tablaEstatus').innerHTML = '<tr><td colspan="5" style="text-align:center; color:red;">Error al cargar analíticas.</td></tr>';
+        }
+    }
+
+    // Carga inicial
+    inicializarDashboard();
+    // Auto-refresco inteligente cada 30 segundos para mantener el centro de control vivo
+    setInterval(inicializarDashboard, 30000);
+</script>
+
+</body>
+</html>
