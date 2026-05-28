@@ -183,11 +183,11 @@
             const select = document.getElementById('s_vehiculo');
             select.innerHTML = '<option value="">Seleccione vehículo en base...</option>';
             data.data.forEach(v => {
-                // Solo mostrar disponibles (144280000)
-                if(v.cr596_estadooperativo === 144280000) {
-                    select.innerHTML += `<option value="${v.cr596_flota_vehiculoid}">[${v.cr596_placa}] - ${v.cr596_nombre}</option>`;
-                }
-            });
+    // Usamos doble igual (==) para evitar problemas de formato de texto/número
+    if(v.cr596_estadooperativo == 144280000) {
+        select.innerHTML += `<option value="${v.cr596_flota_vehiculoid}">[${v.cr596_placa}] - ${v.cr596_nombre}</option>`;
+    }
+})
         } catch(e) { console.error("Error vehículos"); }
     }
 
