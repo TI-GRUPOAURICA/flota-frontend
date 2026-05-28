@@ -177,7 +177,22 @@
     </div>
 
 </div>
+<div class="form-row">
+                <div class="form-group" id="caja_gastos" style="display: none;">
+                    <label style="color: var(--warn-color);">Detalle del Gasto</label>
+                    <input type="text" id="r_detalle_gastos" placeholder="Ej. Peaje S/16.00">
+                </div>
+                <div class="form-group">
+                    <label>Novedades del Vehículo</label>
+                    <input type="text" id="r_obs" placeholder="Problemas, multas...">
+                </div>
+            </div>
 
+            <!-- NUEVO BOTÓN DE AVERÍA -->
+            <div class="form-group" style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px; background: #fdeaea; padding: 15px; border-radius: 8px; border: 1px solid #f5b7b1;">
+                <input type="checkbox" id="r_taller" style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--crit-color);">
+                <label style="margin:0; font-size: 13px; color: var(--crit-color); font-weight: 900;">⚠️ ENVIAR A TALLER (Reportar avería mecánica y bloquear vehículo)</label>
+            </div>
 <script>
     const API_URL = "https://flota-backend-xecu.onrender.com";
     let memoriaVehiculos = [];
