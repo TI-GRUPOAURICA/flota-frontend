@@ -1,1 +1,161 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Combustible - Grupo Aurica</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root { --aurica-blue: #305da0; --aurica-bg: #eceded; --text-dark: #2c3e50; --success-color: #27ae60; }
+        body { font-family: 'Montserrat', sans-serif; background: var(--aurica-bg); margin: 0; padding: 20px; color: var(--text-dark); }
+        
+        .top-bar { display: flex; align-items: center; gap: 15px; background: var(--aurica-blue); color: white; padding: 20px 30px; border-radius: 12px; margin-bottom: 25px; max-width: 800px; margin: 0 auto 25px auto; box-shadow: 0 4px 10px rgba(48, 93, 160, 0.2);}
+        .top-bar h2 { margin: 0; font-size: 24px; font-weight: 900; text-transform: uppercase;}
+        .top-bar p { margin: 3px 0 0 0; font-size: 13px; opacity: 0.9;}
 
+        .card { background: white; padding: 30px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); max-width: 800px; margin: auto; }
+        .card h3 { margin-top: 0; color: var(--aurica-blue); border-bottom: 2px solid #f0f0f0; padding-bottom: 15px; font-weight: 900;}
+
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 800; color: var(--text-dark); font-size: 12px; text-transform: uppercase;}
+        input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-family: 'Montserrat', sans-serif; font-size: 14px;}
+        input:focus, select:focus { border-color: var(--aurica-blue); outline: none;}
+
+        button { background: var(--aurica-blue); color: white; border: none; padding: 15px; width: 100%; font-size: 15px; font-weight: 800; border-radius: 8px; cursor: pointer; transition: 0.2s; margin-top: 10px;}
+        button:hover { background: #264b82; }
+
+        .resultado-box { display: none; background: #e8f8f5; border: 1px solid #a3e4d7; padding: 15px; border-radius: 8px; margin-top: 20px; text-align: center; color: var(--success-color); }
+        .resultado-box h4 { margin: 0 0 5px 0; font-weight: 900; font-size: 18px; }
+        .resultado-box p { margin: 0; font-size: 14px; font-weight: 600; }
+    </style>
+</head>
+<body>
+
+<div class="top-bar">
+    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 22v-8c0-1.1.9-2 2-2h14a2 2 0 0 1 2 2v8"></path><path d="M6 12v-3a6 6 0 0 1 12 0v3"></path><path d="M14 2h4"></path><path d="M16 2v4"></path></svg>
+    <div>
+        <h2>Control de Combustible</h2>
+        <p>Registro de Cargas y Análisis de Rendimiento</p>
+    </div>
+</div>
+
+<div class="card">
+    <h3>⛽ Registrar Nueva Carga</h3>
+    <form id="formCombustible">
+        
+        <div class="form-group" style="margin-bottom: 15px;">
+            <label>1. Seleccione el Vehículo</label>
+            <select id="c_vehiculo" required>
+                <option value="">Cargando flota...</option>
+            </select>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Kilometraje al cargar (Odómetro)</label>
+                <input type="number" id="c_km" required placeholder="Ej. 125300">
+            </div>
+            <div class="form-group">
+                <label>Estación de Servicio (Grifo)</label>
+                <input type="text" id="c_estacion" required placeholder="Ej. Repsol / Primax">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Tipo de Combustible</label>
+                <select id="c_tipo" required>
+                    <option value="">Seleccione...</option>
+                    <option value="Gasolina 90">Gasolina 90</option>
+                    <option value="Gasolina 95">Gasolina 95</option>
+                    <option value="Diesel (DB5)">Diesel (DB5)</option>
+                    <option value="GLP">GLP</option>
+                    <option value="GNV">GNV</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Volumen (Galones / Litros / M3)</label>
+                <input type="number" id="c_volumen" step="0.01" required placeholder="Ej. 15.5">
+            </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 15px;">
+            <label>Costo Total de la Factura/Boleta (S/)</label>
+            <input type="number" id="c_costo" step="0.01" required placeholder="Ej. 250.00">
+        </div>
+
+        <button type="submit" id="btnGuardar">Guardar Registro y Calcular Rendimiento</button>
+    </form>
+
+    <div id="resultadoCalculo" class="resultado-box">
+        <h4>✅ Carga Registrada con Éxito</h4>
+        <p id="textoRendimiento">Rendimiento calculado: 0 Km/Galón</p>
+    </div>
+</div>
+
+<script>
+    const API_URL = "https://flota-backend-xecu.onrender.com";
+
+    async function cargarFlota() {
+        try {
+            const res = await fetch(`${API_URL}/estado-flota`);
+            const data = await res.json();
+            const select = document.getElementById('c_vehiculo');
+            select.innerHTML = '<option value="">Seleccione un vehículo...</option>';
+            data.data.forEach(v => {
+                select.innerHTML += `<option value="${v.cr596_flota_vehiculoid}">[${v.cr596_placa}] - ${v.cr596_nombre}</option>`;
+            });
+        } catch(e) { console.error("Error al cargar la flota"); }
+    }
+
+    document.getElementById('formCombustible').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('btnGuardar');
+        const cajaResultado = document.getElementById('resultadoCalculo');
+        const textoRendimiento = document.getElementById('textoRendimiento');
+        
+        btn.innerText = "Calculando y guardando...";
+        cajaResultado.style.display = 'none';
+
+        const payload = {
+            vehiculo_id: document.getElementById('c_vehiculo').value,
+            volumen_vol: parseFloat(document.getElementById('c_volumen').value),
+            tipo_combustible: document.getElementById('c_tipo').value,
+            costo_total: parseFloat(document.getElementById('c_costo').value),
+            estacion: document.getElementById('c_estacion').value,
+            kilometraje_carga: parseInt(document.getElementById('c_km').value)
+        };
+
+        try {
+            const res = await fetch(`${API_URL}/registrar-carga-combustible`, { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify(payload) 
+            });
+            
+            const data = await res.json();
+
+            if (res.ok) {
+                document.getElementById('formCombustible').reset();
+                cajaResultado.style.display = 'block';
+                
+                if (data.rendimiento_periodo && data.rendimiento_periodo !== "0.0 Km/Unidad Vol.") {
+                    textoRendimiento.innerText = `Rendimiento del periodo anterior: ${data.rendimiento_periodo}`;
+                } else {
+                    textoRendimiento.innerText = "Primera carga registrada. Se calculará el rendimiento en la próxima tanqueada.";
+                }
+            } else {
+                alert("Error al guardar: " + data.detail);
+            }
+        } catch (error) { 
+            alert("Error de conexión al servidor."); 
+        } finally { 
+            btn.innerText = "Guardar Registro y Calcular Rendimiento"; 
+        }
+    });
+
+    cargarFlota();
+</script>
+
+</body>
+</html>
