@@ -110,9 +110,9 @@
                 </select>
             </div>
 
-            <div id="caja_notas_taller" class="form-group" style="display:none; background:#e8f8f5; padding:15px; border-radius:8px; border:1px solid #a3e4d7;">
-                <label style="color:#27ae60; font-size: 14px; margin-bottom: 8px;">🛠️ Liberación de Taller</label>
-                <textarea id="edit_notas" rows="3" placeholder="Ej. Se cambió la batería y se parcho la llanta. Vehículo 100% operativo." style="width:100%; border:1px solid #ccc; border-radius:6px; padding:10px;"></textarea>
+        <div id="caja_notas_taller" class="form-group" style="display:none; background:#e8f8f5; padding:15px; border-radius:8px; border:1px solid #a3e4d7;">
+                <label id="label_notas_taller" style="color:#27ae60; font-size: 14px; margin-bottom: 8px;">🛠️ Detalles de Taller</label>
+                <textarea id="edit_notas" rows="3" placeholder="Detalle de la reparación, motivo de ingreso o justificación..." style="width:100%; border:1px solid #ccc; border-radius:6px; padding:10px;"></textarea>
             </div>
 
             <div style="background: #f8f9fa; border: 1px solid #ddd; padding: 15px; border-radius: 12px; margin-bottom: 15px;">
@@ -339,12 +339,28 @@
     function toggleNotasTaller() {
         const estadoActual = document.getElementById('edit_estado').value;
         const cajaNotas = document.getElementById('caja_notas_taller');
+        const labelNotas = document.getElementById('label_notas_taller');
         
-        // Si estaba inoperativo y el jefe lo cambia a Disponible, obligar a escribir qué reparó
-        if (estadoOriginal == 144280002 && estadoActual == 144280000) {
+        if (estadoActual == 144280002) {
+            // Acción: Enviando al taller (preventivo o manual)
             cajaNotas.style.display = 'block';
+            cajaNotas.style.background = '#fef9e7';
+            cajaNotas.style.borderColor = '#f1c40f';
+            labelNotas.style.color = '#d35400';
+            labelNotas.innerHTML = '📋 Motivo de ingreso a Taller (Mantenimiento programado)';
             document.getElementById('edit_notas').required = true;
+            
+        } else if (estadoOriginal == 144280002 && estadoActual == 144280000) {
+            // Acción: Liberando del taller a operaciones
+            cajaNotas.style.display = 'block';
+            cajaNotas.style.background = '#e8f8f5';
+            cajaNotas.style.borderColor = '#a3e4d7';
+            labelNotas.style.color = '#27ae60';
+            labelNotas.innerHTML = '✅ Detalle de Liberación (¿Qué se reparó?)';
+            document.getElementById('edit_notas').required = true;
+            
         } else {
+            // Acción normal (Sin cambios a taller)
             cajaNotas.style.display = 'none';
             document.getElementById('edit_notas').required = false;
         }
