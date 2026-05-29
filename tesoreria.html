@@ -50,7 +50,6 @@
         .checkbox-container { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 800; color: #e74c3c; margin-top: 5px; cursor: pointer;}
         .checkbox-container input[type="checkbox"] { width: auto; margin: 0; cursor: pointer;}
 
-        /* ESTILO NUEVO PARA CAMPOS DE COMBUSTIBLE */
         .caja-combustible { display: none; background: #ebf5fb; padding: 20px; border-radius: 10px; border: 1px solid #a9cce3; margin-bottom: 20px;}
         .caja-combustible h4 { margin: 0 0 15px 0; color: var(--comb-color); font-size: 14px; font-weight: 900; display: flex; align-items: center; gap: 8px;}
     </style>
@@ -61,7 +60,7 @@
     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
     <div>
         <h2>Panel de Tesorería</h2>
-        <p>Centro de Costos y Gastos Vehiculares</p>
+        <p>Centro de Costos, Análisis y Gastos Vehiculares</p>
     </div>
 </div>
 
@@ -137,6 +136,7 @@
                         <input type="number" id="c_volumen" step="0.01" placeholder="Ej. 15.5">
                     </div>
                 </div>
+
                 <div class="form-row">
                     <div class="form-group">
                         <label>Empresa a facturar (Propietario)</label>
@@ -194,8 +194,8 @@
 
 <div id="panel-reportes" class="panel">
     <div class="card" style="max-width: 600px; margin: auto;">
-        <h3>📊 Exportar Gastos a Excel (CSV)</h3>
-        <p style="font-size: 13px; color: #666;">Seleccione el rango de fechas para generar el reporte de costos y combustible.</p>
+        <h3 style="display: flex; align-items: center; justify-content: center; gap: 10px;">📊 Inteligencia Financiera (Excel)</h3>
+        <p style="font-size: 13px; color: #666; text-align: center;">Descargue la sábana de datos completa. Incluye métricas de combustible, empresas facturadas y métodos de pago.</p>
         
         <div class="form-row" style="margin-top: 20px;">
             <div class="form-group">
@@ -210,7 +210,7 @@
         
         <button class="btn-excel" onclick="generarReporte()" id="btnExcel">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-            Descargar Reporte Financiero
+            Descargar Auditoría Financiera
         </button>
     </div>
 </div>
@@ -218,6 +218,11 @@
 <script>
     const API_URL = "https://flota-backend-xecu.onrender.com"; 
     let memoriaFlota = [];
+
+    // TRADUCTORES DE CÓDIGOS PARA EL EXCEL
+    const mapTiposGasto = { 144280000: "Combustible", 144280001: "Mant. Preventivo", 144280002: "Mant. Correctivo", 144280003: "Peaje / PEX", 144280004: "Lavado", 144280005: "Documentos", 144280006: "Multas", 144280007: "Otros" };
+    const mapEmpresas = { 144280000: "Aurica SAC", 144280001: "Metalab SAC", 144280002: "Mineralab SAC", 144280003: "Minera Gianlu SAC", 144280004: "Tercero" };
+    const mapPagos = { 144280000: "Efectivo", 144280001: "Transferencia", 144280002: "Tarjeta Corp." };
 
     function cambiarTab(tab) {
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -243,11 +248,10 @@
         }
     }
 
-    // --- LÓGICA MÁGICA: MOSTRAR/OCULTAR COMBUSTIBLE ---
     function toggleCombustible() {
         const tipo = document.getElementById('tipo_gasto').value;
         const caja = document.getElementById('caja_combustible');
-        if(tipo === "144280000") { // Es Combustible
+        if(tipo === "144280000") {
             caja.style.display = 'block';
             document.getElementById('c_km').required = true;
             document.getElementById('c_tipo').required = true;
@@ -260,7 +264,6 @@
         }
     }
 
-    // --- CARGA INICIAL ---
     async function inicializar() {
         try {
             const res = await fetch(`${API_URL}/estado-flota`);
@@ -269,7 +272,7 @@
             const select = document.getElementById('select_vehiculo');
             select.innerHTML = '<option value="">Seleccione un vehículo de la flota...</option>';
             memoriaFlota.forEach(v => { select.innerHTML += `<option value="${v.cr596_flota_vehiculoid}">${v.cr596_placa} - ${v.cr596_nombre}</option>`; });
-        } catch(e) { console.error("Error cargando flota"); }
+        } catch(e) {}
         cargarAlertas();
     }
 
@@ -305,15 +308,23 @@
         document.getElementById('observacion').value = "REF GARITA: " + observacion;
     }
 
-    // --- GUARDAR GASTO E INTELIGENCIA DE COMBUSTIBLE ---
+    // --- GUARDADO INTELIGENTE (FUSIONA OBSERVACIÓN + COMBUSTIBLE) ---
     document.getElementById('formGasto').addEventListener('submit', async (e) => {
         e.preventDefault();
         const btn = document.getElementById('btnGuardar');
         btn.innerText = "Guardando...";
 
         const esCombustible = document.getElementById('tipo_gasto').value === "144280000";
+        let observacionFinal = document.getElementById('observacion').value;
 
-        // 1. Guardar el Gasto Financiero
+        // INYECCIÓN DE DATOS: Si es combustible, pegamos los galones en el texto para el Excel
+        if (esCombustible) {
+            const vol = document.getElementById('c_volumen').value;
+            const km = document.getElementById('c_km').value;
+            const tComb = document.getElementById('c_tipo').value;
+            observacionFinal += ` [DETALLE TANK: ${vol} Galones | ${tComb} | Odómetro: ${km} Km]`;
+        }
+
         const payloadGasto = {
             movimiento_id: document.getElementById('viaje_id').value || null,
             vehiculo_id: document.getElementById('select_vehiculo').value,
@@ -324,7 +335,7 @@
             comprobante: document.getElementById('comprobante').value,
             monto: parseFloat(document.getElementById('monto').value),
             metodo_pago: parseInt(document.getElementById('metodo_pago').value),
-            observacion: document.getElementById('observacion').value
+            observacion: observacionFinal // <- Se envía el texto fusionado
         };
 
         try {
@@ -333,7 +344,6 @@
             if (resGasto.ok) { 
                 let mensajeExito = "✅ Gasto registrado correctamente en Tesorería.";
                 
-                // 2. Si es combustible, también guardar en mantenimiento en silencio
                 if (esCombustible) {
                     const payloadComb = {
                         vehiculo_id: document.getElementById('select_vehiculo').value,
@@ -350,7 +360,7 @@
                     if(resComb.ok && dataComb.rendimiento_periodo && dataComb.rendimiento_periodo !== "0.0 Km/Unidad Vol.") {
                         mensajeExito += `\n\n⛽ Rendimiento calculado: ${dataComb.rendimiento_periodo}`;
                     } else {
-                        mensajeExito += `\n\n⛽ Primera carga registrada (Aún no se calcula rendimiento).`;
+                        mensajeExito += `\n\n⛽ Primera carga registrada.`;
                     }
                 }
 
@@ -367,7 +377,7 @@
         finally { btn.innerText = "Registrar Gasto Vehicular"; }
     });
 
-    // --- REPORTE EXCEL (CSV) ADAPTADO A SUPABASE ---
+    // --- REPORTE EXCEL (NUEVO: COLUMNAS COMPLETAS) ---
     async function generarReporte() {
         const inicio = document.getElementById('rep_inicio').value;
         const fin = document.getElementById('rep_fin').value;
@@ -378,24 +388,30 @@
         btn.innerText = "Generando...";
         try {
             const res = await fetch(`${API_URL}/reporte-gastos?inicio=${inicio}&fin=${fin}`);
-            if(!res.ok) throw new Error("Endpoint no configurado");
             const data = await res.json();
             
-            if(data.data.length === 0) { alert("No hay gastos en estas fechas."); btn.innerHTML = "Descargar Reporte Financiero"; return; }
+            if(data.data.length === 0) { alert("No hay gastos en estas fechas."); btn.innerHTML = "Descargar Auditoría Financiera"; return; }
 
             let csvContent = "data:text/csv;charset=utf-8,";
-            csvContent += "Vehiculo,Placa,Fecha,Proveedor,Comprobante,Monto,Observacion\n";
+            // CABECERAS AUMENTADAS
+            csvContent += "Vehiculo,Placa,Fecha,Empresa a Facturar,Tipo de Gasto,Metodo de Pago,Proveedor,Comprobante,Monto Total (S/),Observacion y Detalle\n";
 
             data.data.forEach(row => {
                 let vehiculoName = row.vehiculos ? row.vehiculos.nombre : "Desconocido";
                 let placa = row.vehiculos ? row.vehiculos.placa : "S/P";
                 let fechaFormateada = row.fecha_gasto ? row.fecha_gasto.split('T')[0] : "";
                 
-                let obs = (row.observacion || "").replace(/,/g, " "); 
-                let prov = (row.proveedor || "").replace(/,/g, " ");
-                let comp = (row.comprobante || "").replace(/,/g, " ");
+                // Traducción de Códigos a Texto Humano
+                let txtEmpresa = mapEmpresas[row.empresa] || "Sin Especificar";
+                let txtTipoGasto = mapTiposGasto[row.tipo_gasto] || "Desconocido";
+                let txtPago = mapPagos[row.metodo_pago] || "No indicado";
 
-                let line = `${vehiculoName},${placa},${fechaFormateada},${prov},${comp},${row.monto},${obs}`;
+                let obs = (row.observacion || "").replace(/,/g, ";"); 
+                let prov = (row.proveedor || "").replace(/,/g, ";");
+                let comp = (row.comprobante || "").replace(/,/g, ";");
+
+                // SE CONSTRUYE LA LÍNEA DEL EXCEL
+                let line = `"${vehiculoName}","${placa}","${fechaFormateada}","${txtEmpresa}","${txtTipoGasto}","${txtPago}","${prov}","${comp}",${row.monto},"${obs}"`;
                 csvContent += line + "\n";
             });
 
@@ -408,8 +424,8 @@
             document.body.removeChild(link);
 
         } catch(e) { 
-            alert("Falta agregar el endpoint de reporte en el backend. Lee las instrucciones."); 
-        } finally { btn.innerHTML = "Descargar Reporte Financiero"; }
+            alert("Error al extraer reporte."); 
+        } finally { btn.innerHTML = "Descargar Auditoría Financiera"; }
     }
 
     inicializar();
