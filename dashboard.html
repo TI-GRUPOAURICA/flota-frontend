@@ -33,11 +33,12 @@
         .status-1 { background: var(--route-color); }
         .status-2 { background: var(--crit-color); }
 
-        /* Estilos para los filtros de la tabla de auditoría */
         .filter-input { padding: 8px 12px; border: 1px solid #ccc; border-radius: 6px; font-family: 'Montserrat', sans-serif; font-size: 12px; outline: none; }
         .filter-input:focus { border-color: var(--aurica-blue); }
         
-        /* Contenedor centralizado para no sobrepasar el max-width */
+        .btn-export { background: #27ae60; color: white; border: none; padding: 8px 15px; border-radius: 6px; font-size: 12px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: 0.2s;}
+        .btn-export:hover { background: #219653; }
+
         .container { max-width: 1200px; margin: auto; }
     </style>
 </head>
@@ -51,86 +52,88 @@
 </div>
 
 <div class="kpi-container">
-    <div class="kpi-card" style="border-left-color: #7f8c8d;">
-        <p>Total Flota</p><h3 id="kpi-total">0</h3>
-    </div>
-    <div class="kpi-card" style="border-left-color: var(--ok-color);">
-        <p>Disponibles en Base</p><h3 id="kpi-disp">0</h3>
-    </div>
-    <div class="kpi-card" style="border-left-color: var(--route-color);">
-        <p>Unidades en Ruta</p><h3 id="kpi-ruta">0</h3>
-    </div>
-    <div class="kpi-card" style="border-left-color: var(--crit-color);">
-        <p>Inoperativos / Taller</p><h3 id="kpi-taller">0</h3>
-    </div>
+    <div class="kpi-card" style="border-left-color: #7f8c8d;"><p>Total Flota</p><h3 id="kpi-total">0</h3></div>
+    <div class="kpi-card" style="border-left-color: var(--ok-color);"><p>Disponibles en Base</p><h3 id="kpi-disp">0</h3></div>
+    <div class="kpi-card" style="border-left-color: var(--route-color);"><p>Unidades en Ruta</p><h3 id="kpi-ruta">0</h3></div>
+    <div class="kpi-card" style="border-left-color: var(--crit-color);"><p>Inoperativos / Taller</p><h3 id="kpi-taller">0</h3></div>
 </div>
 
 <div class="dashboard-grid">
     <div class="card">
         <h4>Distribución Operativa</h4>
-        <div class="chart-box">
-            <canvas id="chartEstatus"></canvas>
-        </div>
+        <div class="chart-box"><canvas id="chartEstatus"></canvas></div>
     </div>
-
     <div class="card">
         <h4>Estatus Detallado de Unidades en Tiempo Real</h4>
         <div style="overflow-x: auto; flex: 1;">
             <table>
-                <thead>
-                    <tr>
-                        <th>Placa</th>
-                        <th>Vehículo</th>
-                        <th>Kilometraje</th>
-                        <th>Tanque</th>
-                        <th>Estado</th>
-                    </tr>
-                </thead>
-                <tbody id="tablaEstatus">
-                    <tr><td colspan="5" style="text-align: center;">Procesando analíticas...</td></tr>
-                </tbody>
+                <thead><tr><th>Placa</th><th>Vehículo</th><th>Kilometraje</th><th>Tanque</th><th>Estado</th></tr></thead>
+                <tbody id="tablaEstatus"><tr><td colspan="5" style="text-align: center;">Procesando analíticas...</td></tr></tbody>
             </table>
         </div>
     </div>
 </div>
 
 <div class="container">
+    
     <div class="card" style="margin-top: 25px;">
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f5f5f5; padding-bottom: 15px; margin-bottom: 15px; flex-wrap: wrap; gap: 15px;">
-            <h4 style="margin: 0; border: none; padding: 0; display: flex; align-items: center; gap: 10px;">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                Auditoría de Viajes Terminados
-            </h4>
+            <h4 style="margin: 0; border: none; padding: 0;">📍 Auditoría de Viajes Terminados</h4>
             <div style="display: flex; gap: 10px;">
-                <input type="text" id="filtroPlaca" class="filter-input" placeholder="🔍 Buscar por Placa..." onkeyup="filtrarHistorial()">
-                <input type="text" id="filtroConductor" class="filter-input" placeholder="🔍 Buscar por Conductor..." onkeyup="filtrarHistorial()">
+                <input type="text" id="filtroPlaca" class="filter-input" placeholder="🔍 Filtrar Placa..." onkeyup="filtrarHistorial()">
+                <input type="text" id="filtroConductor" class="filter-input" placeholder="🔍 Filtrar Conductor..." onkeyup="filtrarHistorial()">
+                <button class="btn-export" onclick="exportarTablaCSV('tablaDocRutas', 'Reporte_Rutas_Terminadas')">⬇️ Descargar Excel</button>
             </div>
         </div>
         <div style="overflow-x: auto;">
-            <table>
+            <table id="tablaDocRutas">
                 <thead>
                     <tr>
-                        <th>Fecha y Hora</th>
-                        <th>Vehículo</th>
+                        <th>Fecha Retorno</th>
+                        <th>Placa</th>
                         <th>Conductor</th>
                         <th>Distancia (Km)</th>
                         <th>Consumo (%)</th>
                         <th>Ruta (Origen ➔ Destino)</th>
-                        <th>Auditoría / Novedades</th>
+                        <th>Gastos / Notas</th>
                     </tr>
                 </thead>
-                <tbody id="tablaHistorial">
-                    <tr><td colspan="7" style="text-align: center;">Cargando historial...</td></tr>
-                </tbody>
+                <tbody id="tablaHistorial"><tr><td colspan="7" style="text-align: center;">Cargando rutas...</td></tr></tbody>
             </table>
         </div>
     </div>
+
+    <div class="card" style="margin-top: 25px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f5f5f5; padding-bottom: 15px; margin-bottom: 15px; flex-wrap: wrap; gap: 15px;">
+            <h4 style="margin: 0; border: none; padding: 0; color: var(--crit-color);">🛠️ Historial de Taller e Incidentes Mecánicos</h4>
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="filtroMante" class="filter-input" placeholder="🔍 Buscar por placa o detalle..." onkeyup="filtrarIncidentes()">
+                <button class="btn-export" onclick="exportarTablaCSV('tablaDocIncidentes', 'Reporte_Historial_Mecanico')">⬇️ Descargar Excel</button>
+            </div>
+        </div>
+        <div style="overflow-x: auto;">
+            <table id="tablaDocIncidentes">
+                <thead>
+                    <tr>
+                        <th>Fecha de Registro</th>
+                        <th>Placa</th>
+                        <th>Vehículo</th>
+                        <th>Origen del Reporte</th>
+                        <th>Descripción / Detalle Clínico</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaIncidentes"><tr><td colspan="5" style="text-align: center;">Cargando historial mecánico...</td></tr></tbody>
+            </table>
+        </div>
+    </div>
+
 </div>
 
 <script>
     const API_URL = "https://flota-backend-xecu.onrender.com";
     let chartInstance = null;
-    let historialGlobal = []; // Memoria para los filtros
+    let historialGlobal = []; 
+    let incidentesGlobal = [];
 
     // --- 1. LÓGICA DEL DASHBOARD EN TIEMPO REAL ---
     async function inicializarDashboard() {
@@ -149,15 +152,7 @@
                 else if(v.cr596_estadooperativo == 144280001) { enRuta++; txtEstado = "En Ruta"; claseDot = "status-1"; }
                 else { taller++; txtEstado = "Taller / Falla"; claseDot = "status-2"; }
 
-                tbody.innerHTML += `
-                    <tr>
-                        <td><strong>${v.cr596_placa}</strong></td>
-                        <td>${v.cr596_nombre}</td>
-                        <td>${v.cr596_kilometrajeactual.toLocaleString()} Km</td>
-                        <td>${v.cr596_nivelcombustible}%</td>
-                        <td><span class="status-dot ${claseDot}"></span> ${txtEstado}</td>
-                    </tr>
-                `;
+                tbody.innerHTML += `<tr><td><strong>${v.cr596_placa}</strong></td><td>${v.cr596_nombre}</td><td>${v.cr596_kilometrajeactual.toLocaleString()} Km</td><td>${v.cr596_nivelcombustible}%</td><td><span class="status-dot ${claseDot}"></span> ${txtEstado}</td></tr>`;
             });
 
             document.getElementById('kpi-total').innerText = lista.length;
@@ -170,126 +165,142 @@
             
             chartInstance = new Chart(ctx, {
                 type: 'doughnut',
-                data: {
-                    labels: ['Disponible', 'En Ruta', 'Taller'],
-                    datasets: [{ data: [disponible, enRuta, taller], backgroundColor: ['#27ae60', '#3498db', '#e74c3c'], borderWidth: 2 }]
-                },
+                data: { labels: ['Disponible', 'En Ruta', 'Taller'], datasets: [{ data: [disponible, enRuta, taller], backgroundColor: ['#27ae60', '#3498db', '#e74c3c'], borderWidth: 2 }] },
                 options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { font: { family: 'Montserrat', weight: 600 } } } } }
             });
-        } catch (e) { console.error("Error operativo: ", e); }
+        } catch (e) { console.error("Error operativo"); }
     }
 
-    // --- 2. LÓGICA DEL HISTORIAL Y AUDITORÍA ---
+    // --- 2. LÓGICA DEL HISTORIAL DE RUTAS ---
     async function cargarHistorial() {
         try {
             const res = await fetch(`${API_URL}/historial-rutas`);
             const data = await res.json();
             historialGlobal = data.data;
             renderizarHistorial(historialGlobal);
-        } catch (e) {
-            console.error("Error historial: ", e);
-            document.getElementById('tablaHistorial').innerHTML = '<tr><td colspan="7" style="text-align:center; color:red;">Error al cargar el historial.</td></tr>';
-        }
+        } catch (e) { document.getElementById('tablaHistorial').innerHTML = '<tr><td colspan="7" style="text-align:center; color:red;">Falta backend de historial.</td></tr>'; }
     }
 
-function renderizarHistorial(lista) {
+    function renderizarHistorial(lista) {
         const tbody = document.getElementById('tablaHistorial');
         tbody.innerHTML = '';
-        
-        if(lista.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No se encontraron registros.</td></tr>';
-            return;
-        }
+        if(lista.length === 0) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No hay registros.</td></tr>'; return; }
 
         lista.forEach(viaje => {
-            // 1. Formatear Fecha
             let fechaTexto = "N/A";
             if(viaje.fecha_retorno) {
                 const f = new Date(viaje.fecha_retorno);
                 fechaTexto = f.toLocaleDateString() + ' ' + f.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
             }
-
-            // Datos Cruzados e Inteligencia de Ruta
             const placa = viaje.vehiculos ? viaje.vehiculos.placa : 'N/A';
             const conductor = viaje.conductores ? viaje.conductores.nombre : 'Desconocido';
             const destino = viaje.destino || 'No registrado';
             
-            // Lógica para mostrar Sede u Origen Detallado
-            let origenReal = viaje.origen || 'No registrado';
-            if(origenReal === 'Otros' && viaje.origen_detalle) {
-                origenReal = `🏠 ${viaje.origen_detalle}`;
-            }
-            
+            let origenReal = viaje.origen || 'Sede Principal';
+            if(origenReal === 'Otros' && viaje.origen_detalle) { origenReal = `🏠 ${viaje.origen_detalle}`; }
             const rutaCompleta = `<span style="font-size:11px; color:#7f8c8d;">${origenReal}</span><br>➔ <strong>${destino}</strong>`;
-            
-            // 3. Cálculos de Kilometraje con TOOLTIP (Tu idea)
-            const kmSalida = viaje.km_salida || 0;
-            const kmRetorno = viaje.km_retorno || 0;
+
+            const kmSalida = viaje.km_salida || 0; const kmRetorno = viaje.km_retorno || 0;
             const kmRecorridos = (kmRetorno && kmSalida) ? (kmRetorno - kmSalida) : 0;
-            const tooltipKm = `Salida: ${kmSalida.toLocaleString()} Km ➔ Llegada: ${kmRetorno.toLocaleString()} Km`;
 
-            // 4. Lógica Profesional de Combustible con TOOLTIP
-            const combSalida = viaje.combustible_salida;
-            const combRetorno = viaje.combustible_retorno;
-            let consumoTexto = "N/A";
-            let colorConsumo = "";
-            let tooltipComb = "Sin datos de combustible";
-
+            const combSalida = viaje.combustible_salida; const combRetorno = viaje.combustible_retorno;
+            let consumoTexto = "N/A"; let colorConsumo = "";
             if (combSalida !== null && combRetorno !== null) {
-                tooltipComb = `Salió con: ${combSalida}% ➔ Llegó con: ${combRetorno}%`;
                 let diferencia = combSalida - combRetorno;
-                
-                if (diferencia < 0) {
-                    // Si la diferencia es negativa, significa que tanqueó en ruta
-                    consumoTexto = `⛽ Recargó en ruta`;
-                    colorConsumo = "color: var(--route-color); font-weight: 700;";
-                } else {
-                    consumoTexto = `↓ ${diferencia}%`;
-                    colorConsumo = diferencia > 30 ? 'color: var(--crit-color); font-weight: 900;' : '';
-                }
+                if (diferencia < 0) { consumoTexto = `⛽ Recargó en ruta`; colorConsumo = "color: var(--route-color); font-weight: 700;"; } 
+                else { consumoTexto = `↓ ${diferencia}%`; colorConsumo = diferencia > 30 ? 'color: var(--crit-color); font-weight: 900;' : ''; }
             }
             
-            // 5. Recopilar Novedades para Auditoría
             let incidencias = [];
             if(viaje.observaciones_retorno) incidencias.push(`Nota: ${viaje.observaciones_retorno}`);
             if(viaje.detalle_gastos) incidencias.push(`Gastos: ${viaje.detalle_gastos}`);
             const textoAuditoria = incidencias.length > 0 ? incidencias.join(' | ') : 'Sin novedades';
 
-            // 6. Inyección de filas con la etiqueta 'title' para el efecto Hover (Tooltip)
-            tbody.innerHTML += `
-                <tr>
-                    <td style="font-size: 11px; color: #666;">${fechaTexto}</td>
-                    <td><strong style="color: var(--aurica-blue);">${placa}</strong></td>
-                    <td>${conductor}</td>
-                    <td title="${tooltipKm}" style="cursor: help; border-bottom: 1px dashed #ccc;">${kmRecorridos} Km</td>
-                    <td title="${tooltipComb}" style="cursor: help; border-bottom: 1px dashed #ccc; ${colorConsumo}">${consumoTexto}</td>
-                    <td>${rutaCompleta}</td>
-                    <td style="font-size: 11px; max-width: 250px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;" title="${textoAuditoria}">${textoAuditoria}</td>
-                </tr>
-            `;
+            tbody.innerHTML += `<tr><td style="font-size:11px; color:#666;">${fechaTexto}</td><td><strong style="color:var(--aurica-blue);">${placa}</strong></td><td>${conductor}</td><td>${kmRecorridos} Km</td><td style="${colorConsumo}">${consumoTexto}</td><td>${rutaCompleta}</td><td style="font-size:11px;">${textoAuditoria}</td></tr>`;
         });
     }
 
-    // Buscador en vivo
     function filtrarHistorial() {
         const txtPlaca = document.getElementById('filtroPlaca').value.toLowerCase();
         const txtConductor = document.getElementById('filtroConductor').value.toLowerCase();
-        
-        const filtrados = historialGlobal.filter(viaje => {
-            const placa = viaje.vehiculos ? viaje.vehiculos.placa.toLowerCase() : '';
-            const conductor = viaje.conductores ? viaje.conductores.nombre.toLowerCase() : '';
+        const filtrados = historialGlobal.filter(v => {
+            const placa = v.vehiculos ? v.vehiculos.placa.toLowerCase() : '';
+            const conductor = v.conductores ? v.conductores.nombre.toLowerCase() : '';
             return placa.includes(txtPlaca) && conductor.includes(txtConductor);
         });
-        
         renderizarHistorial(filtrados);
     }
 
-    // Iniciar ambos procesos
+    // --- 3. LÓGICA DE INCIDENTES (NUEVA TABLA CLÍNICA) ---
+    async function cargarIncidentes() {
+        try {
+            const res = await fetch(`${API_URL}/todos-incidentes`);
+            const data = await res.json();
+            incidentesGlobal = data.data;
+            renderizarIncidentes(incidentesGlobal);
+        } catch (e) { document.getElementById('tablaIncidentes').innerHTML = '<tr><td colspan="5" style="text-align:center; color:red;">Falta backend de incidentes.</td></tr>'; }
+    }
+
+    function renderizarIncidentes(lista) {
+        const tbody = document.getElementById('tablaIncidentes');
+        tbody.innerHTML = '';
+        if(lista.length === 0) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No hay incidentes reportados.</td></tr>'; return; }
+
+        lista.forEach(inc => {
+            let fechaTexto = "N/A";
+            if(inc.fecha_incidente) {
+                const f = new Date(inc.fecha_incidente);
+                fechaTexto = f.toLocaleDateString() + ' ' + f.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            }
+            const placa = inc.vehiculos ? inc.vehiculos.placa : 'N/A';
+            const vehNombre = inc.vehiculos ? inc.vehiculos.nombre : 'S/N';
+            const colorOrigen = inc.origen === 'Mantenimiento' ? 'var(--ok-color)' : 'var(--crit-color)';
+
+            tbody.innerHTML += `<tr><td style="font-size:11px; color:#666;">${fechaTexto}</td><td><strong>${placa}</strong></td><td>${vehNombre}</td><td><span style="background:#f0f4f8; padding:4px 8px; border-radius:4px; font-size:11px; color:${colorOrigen}; font-weight:800;">${inc.origen.toUpperCase()}</span></td><td>${inc.descripcion}</td></tr>`;
+        });
+    }
+
+    function filtrarIncidentes() {
+        const txt = document.getElementById('filtroMante').value.toLowerCase();
+        const filtrados = incidentesGlobal.filter(inc => {
+            const placa = inc.vehiculos ? inc.vehiculos.placa.toLowerCase() : '';
+            const desc = inc.descripcion ? inc.descripcion.toLowerCase() : '';
+            return placa.includes(txt) || desc.includes(txt);
+        });
+        renderizarIncidentes(filtrados);
+    }
+
+    // --- 4. FUNCIÓN MÁGICA PARA EXPORTAR A EXCEL (CSV) ---
+    function exportarTablaCSV(tablaId, nombreArchivo) {
+        let csv = [];
+        let filas = document.querySelectorAll(`#${tablaId} tr`);
+        
+        for (let i = 0; i < filas.length; i++) {
+            let fila = [], cols = filas[i].querySelectorAll("td, th");
+            if(filas[i].style.display !== 'none') { // Solo exporta lo que estás viendo
+                for (let j = 0; j < cols.length; j++) {
+                    let data = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, " ").replace(/,/g, ";");
+                    fila.push(data);
+                }
+                csv.push(fila.join(","));
+            }
+        }
+        
+        let csvContent = "data:text/csv;charset=utf-8," + csv.join("\n");
+        let encodedUri = encodeURI(csvContent);
+        let link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", nombreArchivo + ".csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    // Iniciar procesos
     inicializarDashboard();
     cargarHistorial();
-    
-    // Auto-refresco del estatus vivo cada 30 segundos
-    setInterval(inicializarDashboard, 30000);
+    cargarIncidentes();
+    setInterval(inicializarDashboard, 30000); // Auto-refresco del estatus vivo
 </script>
 
 </body>
