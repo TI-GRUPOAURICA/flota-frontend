@@ -46,9 +46,7 @@
 
 <div class="top-bar">
     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
-    <div>
-        <h2>Centro de Control y Auditoría</h2>
-    </div>
+    <div><h2>Centro de Control y Auditoría</h2></div>
 </div>
 
 <div class="kpi-container">
@@ -82,7 +80,7 @@
             <div style="display: flex; gap: 10px;">
                 <input type="text" id="filtroPlaca" class="filter-input" placeholder="🔍 Filtrar Placa..." onkeyup="filtrarHistorial()">
                 <input type="text" id="filtroConductor" class="filter-input" placeholder="🔍 Filtrar Conductor..." onkeyup="filtrarHistorial()">
-                <button class="btn-export" onclick="exportarTablaCSV('tablaDocRutas', 'Reporte_Rutas_Terminadas')">⬇️ Descargar Excel</button>
+                <button class="btn-export" onclick="exportarRutasCSV()">⬇️ Descargar Sábana de Datos</button>
             </div>
         </div>
         <div style="overflow-x: auto;">
@@ -108,7 +106,7 @@
             <h4 style="margin: 0; border: none; padding: 0; color: var(--crit-color);">🛠️ Historial de Taller e Incidentes Mecánicos</h4>
             <div style="display: flex; gap: 10px;">
                 <input type="text" id="filtroMante" class="filter-input" placeholder="🔍 Buscar por placa o detalle..." onkeyup="filtrarIncidentes()">
-                <button class="btn-export" onclick="exportarTablaCSV('tablaDocIncidentes', 'Reporte_Historial_Mecanico')">⬇️ Descargar Excel</button>
+                <button class="btn-export" onclick="exportarTablaVisualCSV('tablaDocIncidentes', 'Reporte_Historial_Mecanico')">⬇️ Descargar Reporte</button>
             </div>
         </div>
         <div style="overflow-x: auto;">
@@ -133,6 +131,7 @@
     const API_URL = "https://flota-backend-xecu.onrender.com";
     let chartInstance = null;
     let historialGlobal = []; 
+    let historialFiltrado = []; // Usado para exportar al Excel solo lo que se filtró
     let incidentesGlobal = [];
 
     // --- 1. LÓGICA DEL DASHBOARD EN TIEMPO REAL ---
@@ -168,16 +167,17 @@
                 data: { labels: ['Disponible', 'En Ruta', 'Taller'], datasets: [{ data: [disponible, enRuta, taller], backgroundColor: ['#27ae60', '#3498db', '#e74c3c'], borderWidth: 2 }] },
                 options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { font: { family: 'Montserrat', weight: 600 } } } } }
             });
-        } catch (e) { console.error("Error operativo"); }
+        } catch (e) {}
     }
 
-    // --- 2. LÓGICA DEL HISTORIAL DE RUTAS ---
+    // --- 2. LÓGICA DEL HISTORIAL DE RUTAS (CON TOOLTIPS RESTAURADOS) ---
     async function cargarHistorial() {
         try {
             const res = await fetch(`${API_URL}/historial-rutas`);
             const data = await res.json();
             historialGlobal = data.data;
-            renderizarHistorial(historialGlobal);
+            historialFiltrado = data.data; // Al inicio el filtro es todo
+            renderizarHistorial(historialFiltrado);
         } catch (e) { document.getElementById('tablaHistorial').innerHTML = '<tr><td colspan="7" style="text-align:center; color:red;">Falta backend de historial.</td></tr>'; }
     }
 
@@ -200,12 +200,18 @@
             if(origenReal === 'Otros' && viaje.origen_detalle) { origenReal = `🏠 ${viaje.origen_detalle}`; }
             const rutaCompleta = `<span style="font-size:11px; color:#7f8c8d;">${origenReal}</span><br>➔ <strong>${destino}</strong>`;
 
-            const kmSalida = viaje.km_salida || 0; const kmRetorno = viaje.km_retorno || 0;
+            // MATEMÁTICA Y TOOLTIPS RESTAURADOS
+            const kmSalida = viaje.km_salida || 0; 
+            const kmRetorno = viaje.km_retorno || 0;
             const kmRecorridos = (kmRetorno && kmSalida) ? (kmRetorno - kmSalida) : 0;
+            const tooltipKm = `Salió: ${kmSalida.toLocaleString()} Km | Llegó: ${kmRetorno.toLocaleString()} Km`;
 
-            const combSalida = viaje.combustible_salida; const combRetorno = viaje.combustible_retorno;
-            let consumoTexto = "N/A"; let colorConsumo = "";
+            const combSalida = viaje.combustible_salida; 
+            const combRetorno = viaje.combustible_retorno;
+            let consumoTexto = "N/A"; let colorConsumo = ""; let tooltipComb = "Sin datos";
+            
             if (combSalida !== null && combRetorno !== null) {
+                tooltipComb = `Salió con: ${combSalida}% | Llegó con: ${combRetorno}%`;
                 let diferencia = combSalida - combRetorno;
                 if (diferencia < 0) { consumoTexto = `⛽ Recargó en ruta`; colorConsumo = "color: var(--route-color); font-weight: 700;"; } 
                 else { consumoTexto = `↓ ${diferencia}%`; colorConsumo = diferencia > 30 ? 'color: var(--crit-color); font-weight: 900;' : ''; }
@@ -216,29 +222,79 @@
             if(viaje.detalle_gastos) incidencias.push(`Gastos: ${viaje.detalle_gastos}`);
             const textoAuditoria = incidencias.length > 0 ? incidencias.join(' | ') : 'Sin novedades';
 
-            tbody.innerHTML += `<tr><td style="font-size:11px; color:#666;">${fechaTexto}</td><td><strong style="color:var(--aurica-blue);">${placa}</strong></td><td>${conductor}</td><td>${kmRecorridos} Km</td><td style="${colorConsumo}">${consumoTexto}</td><td>${rutaCompleta}</td><td style="font-size:11px;">${textoAuditoria}</td></tr>`;
+            tbody.innerHTML += `
+                <tr>
+                    <td style="font-size:11px; color:#666;">${fechaTexto}</td>
+                    <td><strong style="color:var(--aurica-blue);">${placa}</strong></td>
+                    <td>${conductor}</td>
+                    <td title="${tooltipKm}" style="cursor: help; border-bottom: 1px dashed #ccc;">${kmRecorridos} Km</td>
+                    <td title="${tooltipComb}" style="cursor: help; border-bottom: 1px dashed #ccc; ${colorConsumo}">${consumoTexto}</td>
+                    <td>${rutaCompleta}</td>
+                    <td style="font-size:11px;">${textoAuditoria}</td>
+                </tr>
+            `;
         });
     }
 
     function filtrarHistorial() {
         const txtPlaca = document.getElementById('filtroPlaca').value.toLowerCase();
         const txtConductor = document.getElementById('filtroConductor').value.toLowerCase();
-        const filtrados = historialGlobal.filter(v => {
+        historialFiltrado = historialGlobal.filter(v => {
             const placa = v.vehiculos ? v.vehiculos.placa.toLowerCase() : '';
             const conductor = v.conductores ? v.conductores.nombre.toLowerCase() : '';
             return placa.includes(txtPlaca) && conductor.includes(txtConductor);
         });
-        renderizarHistorial(filtrados);
+        renderizarHistorial(historialFiltrado);
     }
 
-    // --- 3. LÓGICA DE INCIDENTES (NUEVA TABLA CLÍNICA) ---
+    // --- 3. EXPORTACIÓN A EXCEL AVANZADA (DATOS CRUDOS) ---
+    function exportarRutasCSV() {
+        if(historialFiltrado.length === 0) { alert("No hay datos para exportar."); return; }
+
+        // Cabeceras detalladas para auditoría pura
+        let csv = "Fecha Retorno,Placa Vehículo,Conductor,Origen,Destino,KM Salida,KM Retorno,Distancia Recorrida (Km),Combustible Salida (%),Combustible Retorno (%),Consumo (%),Observaciones y Gastos\n";
+        
+        historialFiltrado.forEach(v => {
+            const fecha = v.fecha_retorno ? new Date(v.fecha_retorno).toLocaleString() : "N/A";
+            const placa = v.vehiculos ? v.vehiculos.placa : "S/P";
+            const conductor = v.conductores ? v.conductores.nombre : "Desc";
+            const origen = v.origen === 'Otros' ? (v.origen_detalle || 'Otros') : (v.origen || '');
+            const destino = (v.destino || '').replace(/,/g, ';'); // Evita que la coma rompa el Excel
+            
+            const kmS = v.km_salida || 0;
+            const kmR = v.km_retorno || 0;
+            const dist = kmR - kmS;
+            
+            const combS = v.combustible_salida !== null ? v.combustible_salida : 0;
+            const combR = v.combustible_retorno !== null ? v.combustible_retorno : 0;
+            const consumo = combS - combR;
+            
+            let obs = "";
+            if(v.observaciones_retorno) obs += v.observaciones_retorno.replace(/,/g, ';') + " | ";
+            if(v.detalle_gastos) obs += v.detalle_gastos.replace(/,/g, ';');
+
+            // Construir la fila con comillas dobles en campos de texto por seguridad
+            csv += `"${fecha}","${placa}","${conductor}","${origen}","${destino}",${kmS},${kmR},${dist},${combS},${combR},${consumo},"${obs}"\n`;
+        });
+
+        // Forzar codificación correcta en Excel (UTF-8 con BOM)
+        let csvData = new Blob(["\uFEFF"+csv], { type: 'text/csv;charset=utf-8;' });
+        let link = document.createElement("a");
+        link.href = window.URL.createObjectURL(csvData);
+        link.download = "Auditoria_Rutas_Crudo.csv";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    // --- 4. LÓGICA DE INCIDENTES MECÁNICOS ---
     async function cargarIncidentes() {
         try {
             const res = await fetch(`${API_URL}/todos-incidentes`);
             const data = await res.json();
             incidentesGlobal = data.data;
             renderizarIncidentes(incidentesGlobal);
-        } catch (e) { document.getElementById('tablaIncidentes').innerHTML = '<tr><td colspan="5" style="text-align:center; color:red;">Falta backend de incidentes.</td></tr>'; }
+        } catch (e) {}
     }
 
     function renderizarIncidentes(lista) {
@@ -270,37 +326,32 @@
         renderizarIncidentes(filtrados);
     }
 
-    // --- 4. FUNCIÓN MÁGICA PARA EXPORTAR A EXCEL (CSV) ---
-    function exportarTablaCSV(tablaId, nombreArchivo) {
+    function exportarTablaVisualCSV(tablaId, nombreArchivo) {
         let csv = [];
         let filas = document.querySelectorAll(`#${tablaId} tr`);
-        
         for (let i = 0; i < filas.length; i++) {
             let fila = [], cols = filas[i].querySelectorAll("td, th");
-            if(filas[i].style.display !== 'none') { // Solo exporta lo que estás viendo
+            if(filas[i].style.display !== 'none') {
                 for (let j = 0; j < cols.length; j++) {
                     let data = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, " ").replace(/,/g, ";");
-                    fila.push(data);
+                    fila.push(`"${data}"`);
                 }
                 csv.push(fila.join(","));
             }
         }
-        
-        let csvContent = "data:text/csv;charset=utf-8," + csv.join("\n");
-        let encodedUri = encodeURI(csvContent);
+        let csvData = new Blob(["\uFEFF"+csv.join("\n")], { type: 'text/csv;charset=utf-8;' });
         let link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", nombreArchivo + ".csv");
+        link.href = window.URL.createObjectURL(csvData);
+        link.download = nombreArchivo + ".csv";
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
     }
 
-    // Iniciar procesos
     inicializarDashboard();
     cargarHistorial();
     cargarIncidentes();
-    setInterval(inicializarDashboard, 30000); // Auto-refresco del estatus vivo
+    setInterval(inicializarDashboard, 30000); 
 </script>
 
 </body>
