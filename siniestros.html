@@ -156,7 +156,7 @@
             const select = document.getElementById('s_conductor');
             select.innerHTML = '<option value="">Seleccione conductor...</option>';
             data.data.forEach(c => {
-                select.innerHTML += `<option value="${c.id}">${c.nombre}</option>`;
+                select.innerHTML += `<option value="${c.nombre}">${c.nombre}</option>`;
             });
         } catch(e) {}
     }
@@ -191,7 +191,7 @@
         siniestrosData.forEach(s => {
             const placa = s.vehiculos ? s.vehiculos.placa : 'S/P';
             const f = new Date(s.fecha_ocurrencia).toLocaleDateString();
-            const conductorNombre = s.conductores ? s.conductores.nombre : 'Conductor Desconocido';
+            const conductorNombre = s.responsable || 'Conductor Desconocido';
             
             let colorBorde = 'var(--crit-color)';
             let colId = 'col_reportado';
@@ -238,7 +238,7 @@
         const payload = {
             vehiculo_id: document.getElementById('s_vehiculo').value,
             fecha_ocurrencia: document.getElementById('s_fecha').value,
-            conductor_id: document.getElementById('s_conductor').value,
+            responsable: document.getElementById('s_conductor').value,
             descripcion: document.getElementById('s_desc').value,
             estado: "Reportado",
             url_documentos: urlDocs
