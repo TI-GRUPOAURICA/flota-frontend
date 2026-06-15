@@ -77,15 +77,15 @@
             </div>
             <div class="form-group">
                 <label>Conductor / Responsable</label>
-                <input type="text" id="s_responsable" required placeholder="Nombre de quien conducía">
+                <select id="s_conductor" required><option value="">Cargando conductores...</option></select>
             </div>
             <div class="form-group">
                 <label>Descripción del Siniestro</label>
                 <textarea id="s_desc" rows="4" required placeholder="Lugar, detalles del choque, daños visibles..."></textarea>
             </div>
             <div class="form-group">
-                <label>URL / Enlace a Documentos (Fotos, Parte Policial)</label>
-                <input type="url" id="s_docs" placeholder="Link de Drive o SharePoint">
+                <label>Adjuntar Documentos (Fotos, Parte Policial en PDF o Imagen)</label>
+                <input type="file" id="s_docs" accept=".pdf,image/*">
             </div>
             <button type="submit" class="btn-submit" id="btnRegistrar">Registrar Siniestro</button>
         </form>
@@ -129,8 +129,9 @@
                 </select>
             </div>
             <div class="form-group">
-                <label>Actualizar Enlace de Documentos</label>
-                <input type="url" id="u_docs" placeholder="Link de Drive o SharePoint">
+                <label>Adjuntar Nuevo Documento (PDF/Imagen)</label>
+                <input type="file" id="u_docs" accept=".pdf,image/*">
+                <div id="u_docs_link" style="margin-top:5px; font-size:12px;"></div>
             </div>
             <button type="submit" class="btn-submit" style="background: var(--aurica-blue);" id="btnUpdate">Guardar Cambios</button>
             <button type="button" class="btn-cancelar" onclick="cerrarModal()">Cancelar</button>
@@ -144,7 +145,20 @@
 
     async function inicializar() {
         await cargarVehiculos();
+        await cargarConductores();
         await cargarSiniestros();
+    }
+
+    async function cargarConductores() {
+        try {
+            const res = await fetch(`${API_URL}/conductores-autorizados`);
+            const data = await res.json();
+            const select = document.getElementById('s_conductor');
+            select.innerHTML = '<option value="">Seleccione conductor...</option>';
+            data.data.forEach(c => {
+                select.innerHTML += `<option value="${c.id}">${c.nombre}</option>`;
+            });
+        } catch(e) {}
     }
 
     async function cargarVehiculos() {
@@ -177,6 +191,7 @@
         siniestrosData.forEach(s => {
             const placa = s.vehiculos ? s.vehiculos.placa : 'S/P';
             const f = new Date(s.fecha_ocurrencia).toLocaleDateString();
+            const conductorNombre = s.conductores ? s.conductores.nombre : 'Conductor Desconocido';
             
             let colorBorde = 'var(--crit-color)';
             let colId = 'col_reportado';
@@ -189,7 +204,7 @@
 
             const cardHTML = `
                 <div class="s-card" style="border-left-color: ${colorBorde};" onclick="abrirModal('${s.id}')">
-                    <div class="s-fecha">📅 ${f} | 👤 ${s.responsable}</div>
+                    <div class="s-fecha">📅 ${f} | 👤 ${conductorNombre}</div>
                     <div class="s-vehiculo">${placa}</div>
                     <div class="s-desc">${s.descripcion}</div>
                     ${docsHTML}
@@ -202,13 +217,31 @@
     document.getElementById('formSiniestro').addEventListener('submit', async (e) => {
         e.preventDefault();
         const btn = document.getElementById('btnRegistrar'); btn.innerText = "Registrando...";
+        
+        let urlDocs = "";
+        const fileInput = document.getElementById('s_docs');
+        if (fileInput.files.length > 0) {
+            btn.innerText = "Subiendo archivo...";
+            const formData = new FormData();
+            formData.append("file", fileInput.files[0]);
+            try {
+                const uploadRes = await fetch(`${API_URL}/subir-documento-siniestro`, { method: 'POST', body: formData });
+                if(uploadRes.ok) {
+                    const uploadData = await uploadRes.json();
+                    urlDocs = uploadData.url;
+                } else {
+                    alert("Error subiendo el archivo. Asegúrate que existe el bucket 'documentos' en Supabase.");
+                }
+            } catch(e) { console.error("Error subiendo archivo"); }
+        }
+
         const payload = {
             vehiculo_id: document.getElementById('s_vehiculo').value,
             fecha_ocurrencia: document.getElementById('s_fecha').value,
-            responsable: document.getElementById('s_responsable').value,
+            conductor_id: document.getElementById('s_conductor').value,
             descripcion: document.getElementById('s_desc').value,
             estado: "Reportado",
-            url_documentos: document.getElementById('s_docs').value
+            url_documentos: urlDocs
         };
 
         try {
@@ -226,7 +259,15 @@
         if(!s) return;
         document.getElementById('u_id').value = s.id;
         document.getElementById('u_estado').value = s.estado;
-        document.getElementById('u_docs').value = s.url_documentos || "";
+        
+        document.getElementById('u_docs').dataset.currentUrl = s.url_documentos || "";
+        document.getElementById('u_docs').value = ""; // Clear file input
+        if (s.url_documentos) {
+            document.getElementById('u_docs_link').innerHTML = `Actual: <a href="${s.url_documentos}" target="_blank" style="color:var(--aurica-blue)">Ver documento adjunto</a>`;
+        } else {
+            document.getElementById('u_docs_link').innerHTML = "Sin documentos adjuntos.";
+        }
+        
         const placa = s.vehiculos ? s.vehiculos.placa : '';
         document.getElementById('m_detalle').innerText = `Vehículo: ${placa} | Ocurrido: ${new Date(s.fecha_ocurrencia).toLocaleDateString()}`;
         document.getElementById('modalSiniestro').style.display = 'flex';
@@ -238,10 +279,27 @@
         e.preventDefault();
         const btn = document.getElementById('btnUpdate'); btn.innerText = "Guardando...";
         
+        let urlDocs = document.getElementById('u_docs').dataset.currentUrl || "";
+        const fileInput = document.getElementById('u_docs');
+        if (fileInput.files.length > 0) {
+            btn.innerText = "Subiendo archivo...";
+            const formData = new FormData();
+            formData.append("file", fileInput.files[0]);
+            try {
+                const uploadRes = await fetch(`${API_URL}/subir-documento-siniestro`, { method: 'POST', body: formData });
+                if(uploadRes.ok) {
+                    const uploadData = await uploadRes.json();
+                    urlDocs = uploadData.url;
+                } else {
+                    alert("Error subiendo archivo nuevo. Guardando solo el estado.");
+                }
+            } catch(e) { console.error("Error subiendo archivo"); }
+        }
+        
         const payload = {
             id: document.getElementById('u_id').value,
             estado: document.getElementById('u_estado').value,
-            url_documentos: document.getElementById('u_docs').value
+            url_documentos: urlDocs
         };
         
         if (payload.estado === 'Cerrado') { payload.fecha_cierre = new Date().toISOString(); }

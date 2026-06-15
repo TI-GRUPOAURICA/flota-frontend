@@ -160,6 +160,14 @@
                 <input type="checkbox" id="r_gastos" onchange="toggleGastos()" style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--warn-color);">
                 <label style="margin:0; font-size: 13px; color: #d35400;">¿Trajo boletas de gastos? (Peaje, cochera)</label>
             </div>
+            
+            <div class="form-group" style="margin-bottom: 15px; background: #f9ebea; padding: 15px; border-radius: 8px; border: 1px solid #e74c3c;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <input type="checkbox" id="r_siniestro" style="width: 20px; height: 20px; cursor: pointer; accent-color: #c0392b;">
+                    <label style="margin:0; font-size: 13px; color: #c0392b; font-weight: 900;">🚨 OCURRIÓ UN SINIESTRO / ACCIDENTE GRAVE EN RUTA</label>
+                </div>
+            </div>
+            
             <div class="form-row">
                 <div class="form-group" id="caja_gastos" style="display: none;">
                     <label style="color: var(--warn-color);">Detalle del Gasto</label>
@@ -341,6 +349,7 @@
             detalle_gastos: document.getElementById('r_detalle_gastos').value,
             observaciones_retorno: document.getElementById('r_obs').value,
             estado_llegada: document.getElementById('r_taller').checked ? "Mantenimiento Correctivo" : "Disponible",
+            reporta_siniestro: document.getElementById('r_siniestro').checked,
             motivo_taller: document.getElementById('r_motivo_taller').value,
             chk_brisas: document.getElementById('chk_r_brisas').dataset.estado === 'true',
             chk_parachoques: document.getElementById('chk_r_parachoques').dataset.estado === 'true',

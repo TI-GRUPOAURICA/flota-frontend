@@ -112,7 +112,14 @@
         <form id="formMantenimiento">
             <input type="hidden" id="edit_id">
             
-            <div id="alerta_taller" style="display:none; background:#fdeaea; color:#e74c3c; padding:12px; border-radius:8px; margin-bottom:15px; font-weight:800; font-size:12px; border-left:4px solid #e74c3c;">
+            <!-- Alerta Siniestro -->
+            <div id="alerta_siniestro" style="display:none; background: #fdedec; padding: 15px; border-radius: 8px; border-left: 4px solid #e74c3c; margin-bottom: 20px;">
+                <strong style="color: #c0392b;">🚨 VEHÍCULO SINIESTRADO</strong>
+                <p style="margin: 5px 0 0 0; font-size: 13px;">La gestión técnica y legal de este accidente se maneja en el <b>Módulo de Siniestros</b>. El estado está bloqueado aquí.</p>
+            </div>
+
+            <!-- Alerta Mantenimiento -->
+            <div id="alerta_taller" style="display:none; background: #fdf2e9; padding: 15px; border-radius: 8px; border-left: 4px solid #e67e22; margin-bottom: 20px;">
                 🚨 ATENCIÓN: Este vehículo fue bloqueado y requiere liberación.
             </div>
 
@@ -368,8 +375,19 @@
         // Reset de cajas visuales
         document.getElementById('caja_historial').style.display = 'none';
         
-        if (["Mantenimiento Correctivo", "Mantenimiento Preventivo", "Siniestro"].includes(estadoOriginal)) { document.getElementById('alerta_taller').style.display = 'block'; } 
-        else { document.getElementById('alerta_taller').style.display = 'none'; }
+        if (estadoOriginal === "Siniestro") {
+            document.getElementById('alerta_siniestro').style.display = 'block';
+            document.getElementById('alerta_taller').style.display = 'none';
+            document.getElementById('edit_estado').disabled = true;
+        } else {
+            document.getElementById('alerta_siniestro').style.display = 'none';
+            document.getElementById('edit_estado').disabled = false;
+            if (["Mantenimiento Correctivo", "Mantenimiento Preventivo"].includes(estadoOriginal)) { 
+                document.getElementById('alerta_taller').style.display = 'block'; 
+            } else { 
+                document.getElementById('alerta_taller').style.display = 'none'; 
+            }
+        }
 
         document.getElementById('edit_motivo_ingreso').value = v.notas_mantenimiento || "";
         document.getElementById('edit_reparacion').value = ""; // Limpiar reparación
@@ -398,8 +416,8 @@
         const txtMotivo = document.getElementById('edit_motivo_ingreso');
         const txtReparacion = document.getElementById('edit_reparacion');
 
-        const isOriginalTaller = ["Mantenimiento Correctivo", "Mantenimiento Preventivo", "Siniestro"].includes(estadoOriginal);
-        const isActualTaller = ["Mantenimiento Correctivo", "Mantenimiento Preventivo", "Siniestro"].includes(estadoActual);
+        const isOriginalTaller = ["Mantenimiento Correctivo", "Mantenimiento Preventivo"].includes(estadoOriginal);
+        const isActualTaller = ["Mantenimiento Correctivo", "Mantenimiento Preventivo"].includes(estadoActual);
 
         if (isOriginalTaller && !isActualTaller) {
             // LIBERANDO EL VEHÍCULO
