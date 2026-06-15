@@ -119,9 +119,13 @@
             <div class="form-group">
                 <label>Estado Operativo</label>
                 <select id="edit_estado" onchange="toggleNotasTaller()">
-                    <option value="144280000">✅ Disponible (Listo para salir)</option>
-                    <option value="144280002">🛠️ Inoperativo (En taller)</option>
-                    <option value="144280001" disabled>🚚 En Ruta (Solo Garita puede cambiarlo)</option>
+                    <option value="Disponible">✅ Disponible (Listo para salir)</option>
+                    <option value="En uso" disabled>🚚 En Ruta (Solo Garita puede cambiarlo)</option>
+                    <option value="Mantenimiento Preventivo">🔧 Mantenimiento Preventivo</option>
+                    <option value="Mantenimiento Correctivo">🛠️ Mantenimiento Correctivo</option>
+                    <option value="Siniestro">💥 Siniestro</option>
+                    <option value="Baja Temporal">⏸️ Baja Temporal</option>
+                    <option value="Dado de Baja">❌ Dado de Baja</option>
                 </select>
             </div>
 
@@ -249,8 +253,9 @@
                 else if (v.cr596_lunaspolarizadas === 144280001) estLunas = { clase: 'gray', texto: 'No' }; 
                 
                 let badgeHTML = ""; 
-                if(v.cr596_estadooperativo === 144280001) badgeHTML = `<div class="op-badge" style="background:#f39c12">En Ruta</div>`;
-                if(v.cr596_estadooperativo === 144280002) badgeHTML = `<div class="op-badge" style="background:#e74c3c">Inoperativo</div>`;
+                if(v.cr596_estadooperativo === "En uso") badgeHTML = `<div class="op-badge" style="background:#f39c12">En Ruta</div>`;
+                if(["Mantenimiento Correctivo", "Mantenimiento Preventivo", "Siniestro"].includes(v.cr596_estadooperativo)) badgeHTML = `<div class="op-badge" style="background:#e74c3c">${v.cr596_estadooperativo}</div>`;
+                if(["Baja Temporal", "Dado de Baja"].includes(v.cr596_estadooperativo)) badgeHTML = `<div class="op-badge" style="background:#34495e">${v.cr596_estadooperativo}</div>`;
 
                 const fuelNivel = v.cr596_nivelcombustible || 0; 
                 const fuelTipo = v.cr596_tipocombustible || "Gasolina"; 
@@ -363,7 +368,7 @@
         // Reset de cajas visuales
         document.getElementById('caja_historial').style.display = 'none';
         
-        if (estadoOriginal == 144280002) { document.getElementById('alerta_taller').style.display = 'block'; } 
+        if (["Mantenimiento Correctivo", "Mantenimiento Preventivo", "Siniestro"].includes(estadoOriginal)) { document.getElementById('alerta_taller').style.display = 'block'; } 
         else { document.getElementById('alerta_taller').style.display = 'none'; }
 
         document.getElementById('edit_motivo_ingreso').value = v.notas_mantenimiento || "";
@@ -393,19 +398,29 @@
         const txtMotivo = document.getElementById('edit_motivo_ingreso');
         const txtReparacion = document.getElementById('edit_reparacion');
 
-        if (estadoOriginal == 144280002 && estadoActual == 144280000) {
+        const isOriginalTaller = ["Mantenimiento Correctivo", "Mantenimiento Preventivo", "Siniestro"].includes(estadoOriginal);
+        const isActualTaller = ["Mantenimiento Correctivo", "Mantenimiento Preventivo", "Siniestro"].includes(estadoActual);
+
+        if (isOriginalTaller && !isActualTaller) {
             // LIBERANDO EL VEHÍCULO
             cajaMotivo.style.display = 'block';
             txtMotivo.readOnly = true; 
             
             cajaReparacion.style.display = 'block';
             txtReparacion.required = true; 
-        } else if (estadoActual == 144280002) {
+        } else if (isActualTaller && !isOriginalTaller) {
             // MANDANDO A TALLER MANUALMENTE
             cajaMotivo.style.display = 'block';
             txtMotivo.readOnly = false; 
             txtMotivo.required = true;
             
+            cajaReparacion.style.display = 'none';
+            txtReparacion.required = false;
+        } else if (isActualTaller && isOriginalTaller) {
+            // SIGUE EN TALLER
+            cajaMotivo.style.display = 'block';
+            txtMotivo.readOnly = false; 
+            txtMotivo.required = false; 
             cajaReparacion.style.display = 'none';
             txtReparacion.required = false;
         } else {
@@ -425,7 +440,7 @@
 
         const payload = {
             vehiculo_id: document.getElementById('edit_id').value,
-            estado_operativo: parseInt(document.getElementById('edit_estado').value),
+            estado_operativo: document.getElementById('edit_estado').value,
             notas_mantenimiento: document.getElementById('edit_motivo_ingreso').value || null,
             detalle_reparacion: document.getElementById('edit_reparacion').value || null,
             modelo: document.getElementById('edit_modelo').value || null,

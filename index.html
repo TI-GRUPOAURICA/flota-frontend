@@ -100,6 +100,11 @@
                 <div class="module-icon" style="color: var(--accent-admin);"><svg width="55" height="55" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div>
                 <h3>Administración</h3><p>Control de planilla de choferes y vigencia de licencias.</p>
             </a>
+            
+            <a href="siniestros.html" class="module-card" id="card-siniestros" style="border-bottom-color: #e74c3c;">
+                <div class="module-icon" style="color: #e74c3c;"><svg width="55" height="55" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></div>
+                <h3>Gestión de Siniestros</h3><p>Registro y seguimiento de accidentes de flota y seguros.</p>
+            </a>
         </div>
         <div class="footer-cert"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"></path></svg> Entorno seguro conectado a Microsoft Entra ID</div>
     </div>
@@ -140,8 +145,8 @@
             document.getElementById('portal-view').style.display = 'block';
             document.getElementById('userEmailDisplay').innerText = email;
 
-            // 1. LA NUEVA LISTA OFICIAL DE 6 MÓDULOS (Sin Combustible)
-            const cards = ['card-mante', 'card-garita', 'card-conta', 'card-teso', 'card-dash', 'card-admin'];
+            // 1. LA NUEVA LISTA OFICIAL DE MÓDULOS
+            const cards = ['card-mante', 'card-garita', 'card-conta', 'card-teso', 'card-dash', 'card-admin', 'card-siniestros'];
             
             // 2. Ocultar todo con validación de seguridad
             cards.forEach(c => {
@@ -163,6 +168,7 @@
                 if(document.getElementById('card-mante')) document.getElementById('card-mante').style.display = 'flex';
                 // Ahora Mantenimiento también ve Tesorería para poder registrar el combustible
                 if(document.getElementById('card-teso')) document.getElementById('card-teso').style.display = 'flex';
+                if(document.getElementById('card-siniestros')) document.getElementById('card-siniestros').style.display = 'flex';
             }
             if (email === 'seguridadchala@mineralabsac.com' || email.includes('garita')) {
                 if(document.getElementById('card-garita')) document.getElementById('card-garita').style.display = 'flex';

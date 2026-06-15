@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Siniestros - Grupo Aurica</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root { --aurica-blue: #305da0; --aurica-bg: #eceded; --text-dark: #2c3e50; --crit-color: #e74c3c; --warn-color: #f39c12; --ok-color: #27ae60; }
+        body { font-family: 'Montserrat', sans-serif; background: var(--aurica-bg); margin: 0; padding: 20px; color: var(--text-dark); }
+        
+        .top-bar { display: flex; justify-content: space-between; align-items: center; background: var(--aurica-blue); color: white; padding: 20px 30px; border-radius: 12px; margin-bottom: 25px; max-width: 1400px; margin: 0 auto 25px auto; box-shadow: 0 4px 10px rgba(48, 93, 160, 0.2);}
+        .header-title { display: flex; align-items: center; gap: 15px;}
+        .header-title h2 { margin: 0; font-size: 26px; font-weight: 900; text-transform: uppercase;}
+        
+        .btn-primary { background: white; color: var(--aurica-blue); border: none; padding: 10px 20px; border-radius: 8px; font-weight: 800; cursor: pointer; transition: 0.2s;}
+        .btn-primary:hover { background: #f0f0f0; }
+
+        .container { max-width: 1400px; margin: auto; display: grid; grid-template-columns: 1fr 2fr; gap: 25px; align-items: start;}
+        
+        .card { background: white; padding: 25px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); }
+        .card h3 { margin-top: 0; color: var(--crit-color); border-bottom: 2px solid #f0f0f0; padding-bottom: 15px; font-weight: 900;}
+        
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 800; color: var(--text-dark); margin-bottom: 5px;}
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-family: 'Montserrat', sans-serif;}
+        
+        .btn-submit { background: var(--crit-color); color: white; border: none; padding: 15px; width: 100%; font-size: 15px; font-weight: 800; border-radius: 8px; cursor: pointer; margin-top: 10px;}
+        
+        /* KANBAN BOARD */
+        .kanban-board { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
+        .kanban-col { background: #f8f9fa; border-radius: 12px; padding: 15px; min-height: 400px;}
+        .col-header { font-size: 14px; font-weight: 900; text-align: center; padding-bottom: 10px; margin-bottom: 15px; border-bottom: 3px solid #ccc; text-transform: uppercase;}
+        
+        .k-reportado { border-color: var(--crit-color); color: var(--crit-color); }
+        .k-tramite { border-color: var(--warn-color); color: var(--warn-color); }
+        .k-taller { border-color: var(--aurica-blue); color: var(--aurica-blue); }
+        .k-cerrado { border-color: var(--ok-color); color: var(--ok-color); }
+
+        .s-card { background: white; border: 1px solid #eee; padding: 15px; border-radius: 8px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); border-left: 4px solid var(--crit-color); cursor: pointer; transition: 0.2s;}
+        .s-card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.05);}
+        .s-fecha { font-size: 11px; color: #888; font-weight: 600;}
+        .s-vehiculo { font-size: 15px; font-weight: 900; color: var(--aurica-blue); margin: 5px 0;}
+        .s-desc { font-size: 12px; color: #555; line-height: 1.4;}
+
+        /* MODAL */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center;}
+        .modal { background: white; width: 100%; max-width: 500px; border-radius: 16px; padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.2);}
+        .btn-cancelar { background: #bdc3c7; color: white; border: none; padding: 10px; width: 100%; font-size: 14px; font-weight: 600; border-radius: 8px; cursor: pointer; margin-top: 10px;}
+    </style>
+</head>
+<body>
+
+<div class="top-bar">
+    <div class="header-title">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <div>
+            <h2>Gestión de Siniestros</h2>
+            <p>Registro y seguimiento de accidentes y seguros</p>
+        </div>
+    </div>
+    <button class="btn-primary" onclick="window.location.href='index.html'">Volver al Portal</button>
+</div>
+
+<div class="container">
+    <!-- Formulario de Registro -->
+    <div class="card">
+        <h3>💥 Reportar Nuevo Siniestro</h3>
+        <form id="formSiniestro">
+            <div class="form-group">
+                <label>Vehículo Afectado</label>
+                <select id="s_vehiculo" required><option value="">Cargando vehículos...</option></select>
+            </div>
+            <div class="form-group">
+                <label>Fecha de Ocurrencia</label>
+                <input type="datetime-local" id="s_fecha" required>
+            </div>
+            <div class="form-group">
+                <label>Conductor / Responsable</label>
+                <input type="text" id="s_responsable" required placeholder="Nombre de quien conducía">
+            </div>
+            <div class="form-group">
+                <label>Descripción del Siniestro</label>
+                <textarea id="s_desc" rows="4" required placeholder="Lugar, detalles del choque, daños visibles..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>URL / Enlace a Documentos (Fotos, Parte Policial)</label>
+                <input type="url" id="s_docs" placeholder="Link de Drive o SharePoint">
+            </div>
+            <button type="submit" class="btn-submit" id="btnRegistrar">Registrar Siniestro</button>
+        </form>
+    </div>
+
+    <!-- Tablero Kanban -->
+    <div class="kanban-board">
+        <div class="kanban-col">
+            <div class="col-header k-reportado">🚨 Reportado</div>
+            <div id="col_reportado"></div>
+        </div>
+        <div class="kanban-col">
+            <div class="col-header k-tramite">📄 Trámite Seguro</div>
+            <div id="col_tramite"></div>
+        </div>
+        <div class="kanban-col">
+            <div class="col-header k-taller">🛠️ Taller</div>
+            <div id="col_taller"></div>
+        </div>
+        <div class="kanban-col">
+            <div class="col-header k-cerrado">✅ Cerrado</div>
+            <div id="col_cerrado"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para actualizar estado -->
+<div class="modal-overlay" id="modalSiniestro">
+    <div class="modal">
+        <h3 style="color: var(--aurica-blue); margin-top: 0;">Actualizar Estado de Siniestro</h3>
+        <p id="m_detalle" style="font-size: 13px; color: #666;"></p>
+        <form id="formUpdate">
+            <input type="hidden" id="u_id">
+            <div class="form-group">
+                <label>Nuevo Estado</label>
+                <select id="u_estado">
+                    <option value="Reportado">Reportado</option>
+                    <option value="En Trámite Seguro">En Trámite Seguro</option>
+                    <option value="Taller Siniestro">Taller Siniestro</option>
+                    <option value="Cerrado">Cerrado (Resuelto)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Actualizar Enlace de Documentos</label>
+                <input type="url" id="u_docs" placeholder="Link de Drive o SharePoint">
+            </div>
+            <button type="submit" class="btn-submit" style="background: var(--aurica-blue);" id="btnUpdate">Guardar Cambios</button>
+            <button type="button" class="btn-cancelar" onclick="cerrarModal()">Cancelar</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    const API_URL = "https://flota-backend-xecu.onrender.com";
+    let siniestrosData = [];
+
+    async function inicializar() {
+        await cargarVehiculos();
+        await cargarSiniestros();
+    }
+
+    async function cargarVehiculos() {
+        try {
+            const res = await fetch(`${API_URL}/vehiculos-activos`);
+            const data = await res.json();
+            const select = document.getElementById('s_vehiculo');
+            select.innerHTML = '<option value="">Seleccione vehículo...</option>';
+            data.data.forEach(v => {
+                select.innerHTML += `<option value="${v.cr596_flota_vehiculoid}">[${v.cr596_placa}] - ${v.cr596_nombre}</option>`;
+            });
+        } catch(e) {}
+    }
+
+    async function cargarSiniestros() {
+        try {
+            const res = await fetch(`${API_URL}/siniestros`);
+            const data = await res.json();
+            siniestrosData = data.data;
+            renderizarKanban();
+        } catch(e) {}
+    }
+
+    function renderizarKanban() {
+        document.getElementById('col_reportado').innerHTML = '';
+        document.getElementById('col_tramite').innerHTML = '';
+        document.getElementById('col_taller').innerHTML = '';
+        document.getElementById('col_cerrado').innerHTML = '';
+
+        siniestrosData.forEach(s => {
+            const placa = s.vehiculos ? s.vehiculos.placa : 'S/P';
+            const f = new Date(s.fecha_ocurrencia).toLocaleDateString();
+            
+            let colorBorde = 'var(--crit-color)';
+            let colId = 'col_reportado';
+            
+            if(s.estado === 'En Trámite Seguro') { colorBorde = 'var(--warn-color)'; colId = 'col_tramite'; }
+            if(s.estado === 'Taller Siniestro') { colorBorde = 'var(--aurica-blue)'; colId = 'col_taller'; }
+            if(s.estado === 'Cerrado') { colorBorde = 'var(--ok-color)'; colId = 'col_cerrado'; }
+
+            const docsHTML = s.url_documentos ? `<a href="${s.url_documentos}" target="_blank" style="font-size:11px; color:#3498db; text-decoration:none; display:block; margin-top:5px;">🔗 Ver Documentos</a>` : '';
+
+            const cardHTML = `
+                <div class="s-card" style="border-left-color: ${colorBorde};" onclick="abrirModal('${s.id}')">
+                    <div class="s-fecha">📅 ${f} | 👤 ${s.responsable}</div>
+                    <div class="s-vehiculo">${placa}</div>
+                    <div class="s-desc">${s.descripcion}</div>
+                    ${docsHTML}
+                </div>
+            `;
+            document.getElementById(colId).innerHTML += cardHTML;
+        });
+    }
+
+    document.getElementById('formSiniestro').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('btnRegistrar'); btn.innerText = "Registrando...";
+        const payload = {
+            vehiculo_id: document.getElementById('s_vehiculo').value,
+            fecha_ocurrencia: document.getElementById('s_fecha').value,
+            responsable: document.getElementById('s_responsable').value,
+            descripcion: document.getElementById('s_desc').value,
+            estado: "Reportado",
+            url_documentos: document.getElementById('s_docs').value
+        };
+
+        try {
+            const res = await fetch(`${API_URL}/registrar-siniestro`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            if (res.ok) { 
+                alert("✅ Siniestro registrado. El vehículo ha pasado a estado 'Siniestro'."); 
+                document.getElementById('formSiniestro').reset(); 
+                cargarSiniestros(); 
+            }
+        } catch (error) { alert("Error al conectar."); } finally { btn.innerText = "Registrar Siniestro"; }
+    });
+
+    function abrirModal(id) {
+        const s = siniestrosData.find(x => x.id === id);
+        if(!s) return;
+        document.getElementById('u_id').value = s.id;
+        document.getElementById('u_estado').value = s.estado;
+        document.getElementById('u_docs').value = s.url_documentos || "";
+        const placa = s.vehiculos ? s.vehiculos.placa : '';
+        document.getElementById('m_detalle').innerText = `Vehículo: ${placa} | Ocurrido: ${new Date(s.fecha_ocurrencia).toLocaleDateString()}`;
+        document.getElementById('modalSiniestro').style.display = 'flex';
+    }
+
+    function cerrarModal() { document.getElementById('modalSiniestro').style.display = 'none'; }
+
+    document.getElementById('formUpdate').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('btnUpdate'); btn.innerText = "Guardando...";
+        
+        const payload = {
+            id: document.getElementById('u_id').value,
+            estado: document.getElementById('u_estado').value,
+            url_documentos: document.getElementById('u_docs').value
+        };
+        
+        if (payload.estado === 'Cerrado') { payload.fecha_cierre = new Date().toISOString(); }
+
+        try {
+            const res = await fetch(`${API_URL}/actualizar-siniestro`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            if (res.ok) { cerrarModal(); cargarSiniestros(); }
+        } catch (error) { alert("Error al conectar."); } finally { btn.innerText = "Guardar Cambios"; }
+    });
+
+    inicializar();
+</script>
+
+</body>
+</html>

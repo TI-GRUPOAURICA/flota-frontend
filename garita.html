@@ -266,7 +266,7 @@
             const select = document.getElementById('s_vehiculo');
             select.innerHTML = '<option value="">Seleccione vehículo en base...</option>';
             memoriaVehiculos.forEach(v => {
-                if(v.cr596_estadooperativo == 144280000) { select.innerHTML += `<option value="${v.cr596_flota_vehiculoid}">[${v.cr596_placa}] - ${v.cr596_nombre}</option>`; }
+                if(v.cr596_estadooperativo === "Disponible") { select.innerHTML += `<option value="${v.cr596_flota_vehiculoid}">[${v.cr596_placa}] - ${v.cr596_nombre}</option>`; }
             });
         } catch(e) {}
     }
@@ -340,7 +340,7 @@
             reporta_gastos: document.getElementById('r_gastos').checked,
             detalle_gastos: document.getElementById('r_detalle_gastos').value,
             observaciones_retorno: document.getElementById('r_obs').value,
-            estado_llegada: document.getElementById('r_taller').checked ? 144280002 : 144280000,
+            estado_llegada: document.getElementById('r_taller').checked ? "Mantenimiento Correctivo" : "Disponible",
             motivo_taller: document.getElementById('r_motivo_taller').value,
             chk_brisas: document.getElementById('chk_r_brisas').dataset.estado === 'true',
             chk_parachoques: document.getElementById('chk_r_parachoques').dataset.estado === 'true',
@@ -356,7 +356,7 @@
             chk_cinturon: document.getElementById('chk_r_cinturon').dataset.estado === 'true'
         };
         
-        if (!payload.chk_brisas || !payload.chk_llantas || !payload.chk_luces || !payload.chk_bocina) { payload.estado_llegada = 144280002; }
+        if (!payload.chk_brisas || !payload.chk_llantas || !payload.chk_luces || !payload.chk_bocina) { payload.estado_llegada = "Mantenimiento Correctivo"; }
 
         try {
             const res = await fetch(`${API_URL}/registrar-retorno`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });

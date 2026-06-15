@@ -147,9 +147,10 @@
 
             lista.forEach(v => {
                 let txtEstado = ""; let claseDot = "";
-                if(v.cr596_estadooperativo == 144280000) { disponible++; txtEstado = "Disponible"; claseDot = "status-0"; }
-                else if(v.cr596_estadooperativo == 144280001) { enRuta++; txtEstado = "En Ruta"; claseDot = "status-1"; }
-                else { taller++; txtEstado = "Taller / Falla"; claseDot = "status-2"; }
+                const estado = v.cr596_estadooperativo;
+                if(estado === "Disponible") { disponible++; txtEstado = "Disponible"; claseDot = "status-0"; }
+                else if(estado === "En uso") { enRuta++; txtEstado = "En Ruta"; claseDot = "status-1"; }
+                else { taller++; txtEstado = estado || "Desconocido"; claseDot = "status-2"; }
 
                 tbody.innerHTML += `<tr><td><strong>${v.cr596_placa}</strong></td><td>${v.cr596_nombre}</td><td>${v.cr596_kilometrajeactual.toLocaleString()} Km</td><td>${v.cr596_nivelcombustible}%</td><td><span class="status-dot ${claseDot}"></span> ${txtEstado}</td></tr>`;
             });
