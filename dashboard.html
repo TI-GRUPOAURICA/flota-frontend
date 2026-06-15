@@ -156,8 +156,8 @@
             lista.forEach(v => {
                 let txtEstado = ""; let claseDot = "";
                 const estado = v.cr596_estadooperativo;
-                if(estado === "Disponible") { disponible++; txtEstado = "Disponible"; claseDot = "status-0"; }
-                else if(estado === "En uso") { enRuta++; txtEstado = "En Ruta"; claseDot = "status-1"; }
+                if(estado === "Disponible" || estado == 144280000 || estado === "144280000") { disponible++; txtEstado = "Disponible"; claseDot = "status-0"; }
+                else if(estado === "En uso" || estado == 144280002 || estado === "144280002") { enRuta++; txtEstado = "En Ruta"; claseDot = "status-1"; }
                 else if(estado === "Siniestro") { siniestros++; txtEstado = "Siniestrado"; claseDot = "status-2"; }
                 else { taller++; txtEstado = estado || "Desconocido"; claseDot = "status-2"; }
 
