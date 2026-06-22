@@ -28,8 +28,8 @@
         .btn-submit { background: var(--crit-color); color: white; border: none; padding: 15px; width: 100%; font-size: 15px; font-weight: 800; border-radius: 8px; cursor: pointer; margin-top: 10px;}
         
         /* KANBAN BOARD */
-        .kanban-board { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
-        .kanban-col { background: #f8f9fa; border-radius: 12px; padding: 15px; min-height: 400px;}
+        .kanban-board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+        .kanban-col { background: #f8f9fa; border-radius: 12px; padding: 15px; max-height: 600px; overflow-y: auto;}
         .col-header { font-size: 14px; font-weight: 900; text-align: center; padding-bottom: 10px; margin-bottom: 15px; border-bottom: 3px solid #ccc; text-transform: uppercase;}
         
         .k-reportado { border-color: var(--crit-color); color: var(--crit-color); }
@@ -42,6 +42,16 @@
         .s-fecha { font-size: 11px; color: #888; font-weight: 600;}
         .s-vehiculo { font-size: 15px; font-weight: 900; color: var(--aurica-blue); margin: 5px 0;}
         .s-desc { font-size: 12px; color: #555; line-height: 1.4;}
+
+        /* Estilos Tabla Historial */
+        .historial-section { margin-top: 40px; background: white; padding: 25px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); }
+        .historial-section h3 { margin-top: 0; color: var(--ok-color); border-bottom: 2px solid #f0f0f0; padding-bottom: 15px; font-weight: 900;}
+        .table-cerrados { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .table-cerrados th { background: #f8fbff; color: var(--aurica-blue); padding: 12px; text-align: left; font-size: 13px; text-transform: uppercase; border-bottom: 2px solid #cce0ff; }
+        .table-cerrados td { padding: 12px; border-bottom: 1px solid #eee; font-size: 13px; color: var(--text-dark); }
+        .table-cerrados tr:hover { background: #fafafa; }
+        .btn-ver-doc { background: #ecf0f1; color: var(--aurica-blue); border: 1px solid #bdc3c7; padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: 800; text-decoration: none; display: inline-block; transition: 0.2s;}
+        .btn-ver-doc:hover { background: var(--aurica-blue); color: white; }
 
         /* MODAL */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center;}
@@ -87,7 +97,7 @@
                 <textarea id="s_desc" rows="4" required placeholder="Lugar, detalles del choque, daños visibles..."></textarea>
             </div>
             <div class="form-group">
-                <label>Adjuntar Documentos (Fotos, Parte Policial en PDF o Imagen)</label>
+                <label>Adjuntar Documentos (Fotos, Parte Policial en PDF o Imagen) <span style="color:#888; font-weight:400;">- Opcional</span></label>
                 <input type="file" id="s_docs" accept=".pdf,image/*">
             </div>
             <button type="submit" class="btn-submit" id="btnRegistrar">Registrar Siniestro</button>
@@ -108,9 +118,28 @@
             <div class="col-header k-taller">🛠️ Taller</div>
             <div id="col_taller"></div>
         </div>
-        <div class="kanban-col">
-            <div class="col-header k-cerrado">✅ Cerrado</div>
-            <div id="col_cerrado"></div>
+    </div>
+</div>
+
+<div class="container" style="display: block;">
+    <!-- Historial Cerrados -->
+    <div class="historial-section">
+        <h3>✅ Historial de Siniestros Cerrados</h3>
+        <div style="overflow-x: auto;">
+            <table class="table-cerrados">
+                <thead>
+                    <tr>
+                        <th>Fecha y Hora</th>
+                        <th>Vehículo</th>
+                        <th>Conductor</th>
+                        <th>Descripción</th>
+                        <th>Documentos</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla_cerrados">
+                    <tr><td colspan="5" style="text-align: center; color: #888;">Cargando historial...</td></tr>
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
@@ -132,7 +161,7 @@
                 </select>
             </div>
             <div class="form-group">
-                <label>Adjuntar Nuevo Documento (PDF/Imagen)</label>
+                <label>Adjuntar Nuevo Documento (PDF/Imagen) <span style="color:#888; font-weight:400;">- Opcional</span></label>
                 <input type="file" id="u_docs" accept=".pdf,image/*">
                 <div id="u_docs_link" style="margin-top:5px; font-size:12px;"></div>
             </div>
@@ -221,32 +250,52 @@
         document.getElementById('col_reportado').innerHTML = '';
         document.getElementById('col_tramite').innerHTML = '';
         document.getElementById('col_taller').innerHTML = '';
-        document.getElementById('col_cerrado').innerHTML = '';
+        document.getElementById('tabla_cerrados').innerHTML = '';
+
+        let cerradosCount = 0;
 
         siniestrosData.forEach(s => {
             const placa = s.vehiculos ? s.vehiculos.placa : 'S/P';
             const f = new Date(s.fecha_ocurrencia).toLocaleDateString();
             const conductorNombre = s.responsable || 'Conductor Desconocido';
-            
-            let colorBorde = 'var(--crit-color)';
-            let colId = 'col_reportado';
-            
-            if(s.estado === 'En Trámite Seguro') { colorBorde = 'var(--warn-color)'; colId = 'col_tramite'; }
-            if(s.estado === 'Taller Siniestro') { colorBorde = 'var(--aurica-blue)'; colId = 'col_taller'; }
-            if(s.estado === 'Cerrado') { colorBorde = 'var(--ok-color)'; colId = 'col_cerrado'; }
-
             const docsHTML = s.url_documentos ? `<a href="${s.url_documentos}" target="_blank" style="font-size:11px; color:#3498db; text-decoration:none; display:block; margin-top:5px;">🔗 Ver Documentos</a>` : '';
+            
+            if(s.estado === 'Cerrado') {
+                cerradosCount++;
+                const fh = new Date(s.fecha_ocurrencia).toLocaleString();
+                const btnDoc = s.url_documentos ? `<a href="${s.url_documentos}" target="_blank" class="btn-ver-doc">📄 Ver Documento</a>` : '<span style="color:#aaa; font-size:11px;">Sin adjunto</span>';
+                
+                document.getElementById('tabla_cerrados').innerHTML += `
+                    <tr>
+                        <td style="font-weight:600; color:#555;">${fh}</td>
+                        <td style="font-weight:800; color:var(--aurica-blue);">${placa}</td>
+                        <td>${conductorNombre}</td>
+                        <td style="max-width:300px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${s.descripcion}">${s.descripcion}</td>
+                        <td>${btnDoc}</td>
+                    </tr>
+                `;
+            } else {
+                let colorBorde = 'var(--crit-color)';
+                let colId = 'col_reportado';
+                
+                if(s.estado === 'En Trámite Seguro') { colorBorde = 'var(--warn-color)'; colId = 'col_tramite'; }
+                if(s.estado === 'Taller Siniestro') { colorBorde = 'var(--aurica-blue)'; colId = 'col_taller'; }
 
-            const cardHTML = `
-                <div class="s-card" style="border-left-color: ${colorBorde};" onclick="abrirModal('${s.id}')">
-                    <div class="s-fecha">📅 ${f} | 👤 ${conductorNombre}</div>
-                    <div class="s-vehiculo">${placa}</div>
-                    <div class="s-desc">${s.descripcion}</div>
-                    ${docsHTML}
-                </div>
-            `;
-            document.getElementById(colId).innerHTML += cardHTML;
+                const cardHTML = `
+                    <div class="s-card" style="border-left-color: ${colorBorde};" onclick="abrirModal('${s.id}')">
+                        <div class="s-fecha">📅 ${f} | 👤 ${conductorNombre}</div>
+                        <div class="s-vehiculo">${placa}</div>
+                        <div class="s-desc">${s.descripcion}</div>
+                        ${docsHTML}
+                    </div>
+                `;
+                document.getElementById(colId).innerHTML += cardHTML;
+            }
         });
+
+        if(cerradosCount === 0) {
+            document.getElementById('tabla_cerrados').innerHTML = '<tr><td colspan="5" style="text-align: center; color: #888;">No hay siniestros cerrados.</td></tr>';
+        }
     }
 
     function abrirModalExportar() {
@@ -323,8 +372,15 @@
                     urlDocs = uploadData.url;
                 } else {
                     alert("Error subiendo el archivo. Asegúrate que existe el bucket 'documentos' en Supabase.");
+                    btn.innerText = "Registrar Siniestro";
+                    return; // IMPORTANTE: Se detiene la ejecución si falla el archivo
                 }
-            } catch(e) { console.error("Error subiendo archivo"); }
+            } catch(e) { 
+                console.error("Error subiendo archivo"); 
+                alert("Error de conexión al intentar subir el archivo.");
+                btn.innerText = "Registrar Siniestro";
+                return;
+            }
         }
 
         const payload = {
@@ -383,9 +439,16 @@
                     const uploadData = await uploadRes.json();
                     urlDocs = uploadData.url;
                 } else {
-                    alert("Error subiendo archivo nuevo. Guardando solo el estado.");
+                    alert("Error subiendo archivo nuevo. La actualización ha sido cancelada.");
+                    btn.innerText = "Guardar Cambios";
+                    return;
                 }
-            } catch(e) { console.error("Error subiendo archivo"); }
+            } catch(e) { 
+                console.error("Error subiendo archivo"); 
+                alert("Error de conexión al intentar subir el archivo.");
+                btn.innerText = "Guardar Cambios";
+                return;
+            }
         }
         
         const payload = {
