@@ -205,6 +205,9 @@
 </div>
 
 <script>
+    // 🔒 GUARD: Verificar sesión activa
+    (function(){var s=JSON.parse(sessionStorage.getItem('flotapro_session')||'null');if(!s||(Date.now()-s.timestamp>28800000)){sessionStorage.removeItem('flotapro_session');window.location.href='index.html';}})();
+
     const API_URL = "https://flota-backend-xecu.onrender.com";
     let flotaData = [];
     let estadoOriginal = "";
@@ -318,7 +321,7 @@
                     </div>
                 `;
             });
-        } catch(e) {}
+        } catch(e) { console.error(e); panel.innerHTML = '<h3 style="text-align:center;width:100%;color:#e74c3c;">\u274c Error al conectar con el servidor. Verifique su conexi\u00f3n.</h3>'; }
     }
 
     function formatInputDate(isoString) { return isoString ? isoString.split('T')[0] : ""; }

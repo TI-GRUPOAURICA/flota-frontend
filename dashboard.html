@@ -16,7 +16,7 @@
         .top-bar-left { display: flex; align-items: center; gap: 15px; }
         .top-bar h2 { margin: 0; font-size: 24px; font-weight: 900; text-transform: uppercase;}
         
-        .kpi-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; max-width: 1200px; margin: 0 auto 25px auto; }
+        .kpi-container { display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; max-width: 1200px; margin: 0 auto 25px auto; }
         .kpi-card { background: white; padding: 20px 25px; border-radius: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border-left: 6px solid var(--aurica-blue); }
         .kpi-card p { margin: 0; font-size: 11px; text-transform: uppercase; font-weight: 800; color: #888; }
         .kpi-card h3 { margin: 5px 0 0 0; font-size: 28px; font-weight: 900; color: var(--text-dark); }
@@ -71,7 +71,8 @@
     <div class="kpi-card" style="border-left-color: #7f8c8d;"><p>Total Flota</p><h3 id="kpi-total">0</h3></div>
     <div class="kpi-card" style="border-left-color: var(--ok-color);"><p>Disponibles en Base</p><h3 id="kpi-disp">0</h3></div>
     <div class="kpi-card" style="border-left-color: var(--route-color);"><p>Unidades en Ruta</p><h3 id="kpi-ruta">0</h3></div>
-    <div class="kpi-card" style="border-left-color: var(--crit-color);"><p>Inoperativos / Taller</p><h3 id="kpi-taller">0</h3></div>
+    <div class="kpi-card" style="border-left-color: var(--warn-color);"><p>En Taller</p><h3 id="kpi_taller">0</h3></div>
+    <div class="kpi-card" style="border-left-color: var(--crit-color);"><p>Siniestrados</p><h3 id="kpi_siniestros">0</h3></div>
 </div>
 
 <div class="dashboard-grid">
@@ -101,14 +102,7 @@
                 <button class="btn-export" onclick="abrirModalExportar('rutas')">⬇️ Descargar Sábana de Datos</button>
             </div>
         </div>
-        <div class="kpi-card kpi-yellow">
-            <h3 id="kpi_taller">0</h3>
-            <p>En Mantenimiento</p>
-        </div>
-        <div class="kpi-card kpi-red">
-            <h3 id="kpi_siniestros">0</h3>
-            <p>Siniestrados</p>
-        </div>
+
         <div style="overflow-x: auto;">
             <table id="tablaDocRutas">
                 <thead>
@@ -185,6 +179,9 @@
 </div>
 
 <script>
+    // 🔒 GUARD: Verificar sesión activa
+    (function(){var s=JSON.parse(sessionStorage.getItem('flotapro_session')||'null');if(!s||(Date.now()-s.timestamp>28800000)){sessionStorage.removeItem('flotapro_session');window.location.href='index.html';}})();
+
     const API_URL = "https://flota-backend-xecu.onrender.com";
     let chartInstance = null;
     let chartDisponibilidad = null;
@@ -231,7 +228,7 @@
                 options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { font: { family: 'Montserrat', weight: 600 } } } } }
             });
             chartDisponibilidad = chartInstance;
-        } catch (e) {}
+        } catch (e) { document.getElementById('tablaEstatus').innerHTML = '<tr><td colspan="5" style="text-align:center;color:#e74c3c;">\u274c Error al conectar con el servidor. Reintentando en 30s...</td></tr>'; }
     }
 
     async function cargarHistorial() {
@@ -425,7 +422,7 @@
             const data = await res.json();
             incidentesGlobal = data.data;
             renderizarIncidentes(incidentesGlobal);
-        } catch (e) {}
+        } catch (e) { document.getElementById('tablaIncidentes').innerHTML = '<tr><td colspan="5" style="text-align:center;color:#e74c3c;">Error al cargar incidentes.</td></tr>'; }
     }
 
     function renderizarIncidentes(lista) {

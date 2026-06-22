@@ -133,6 +133,7 @@
         }
 
         function cerrarSesionMicrosoft() {
+            sessionStorage.removeItem('flotapro_session');
             const logoutRequest = { account: msalInstance.getAllAccounts()[0] };
             msalInstance.logoutPopup(logoutRequest).then(() => {
                 document.getElementById('login-view').style.display = 'flex';
@@ -144,6 +145,9 @@
             document.getElementById('login-view').style.display = 'none';
             document.getElementById('portal-view').style.display = 'block';
             document.getElementById('userEmailDisplay').innerText = email;
+
+            // 🔒 SESIÓN: Guardar en sessionStorage para validar en módulos
+            sessionStorage.setItem('flotapro_session', JSON.stringify({ email: email, timestamp: Date.now() }));
 
             // 1. LA NUEVA LISTA OFICIAL DE MÓDULOS
             const cards = ['card-mante', 'card-garita', 'card-conta', 'card-teso', 'card-dash', 'card-admin', 'card-siniestros'];

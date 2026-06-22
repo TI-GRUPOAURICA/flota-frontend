@@ -80,12 +80,8 @@
     </div>
 </div>
 
-<div class="tabs">
-    <button class="tablinks active" onclick="openTab(event, 'Dashboard')">Panel General</button>
-    <button class="tablinks" onclick="openTab(event, 'Registro')">Registrar Gasto</button>
-</div>
 
-<div id="panel-registro" class="panel active">
+<div id="panel-registro" style="max-width: 1400px; margin: auto;">
     <div class="grid-layout">
         <div class="card">
             <h3>🚨 Reembolsos de Garita</h3>
@@ -238,6 +234,9 @@
 </div>
 
 <script>
+    // 🔒 GUARD: Verificar sesión activa
+    (function(){var s=JSON.parse(sessionStorage.getItem('flotapro_session')||'null');if(!s||(Date.now()-s.timestamp>28800000)){sessionStorage.removeItem('flotapro_session');window.location.href='index.html';}})();
+
     const API_URL = "https://flota-backend-xecu.onrender.com"; 
     let memoriaFlota = [];
 
@@ -245,12 +244,7 @@
     const EMPRESAS = { 144280000: "Aurica SAC", 144280001: "Metalab SAC", 144280002: "Mineralab SAC", 144280003: "Minera Gianlu SAC", 144280004: "Tercero" };
     const METODO_PAGO = { 144280000: "Efectivo", 144280001: "Transferencia", 144280002: "Tarjeta Corp." };
 
-    function openTab(evt, tabName) {
-        document.querySelectorAll('.panel').forEach(p => p.style.display = 'none');
-        document.querySelectorAll('.tablinks').forEach(t => t.classList.remove('active'));
-        document.getElementById('panel-' + tabName.toLowerCase()).style.display = 'block';
-        evt.currentTarget.classList.add('active');
-    }
+
 
     function toggleComprobante() {
         const txt = document.getElementById('comprobante');
@@ -288,7 +282,7 @@
             const select = document.getElementById('select_vehiculo');
             select.innerHTML = '<option value="">Seleccione un vehículo de la flota...</option>';
             memoriaFlota.forEach(v => { select.innerHTML += `<option value="${v.cr596_flota_vehiculoid}">${v.cr596_placa} - ${v.cr596_nombre}</option>`; });
-        } catch(e) {}
+        } catch(e) { console.error(e); document.getElementById('select_vehiculo').innerHTML = '<option>Error al cargar veh\u00edculos</option>'; }
         cargarAlertas();
     }
 

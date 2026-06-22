@@ -172,6 +172,9 @@
 </div>
 
 <script>
+    // 🔒 GUARD: Verificar sesión activa
+    (function(){var s=JSON.parse(sessionStorage.getItem('flotapro_session')||'null');if(!s||(Date.now()-s.timestamp>28800000)){sessionStorage.removeItem('flotapro_session');window.location.href='index.html';}})();
+
     const API_URL = "https://flota-backend-xecu.onrender.com";
     let siniestrosData = [];
 
@@ -190,7 +193,7 @@
             data.data.forEach(c => {
                 select.innerHTML += `<option value="${c.nombre}">${c.nombre}</option>`;
             });
-        } catch(e) {}
+        } catch(e) { console.error(e); document.getElementById('s_conductor').innerHTML = '<option>Error al cargar conductores</option>'; }
     }
 
     async function cargarVehiculos() {
@@ -202,7 +205,7 @@
             data.data.forEach(v => {
                 select.innerHTML += `<option value="${v.cr596_flota_vehiculoid}">[${v.cr596_placa}] - ${v.cr596_nombre}</option>`;
             });
-        } catch(e) {}
+        } catch(e) { console.error(e); document.getElementById('s_vehiculo').innerHTML = '<option>Error al cargar veh\u00edculos</option>'; }
     }
 
     async function cargarSiniestros() {
@@ -211,7 +214,7 @@
             const data = await res.json();
             siniestrosData = data.data;
             renderizarKanban();
-        } catch(e) {}
+        } catch(e) { console.error(e); document.getElementById('col_reportado').innerHTML = '<div style="text-align:center;padding:20px;color:#e74c3c;">Error al cargar siniestros</div>'; }
     }
 
     function renderizarKanban() {

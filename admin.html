@@ -103,6 +103,9 @@
 </div>
 
 <script>
+    // 🔒 GUARD: Verificar sesión activa
+    (function(){var s=JSON.parse(sessionStorage.getItem('flotapro_session')||'null');if(!s||(Date.now()-s.timestamp>28800000)){sessionStorage.removeItem('flotapro_session');window.location.href='index.html';}})();
+
     const API_URL = "https://flota-backend-xecu.onrender.com";
 
     async function cargarConductores() {
