@@ -7,9 +7,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800;900&display=swap" rel="stylesheet">
     <style>
         :root { --aurica-blue: #305da0; --aurica-bg: #eceded; --text-dark: #2c3e50; --ok-color: #27ae60; --crit-color: #e74c3c; --warn-color: #f39c12; }
+        .btn-primary { background: white; color: var(--aurica-blue); border: none; padding: 10px 20px; border-radius: 8px; font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 13px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 8px; white-space: nowrap;}
+        .btn-primary:hover { background: #f0f0f0; transform: translateX(-2px); }
         body { font-family: 'Montserrat', sans-serif; background: var(--aurica-bg); margin: 0; padding: 20px; color: var(--text-dark); }
         
-        .top-bar { display: flex; align-items: center; gap: 15px; background: var(--aurica-blue); color: white; padding: 20px 30px; border-radius: 12px; margin-bottom: 25px; max-width: 1200px; margin: 0 auto 25px auto; box-shadow: 0 4px 10px rgba(48, 93, 160, 0.2);}
+        .top-bar { display: flex; align-items: center; justify-content: space-between; gap: 15px; background: var(--aurica-blue); color: white; padding: 20px 30px; border-radius: 12px; margin-bottom: 25px; max-width: 1200px; margin: 0 auto 25px auto; box-shadow: 0 4px 10px rgba(48, 93, 160, 0.2);}
+        .top-bar-left { display: flex; align-items: center; gap: 15px; }
         .top-bar h2 { margin: 0; font-size: 24px; font-weight: 900; text-transform: uppercase;}
         
         .grid-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; max-width: 1200px; margin: auto; }
@@ -40,11 +43,17 @@
 <body>
 
 <div class="top-bar">
-    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-    <div>
-        <h2>Control de Garita</h2>
-        <p>Registro de Salidas y Retornos de Flota</p>
+    <div class="top-bar-left">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+        <div>
+            <h2>Control de Garita</h2>
+            <p style="margin: 3px 0 0 0; font-size: 13px; opacity: 0.9;">Registro de Salidas y Retornos de Flota</p>
+        </div>
     </div>
+    <button class="btn-primary" onclick="window.location.href='index.html'">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"></path><polyline points="12 19 5 12 12 5"></polyline></svg>
+        Panel Principal
+    </button>
 </div>
 
 <div class="grid-layout">
