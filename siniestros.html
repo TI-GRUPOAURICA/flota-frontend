@@ -59,7 +59,10 @@
             <p>Registro y seguimiento de accidentes y seguros</p>
         </div>
     </div>
-    <button class="btn-primary" onclick="window.location.href='index.html'">Volver al Portal</button>
+    <div style="display: flex; gap: 10px;">
+        <button class="btn-primary" style="background: #27ae60; color: white;" onclick="exportarSiniestrosCSV()">⬇️ Descargar Reporte</button>
+        <button class="btn-primary" onclick="window.location.href='index.html'">Volver al Portal</button>
+    </div>
 </div>
 
 <div class="container">
@@ -212,6 +215,33 @@
             `;
             document.getElementById(colId).innerHTML += cardHTML;
         });
+    }
+
+    function exportarSiniestrosCSV() {
+        if(siniestrosData.length === 0) { alert("No hay datos para exportar."); return; }
+
+        let csv = "Fecha Ocurrencia,Vehiculo,Placa,Conductor/Responsable,Estado,Descripcion,URL Documentos\n";
+        
+        siniestrosData.forEach(s => {
+            const fecha = s.fecha_ocurrencia ? new Date(s.fecha_ocurrencia).toLocaleString() : "N/A";
+            const vehiculoName = s.vehiculos ? s.vehiculos.nombre : "Desconocido";
+            const placa = s.vehiculos ? s.vehiculos.placa : "S/P";
+            const responsable = s.responsable || "No registrado";
+            const estado = s.estado || "Desconocido";
+            const desc = s.descripcion ? s.descripcion.replace(/(\r\n|\n|\r)/gm, " ").replace(/,/g, ";") : "";
+            const docs = s.url_documentos || "Sin adjunto";
+
+            csv += `"${fecha}","${vehiculoName}","${placa}","${responsable}","${estado}","${desc}","${docs}"\n`;
+        });
+
+        // Forzar codificación correcta en Excel (UTF-8 con BOM)
+        let csvData = new Blob(["\uFEFF"+csv], { type: 'text/csv;charset=utf-8;' });
+        let link = document.createElement("a");
+        link.href = window.URL.createObjectURL(csvData);
+        link.download = "Reporte_Siniestros.csv";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     }
 
     document.getElementById('formSiniestro').addEventListener('submit', async (e) => {
