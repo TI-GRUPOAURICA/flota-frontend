@@ -55,6 +55,10 @@
 
         .caja-combustible { display: none; background: #ebf5fb; padding: 20px; border-radius: 10px; border: 1px solid #a9cce3; margin-bottom: 20px;}
         .caja-combustible h4 { margin: 0 0 15px 0; color: var(--comb-color); font-size: 14px; font-weight: 900; display: flex; align-items: center; gap: 8px;}
+        /* MODAL */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center;}
+        .modal { background: white; width: 100%; max-width: 500px; border-radius: 16px; padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.2);}
+        .btn-cancelar { background: #bdc3c7; color: white; border: none; padding: 10px; width: 100%; font-size: 14px; font-weight: 600; border-radius: 8px; cursor: pointer; margin-top: 10px;}
     </style>
 </head>
 <body>
@@ -67,15 +71,18 @@
             <p>Centro de Costos, Análisis y Gastos Vehiculares</p>
         </div>
     </div>
-    <button class="btn-primary" onclick="window.location.href='index.html'">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"></path><polyline points="12 19 5 12 12 5"></polyline></svg>
-        Panel Principal
-    </button>
+    <div style="display: flex; gap: 10px;">
+        <button class="btn-primary" style="background: #27ae60; color: white;" onclick="abrirModalExportar()">⬇️ Descargar Reporte</button>
+        <button class="btn-primary" onclick="window.location.href='index.html'">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"></path><polyline points="12 19 5 12 12 5"></polyline></svg>
+            Panel Principal
+        </button>
+    </div>
 </div>
 
 <div class="tabs">
-    <div class="tab active" onclick="cambiarTab('registro')">💳 Registro de Gastos</div>
-    <div class="tab" onclick="cambiarTab('reportes')">📊 Reportes y Exportación</div>
+    <button class="tablinks active" onclick="openTab(event, 'Dashboard')">Panel General</button>
+    <button class="tablinks" onclick="openTab(event, 'Registro')">Registrar Gasto</button>
 </div>
 
 <div id="panel-registro" class="panel active">
@@ -201,26 +208,32 @@
     </div>
 </div>
 
-<div id="panel-reportes" class="panel">
-    <div class="card" style="max-width: 600px; margin: auto;">
-        <h3 style="display: flex; align-items: center; justify-content: center; gap: 10px;">📊 Inteligencia Financiera (Excel)</h3>
-        <p style="font-size: 13px; color: #666; text-align: center;">Descargue la sábana de datos completa. Incluye métricas de combustible, empresas facturadas y métodos de pago.</p>
+<!-- Modal Exportar -->
+<div class="modal-overlay" id="modalExportar">
+    <div class="modal" style="max-width: 400px;">
+        <h3 style="color: var(--aurica-blue); margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px;">📊 Exportar Reporte</h3>
+        <p style="font-size: 13px; color: #666; margin-bottom: 20px;">Seleccione el periodo para descargar los datos de gastos en Excel.</p>
         
-        <div class="form-row" style="margin-top: 20px;">
-            <div class="form-group">
-                <label>Fecha Inicio</label>
-                <input type="date" id="rep_inicio">
-            </div>
-            <div class="form-group">
-                <label>Fecha Fin</label>
-                <input type="date" id="rep_fin">
-            </div>
+        <div class="form-group">
+            <label>Mes</label>
+            <select id="exp_mes">
+                <option value="01">Enero</option><option value="02">Febrero</option><option value="03">Marzo</option>
+                <option value="04">Abril</option><option value="05">Mayo</option><option value="06">Junio</option>
+                <option value="07">Julio</option><option value="08">Agosto</option><option value="09">Septiembre</option>
+                <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+                <option value="ALL">Todos los meses (Histórico del Año)</option>
+            </select>
         </div>
-        
-        <button class="btn-excel" onclick="generarReporte()" id="btnExcel">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-            Descargar Auditoría Financiera
-        </button>
+        <div class="form-group">
+            <label>Año</label>
+            <select id="exp_anio">
+                <option value="2024">2024</option><option value="2025">2025</option>
+                <option value="2026">2026</option><option value="2027">2027</option>
+            </select>
+        </div>
+
+        <button type="button" class="btn-submit" style="background: #27ae60;" onclick="ejecutarExportacion()">⬇️ Descargar Excel</button>
+        <button type="button" class="btn-cancelar" onclick="cerrarModalExportar()">Cancelar</button>
     </div>
 </div>
 
@@ -228,21 +241,15 @@
     const API_URL = "https://flota-backend-xecu.onrender.com"; 
     let memoriaFlota = [];
 
-    // TRADUCTORES DE CÓDIGOS PARA EL EXCEL
-    const mapTiposGasto = { 144280000: "Combustible", 144280001: "Mant. Preventivo", 144280002: "Mant. Correctivo", 144280003: "Peaje / PEX", 144280004: "Lavado", 144280005: "Documentos", 144280006: "Multas", 144280007: "Otros" };
-    const mapEmpresas = { 144280000: "Aurica SAC", 144280001: "Metalab SAC", 144280002: "Mineralab SAC", 144280003: "Minera Gianlu SAC", 144280004: "Tercero" };
-    const mapPagos = { 144280000: "Efectivo", 144280001: "Transferencia", 144280002: "Tarjeta Corp." };
+    const TIPO_GASTO = { 144280000: "Combustible", 144280001: "Mant. Preventivo", 144280002: "Mant. Correctivo", 144280003: "Peaje / PEX", 144280004: "Lavado", 144280005: "Documentos", 144280006: "Multas", 144280007: "Otros" };
+    const EMPRESAS = { 144280000: "Aurica SAC", 144280001: "Metalab SAC", 144280002: "Mineralab SAC", 144280003: "Minera Gianlu SAC", 144280004: "Tercero" };
+    const METODO_PAGO = { 144280000: "Efectivo", 144280001: "Transferencia", 144280002: "Tarjeta Corp." };
 
-    function cambiarTab(tab) {
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-        if(tab === 'registro') {
-            document.querySelectorAll('.tab')[0].classList.add('active');
-            document.getElementById('panel-registro').classList.add('active');
-        } else {
-            document.querySelectorAll('.tab')[1].classList.add('active');
-            document.getElementById('panel-reportes').classList.add('active');
-        }
+    function openTab(evt, tabName) {
+        document.querySelectorAll('.panel').forEach(p => p.style.display = 'none');
+        document.querySelectorAll('.tablinks').forEach(t => t.classList.remove('active'));
+        document.getElementById('panel-' + tabName.toLowerCase()).style.display = 'block';
+        evt.currentTarget.classList.add('active');
     }
 
     function toggleComprobante() {
@@ -317,7 +324,6 @@
         document.getElementById('observacion').value = "REF GARITA: " + observacion;
     }
 
-    // --- GUARDADO INTELIGENTE (FUSIONA OBSERVACIÓN + COMBUSTIBLE) ---
     document.getElementById('formGasto').addEventListener('submit', async (e) => {
         e.preventDefault();
         const btn = document.getElementById('btnGuardar');
@@ -353,6 +359,7 @@
             if (resGasto.ok) { 
                 let mensajeExito = "✅ Gasto registrado correctamente en Tesorería.";
                 
+                // Si es combustible, también mandamos el request paralelo a /registrar-carga-combustible
                 if (esCombustible) {
                     const payloadComb = {
                         vehiculo_id: document.getElementById('select_vehiculo').value,
@@ -386,23 +393,47 @@
         finally { btn.innerText = "Registrar Gasto Vehicular"; }
     });
 
-    // --- REPORTE EXCEL (NUEVO: COLUMNAS COMPLETAS) ---
-    async function generarReporte() {
-        const inicio = document.getElementById('rep_inicio').value;
-        const fin = document.getElementById('rep_fin').value;
-        const btn = document.getElementById('btnExcel');
+    function abrirModalExportar() {
+        const hoy = new Date();
+        document.getElementById('exp_mes').value = String(hoy.getMonth() + 1).padStart(2, '0');
+        document.getElementById('exp_anio').value = String(hoy.getFullYear());
+        document.getElementById('modalExportar').style.display = 'flex';
+    }
 
-        if(!inicio || !fin) { alert("Seleccione el rango de fechas."); return; }
+    function cerrarModalExportar() {
+        document.getElementById('modalExportar').style.display = 'none';
+    }
 
+    async function ejecutarExportacion() {
+        const mes = document.getElementById('exp_mes').value;
+        const anio = document.getElementById('exp_anio').value;
+        
+        let inicioStr = "";
+        let finStr = "";
+
+        if (mes === "ALL") {
+            inicioStr = `${anio}-01-01`;
+            finStr = `${anio}-12-31`;
+        } else {
+            inicioStr = `${anio}-${mes}-01`;
+            const ultimoDia = new Date(anio, parseInt(mes), 0).getDate();
+            finStr = `${anio}-${mes}-${ultimoDia}`;
+        }
+
+        const btn = document.querySelector('#modalExportar .btn-submit');
         btn.innerText = "Generando...";
+
         try {
-            const res = await fetch(`${API_URL}/reporte-gastos?inicio=${inicio}&fin=${fin}`);
+            const res = await fetch(`${API_URL}/reporte-gastos?inicio=${inicioStr}&fin=${finStr}`);
             const data = await res.json();
-            
-            if(data.data.length === 0) { alert("No hay gastos en estas fechas."); btn.innerHTML = "Descargar Auditoría Financiera"; return; }
+
+            if (data.data.length === 0) {
+                alert(`No hay gastos registrados para ${mes === "ALL" ? "el año " + anio : mes + "/" + anio}.`);
+                btn.innerText = "⬇️ Descargar Excel";
+                return;
+            }
 
             let csvContent = "data:text/csv;charset=utf-8,";
-            // CABECERAS AUMENTADAS
             csvContent += "Vehiculo,Placa,Fecha,Empresa a Facturar,Tipo de Gasto,Metodo de Pago,Proveedor,Comprobante,Monto Total (S/),Observacion y Detalle\n";
 
             data.data.forEach(row => {
@@ -410,16 +441,14 @@
                 let placa = row.vehiculos ? row.vehiculos.placa : "S/P";
                 let fechaFormateada = row.fecha_gasto ? row.fecha_gasto.split('T')[0] : "";
                 
-                // Traducción de Códigos a Texto Humano
-                let txtEmpresa = mapEmpresas[row.empresa] || "Sin Especificar";
-                let txtTipoGasto = mapTiposGasto[row.tipo_gasto] || "Desconocido";
-                let txtPago = mapPagos[row.metodo_pago] || "No indicado";
+                let txtEmpresa = EMPRESAS[row.empresa] || "Sin Especificar";
+                let txtTipoGasto = TIPO_GASTO[row.tipo_gasto] || "Desconocido";
+                let txtPago = METODO_PAGO[row.metodo_pago] || "No indicado";
 
                 let obs = (row.observacion || "").replace(/,/g, ";"); 
                 let prov = (row.proveedor || "").replace(/,/g, ";");
                 let comp = (row.comprobante || "").replace(/,/g, ";");
 
-                // SE CONSTRUYE LA LÍNEA DEL EXCEL
                 let line = `"${vehiculoName}","${placa}","${fechaFormateada}","${txtEmpresa}","${txtTipoGasto}","${txtPago}","${prov}","${comp}",${row.monto},"${obs}"`;
                 csvContent += line + "\n";
             });
@@ -427,14 +456,17 @@
             const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");
             link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `Reporte_Gastos_${inicio}_al_${fin}.csv`);
+            link.setAttribute("download", `Reporte_Gastos_${mes}_${anio}.csv`);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-
+            
+            cerrarModalExportar();
         } catch(e) { 
             alert("Error al extraer reporte."); 
-        } finally { btn.innerHTML = "Descargar Auditoría Financiera"; }
+        } finally { 
+            btn.innerText = "⬇️ Descargar Excel"; 
+        }
     }
 
     inicializar();

@@ -43,6 +43,15 @@
         .btn-export:hover { background: #219653; }
 
         .container { max-width: 1200px; margin: auto; }
+
+        /* MODAL */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center;}
+        .modal { background: white; width: 100%; max-width: 500px; border-radius: 16px; padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.2);}
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 800; color: var(--text-dark); margin-bottom: 5px;}
+        .form-group select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-family: 'Montserrat', sans-serif;}
+        .btn-submit { background: var(--aurica-blue); color: white; border: none; padding: 15px; width: 100%; font-size: 15px; font-weight: 800; border-radius: 8px; cursor: pointer; margin-top: 10px;}
+        .btn-cancelar { background: #bdc3c7; color: white; border: none; padding: 10px; width: 100%; font-size: 14px; font-weight: 600; border-radius: 8px; cursor: pointer; margin-top: 10px;}
     </style>
 </head>
 <body>
@@ -89,7 +98,7 @@
             <div style="display: flex; gap: 10px;">
                 <input type="text" id="filtroPlaca" class="filter-input" placeholder="🔍 Filtrar Placa..." onkeyup="filtrarHistorial()">
                 <input type="text" id="filtroConductor" class="filter-input" placeholder="🔍 Filtrar Conductor..." onkeyup="filtrarHistorial()">
-                <button class="btn-export" onclick="exportarRutasCSV()">⬇️ Descargar Sábana de Datos</button>
+                <button class="btn-export" onclick="abrirModalExportar('rutas')">⬇️ Descargar Sábana de Datos</button>
             </div>
         </div>
         <div class="kpi-card kpi-yellow">
@@ -123,7 +132,7 @@
             <h4 style="margin: 0; border: none; padding: 0; color: var(--crit-color);">🛠️ Historial de Taller e Incidentes Mecánicos</h4>
             <div style="display: flex; gap: 10px;">
                 <input type="text" id="filtroMante" class="filter-input" placeholder="🔍 Buscar por placa o detalle..." onkeyup="filtrarIncidentes()">
-                <button class="btn-export" onclick="exportarTablaVisualCSV('tablaDocIncidentes', 'Reporte_Historial_Mecanico')">⬇️ Descargar Reporte</button>
+                <button class="btn-export" onclick="abrirModalExportar('incidentes')">⬇️ Descargar Reporte</button>
             </div>
         </div>
         <div style="overflow-x: auto;">
@@ -142,6 +151,37 @@
         </div>
     </div>
 
+</div>
+
+<!-- Modal Exportar -->
+<div class="modal-overlay" id="modalExportar">
+    <div class="modal" style="max-width: 400px;">
+        <h3 style="color: var(--aurica-blue); margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px;">📊 Exportar Reporte</h3>
+        <p style="font-size: 13px; color: #666; margin-bottom: 20px;">Seleccione el periodo para descargar los datos en Excel.</p>
+        
+        <input type="hidden" id="exp_tipo_reporte">
+
+        <div class="form-group">
+            <label>Mes</label>
+            <select id="exp_mes">
+                <option value="01">Enero</option><option value="02">Febrero</option><option value="03">Marzo</option>
+                <option value="04">Abril</option><option value="05">Mayo</option><option value="06">Junio</option>
+                <option value="07">Julio</option><option value="08">Agosto</option><option value="09">Septiembre</option>
+                <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+                <option value="ALL">Todos los meses (Histórico)</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Año</label>
+            <select id="exp_anio">
+                <option value="2024">2024</option><option value="2025">2025</option>
+                <option value="2026">2026</option><option value="2027">2027</option>
+            </select>
+        </div>
+
+        <button type="button" class="btn-submit" style="background: #27ae60;" onclick="ejecutarExportacion()">⬇️ Descargar Excel</button>
+        <button type="button" class="btn-cancelar" onclick="cerrarModalExportar()">Cancelar</button>
+    </div>
 </div>
 
 <script>
@@ -270,19 +310,53 @@
         renderizarHistorial(historialFiltrado);
     }
 
-    // --- 3. EXPORTACIÓN A EXCEL AVANZADA (DATOS CRUDOS) ---
-    function exportarRutasCSV() {
-        if(historialFiltrado.length === 0) { alert("No hay datos para exportar."); return; }
+    function abrirModalExportar(tipo) {
+        document.getElementById('exp_tipo_reporte').value = tipo;
+        const hoy = new Date();
+        document.getElementById('exp_mes').value = String(hoy.getMonth() + 1).padStart(2, '0');
+        document.getElementById('exp_anio').value = String(hoy.getFullYear());
+        document.getElementById('modalExportar').style.display = 'flex';
+    }
 
-        // Cabeceras detalladas para auditoría pura
+    function cerrarModalExportar() {
+        document.getElementById('modalExportar').style.display = 'none';
+    }
+
+    function ejecutarExportacion() {
+        const tipo = document.getElementById('exp_tipo_reporte').value;
+        const mes = document.getElementById('exp_mes').value;
+        const anio = document.getElementById('exp_anio').value;
+
+        if(tipo === 'rutas') exportarRutasCSV(mes, anio);
+        else if(tipo === 'incidentes') exportarIncidentesCSV(mes, anio);
+
+        cerrarModalExportar();
+    }
+
+    // --- 3. EXPORTACIÓN A EXCEL AVANZADA (DATOS CRUDOS) ---
+    function exportarRutasCSV(mes, anio) {
+        let filtrados = historialGlobal;
+
+        if (mes !== "ALL") {
+            filtrados = historialGlobal.filter(v => {
+                if(!v.fecha_retorno) return false;
+                const f = new Date(v.fecha_retorno);
+                const sMes = String(f.getMonth() + 1).padStart(2, '0');
+                const sAnio = String(f.getFullYear());
+                return sMes === mes && sAnio === anio;
+            });
+        }
+
+        if(filtrados.length === 0) { alert(`No hay datos de rutas para ${mes === "ALL" ? "el histórico" : mes + "/" + anio}.`); return; }
+
         let csv = "Fecha Retorno,Placa Vehículo,Conductor,Origen,Destino,KM Salida,KM Retorno,Distancia Recorrida (Km),Combustible Salida (%),Combustible Retorno (%),Consumo (%),Observaciones y Gastos\n";
         
-        historialFiltrado.forEach(v => {
+        filtrados.forEach(v => {
             const fecha = v.fecha_retorno ? new Date(v.fecha_retorno).toLocaleString() : "N/A";
             const placa = v.vehiculos ? v.vehiculos.placa : "S/P";
             const conductor = v.conductores ? v.conductores.nombre : "Desc";
             const origen = v.origen === 'Otros' ? (v.origen_detalle || 'Otros') : (v.origen || '');
-            const destino = (v.destino || '').replace(/,/g, ';'); // Evita que la coma rompa el Excel
+            const destino = (v.destino || '').replace(/,/g, ';'); 
             
             const kmS = v.km_salida || 0;
             const kmR = v.km_retorno || 0;
@@ -296,15 +370,49 @@
             if(v.observaciones_retorno) obs += v.observaciones_retorno.replace(/,/g, ';') + " | ";
             if(v.detalle_gastos) obs += v.detalle_gastos.replace(/,/g, ';');
 
-            // Construir la fila con comillas dobles en campos de texto por seguridad
             csv += `"${fecha}","${placa}","${conductor}","${origen}","${destino}",${kmS},${kmR},${dist},${combS},${combR},${consumo},"${obs}"\n`;
         });
 
-        // Forzar codificación correcta en Excel (UTF-8 con BOM)
         let csvData = new Blob(["\uFEFF"+csv], { type: 'text/csv;charset=utf-8;' });
         let link = document.createElement("a");
         link.href = window.URL.createObjectURL(csvData);
-        link.download = "Auditoria_Rutas_Crudo.csv";
+        link.download = `Auditoria_Rutas_${mes}_${anio}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    function exportarIncidentesCSV(mes, anio) {
+        let filtrados = incidentesGlobal;
+
+        if (mes !== "ALL") {
+            filtrados = incidentesGlobal.filter(inc => {
+                if(!inc.fecha_incidente) return false;
+                const f = new Date(inc.fecha_incidente);
+                const sMes = String(f.getMonth() + 1).padStart(2, '0');
+                const sAnio = String(f.getFullYear());
+                return sMes === mes && sAnio === anio;
+            });
+        }
+
+        if(filtrados.length === 0) { alert(`No hay incidentes mecánicos para ${mes === "ALL" ? "el histórico" : mes + "/" + anio}.`); return; }
+
+        let csv = "Fecha de Registro,Placa,Vehiculo,Origen del Reporte,Descripcion / Detalle Clinico\n";
+        
+        filtrados.forEach(inc => {
+            const fecha = inc.fecha_incidente ? new Date(inc.fecha_incidente).toLocaleString() : "N/A";
+            const placa = inc.vehiculos ? inc.vehiculos.placa : "S/P";
+            const vehNombre = inc.vehiculos ? inc.vehiculos.nombre : "S/N";
+            const origen = inc.origen || "N/A";
+            const desc = inc.descripcion ? inc.descripcion.replace(/(\r\n|\n|\r)/gm, " ").replace(/,/g, ";") : "";
+
+            csv += `"${fecha}","${placa}","${vehNombre}","${origen}","${desc}"\n`;
+        });
+
+        let csvData = new Blob(["\uFEFF"+csv], { type: 'text/csv;charset=utf-8;' });
+        let link = document.createElement("a");
+        link.href = window.URL.createObjectURL(csvData);
+        link.download = `Reporte_Historial_Mecanico_${mes}_${anio}.csv`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -350,25 +458,7 @@
     }
 
     function exportarTablaVisualCSV(tablaId, nombreArchivo) {
-        let csv = [];
-        let filas = document.querySelectorAll(`#${tablaId} tr`);
-        for (let i = 0; i < filas.length; i++) {
-            let fila = [], cols = filas[i].querySelectorAll("td, th");
-            if(filas[i].style.display !== 'none') {
-                for (let j = 0; j < cols.length; j++) {
-                    let data = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, " ").replace(/,/g, ";");
-                    fila.push(`"${data}"`);
-                }
-                csv.push(fila.join(","));
-            }
-        }
-        let csvData = new Blob(["\uFEFF"+csv.join("\n")], { type: 'text/csv;charset=utf-8;' });
-        let link = document.createElement("a");
-        link.href = window.URL.createObjectURL(csvData);
-        link.download = nombreArchivo + ".csv";
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        // Función obsoleta - Se reemplaza por exportarIncidentesCSV para exportación de data cruda profesional.
     }
 
     inicializarDashboard();

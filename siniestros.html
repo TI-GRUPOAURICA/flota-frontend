@@ -60,7 +60,7 @@
         </div>
     </div>
     <div style="display: flex; gap: 10px;">
-        <button class="btn-primary" style="background: #27ae60; color: white;" onclick="exportarSiniestrosCSV()">⬇️ Descargar Reporte</button>
+        <button class="btn-primary" style="background: #27ae60; color: white;" onclick="abrirModalExportar()">⬇️ Descargar Reporte</button>
         <button class="btn-primary" onclick="window.location.href='index.html'">Volver al Portal</button>
     </div>
 </div>
@@ -142,6 +142,35 @@
     </div>
 </div>
 
+<!-- Modal Exportar -->
+<div class="modal-overlay" id="modalExportar">
+    <div class="modal" style="max-width: 400px;">
+        <h3 style="color: var(--aurica-blue); margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px;">📊 Exportar Reporte</h3>
+        <p style="font-size: 13px; color: #666; margin-bottom: 20px;">Seleccione el periodo para descargar los datos consolidados en Excel.</p>
+        
+        <div class="form-group">
+            <label>Mes</label>
+            <select id="exp_mes">
+                <option value="01">Enero</option><option value="02">Febrero</option><option value="03">Marzo</option>
+                <option value="04">Abril</option><option value="05">Mayo</option><option value="06">Junio</option>
+                <option value="07">Julio</option><option value="08">Agosto</option><option value="09">Septiembre</option>
+                <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+                <option value="ALL">Todos los meses (Histórico)</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Año</label>
+            <select id="exp_anio">
+                <option value="2024">2024</option><option value="2025">2025</option>
+                <option value="2026">2026</option><option value="2027">2027</option>
+            </select>
+        </div>
+
+        <button type="button" class="btn-submit" style="background: #27ae60;" onclick="ejecutarExportacion()">⬇️ Descargar Excel</button>
+        <button type="button" class="btn-cancelar" onclick="cerrarModalExportar()">Cancelar</button>
+    </div>
+</div>
+
 <script>
     const API_URL = "https://flota-backend-xecu.onrender.com";
     let siniestrosData = [];
@@ -217,12 +246,41 @@
         });
     }
 
-    function exportarSiniestrosCSV() {
-        if(siniestrosData.length === 0) { alert("No hay datos para exportar."); return; }
+    function abrirModalExportar() {
+        const hoy = new Date();
+        document.getElementById('exp_mes').value = String(hoy.getMonth() + 1).padStart(2, '0');
+        document.getElementById('exp_anio').value = String(hoy.getFullYear());
+        document.getElementById('modalExportar').style.display = 'flex';
+    }
+
+    function cerrarModalExportar() {
+        document.getElementById('modalExportar').style.display = 'none';
+    }
+
+    function ejecutarExportacion() {
+        const mes = document.getElementById('exp_mes').value;
+        const anio = document.getElementById('exp_anio').value;
+
+        let filtrados = siniestrosData;
+
+        if (mes !== "ALL") {
+            filtrados = siniestrosData.filter(s => {
+                if(!s.fecha_ocurrencia) return false;
+                const f = new Date(s.fecha_ocurrencia);
+                const sMes = String(f.getMonth() + 1).padStart(2, '0');
+                const sAnio = String(f.getFullYear());
+                return sMes === mes && sAnio === anio;
+            });
+        }
+
+        if(filtrados.length === 0) { 
+            alert(`No hay registros para ${mes === "ALL" ? "el histórico" : mes + "/" + anio}.`); 
+            return; 
+        }
 
         let csv = "Fecha Ocurrencia,Vehiculo,Placa,Conductor/Responsable,Estado,Descripcion,URL Documentos\n";
         
-        siniestrosData.forEach(s => {
+        filtrados.forEach(s => {
             const fecha = s.fecha_ocurrencia ? new Date(s.fecha_ocurrencia).toLocaleString() : "N/A";
             const vehiculoName = s.vehiculos ? s.vehiculos.nombre : "Desconocido";
             const placa = s.vehiculos ? s.vehiculos.placa : "S/P";
@@ -234,14 +292,15 @@
             csv += `"${fecha}","${vehiculoName}","${placa}","${responsable}","${estado}","${desc}","${docs}"\n`;
         });
 
-        // Forzar codificación correcta en Excel (UTF-8 con BOM)
         let csvData = new Blob(["\uFEFF"+csv], { type: 'text/csv;charset=utf-8;' });
         let link = document.createElement("a");
         link.href = window.URL.createObjectURL(csvData);
-        link.download = "Reporte_Siniestros.csv";
+        link.download = `Reporte_Siniestros_${mes}_${anio}.csv`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+        
+        cerrarModalExportar();
     }
 
     document.getElementById('formSiniestro').addEventListener('submit', async (e) => {
