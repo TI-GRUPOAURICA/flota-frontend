@@ -258,12 +258,22 @@
             const placa = s.vehiculos ? s.vehiculos.placa : 'S/P';
             const f = new Date(s.fecha_ocurrencia).toLocaleDateString();
             const conductorNombre = s.responsable || 'Conductor Desconocido';
-            const docsHTML = s.url_documentos ? `<a href="${s.url_documentos}" target="_blank" style="font-size:11px; color:#3498db; text-decoration:none; display:block; margin-top:5px;">🔗 Ver Documentos</a>` : '';
+            let docsHTML = '';
+            if (s.url_documentos) {
+                const urls = s.url_documentos.split(',');
+                urls.forEach((url, i) => {
+                    docsHTML += `<a href="${url}" target="_blank" style="font-size:11px; color:#3498db; text-decoration:none; display:block; margin-top:5px;">🔗 Ver Doc ${i+1}</a>`;
+                });
+            }
             
             if(s.estado === 'Cerrado') {
                 cerradosCount++;
                 const fh = new Date(s.fecha_ocurrencia).toLocaleString();
-                const btnDoc = s.url_documentos ? `<a href="${s.url_documentos}" target="_blank" class="btn-ver-doc">📄 Ver Documento</a>` : '<span style="color:#aaa; font-size:11px;">Sin adjunto</span>';
+                let btnDoc = '<span style="color:#aaa; font-size:11px;">Sin adjunto</span>';
+                if (s.url_documentos) {
+                    const urls = s.url_documentos.split(',');
+                    btnDoc = urls.map((url, i) => `<a href="${url}" target="_blank" class="btn-ver-doc" style="margin-right: 4px; margin-bottom: 4px;">📄 Doc ${i+1}</a>`).join('');
+                }
                 
                 document.getElementById('tabla_cerrados').innerHTML += `
                     <tr>
@@ -339,7 +349,7 @@
             const responsable = s.responsable || "No registrado";
             const estado = s.estado || "Desconocido";
             const desc = s.descripcion ? s.descripcion.replace(/(\r\n|\n|\r)/gm, " ").replace(/,/g, ";") : "";
-            const docs = s.url_documentos || "Sin adjunto";
+            const docs = s.url_documentos ? s.url_documentos.replace(/,/g, " | ") : "Sin adjunto";
 
             csv += `"${fecha}","${vehiculoName}","${placa}","${responsable}","${estado}","${desc}","${docs}"\n`;
         });
@@ -411,7 +421,9 @@
         document.getElementById('u_docs').dataset.currentUrl = s.url_documentos || "";
         document.getElementById('u_docs').value = ""; // Clear file input
         if (s.url_documentos) {
-            document.getElementById('u_docs_link').innerHTML = `Actual: <a href="${s.url_documentos}" target="_blank" style="color:var(--aurica-blue)">Ver documento adjunto</a>`;
+            const urls = s.url_documentos.split(',');
+            const links = urls.map((url, i) => `<a href="${url}" target="_blank" style="color:var(--aurica-blue); margin-right:8px;">Doc ${i+1}</a>`).join('');
+            document.getElementById('u_docs_link').innerHTML = `Actual: ${links}`;
         } else {
             document.getElementById('u_docs_link').innerHTML = "Sin documentos adjuntos.";
         }
@@ -437,7 +449,11 @@
                 const uploadRes = await fetch(`${API_URL}/subir-documento-siniestro`, { method: 'POST', body: formData });
                 if(uploadRes.ok) {
                     const uploadData = await uploadRes.json();
-                    urlDocs = uploadData.url;
+                    if (urlDocs !== "") {
+                        urlDocs = urlDocs + "," + uploadData.url;
+                    } else {
+                        urlDocs = uploadData.url;
+                    }
                 } else {
                     alert("Error subiendo archivo nuevo. La actualización ha sido cancelada.");
                     btn.innerText = "Guardar Cambios";
