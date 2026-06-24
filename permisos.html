@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Permisos - Grupo Aurica</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root { --aurica-blue: #305da0; --aurica-bg: #eceded; --text-dark: #2c3e50; --ok-color: #27ae60; --crit-color: #e74c3c; --accent-admin: #16a085; }
+        .btn-primary { background: white; color: var(--aurica-blue); border: none; padding: 10px 20px; border-radius: 8px; font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 13px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 8px; white-space: nowrap;}
+        .btn-primary:hover { background: #f0f0f0; transform: translateX(-2px); }
+        
+        body { font-family: 'Montserrat', sans-serif; background: var(--aurica-bg); margin: 0; padding: 20px; color: var(--text-dark); }
+        
+        .top-bar { display: flex; align-items: center; justify-content: space-between; gap: 15px; background: var(--accent-admin); color: white; padding: 20px 30px; border-radius: 12px; margin-bottom: 25px; max-width: 1400px; margin: 0 auto 25px auto; box-shadow: 0 4px 10px rgba(22, 160, 133, 0.2);}
+        .top-bar-left { display: flex; align-items: center; gap: 15px; }
+        .top-bar h2 { margin: 0; font-size: 24px; font-weight: 900; text-transform: uppercase;}
+        .top-bar p { margin: 3px 0 0 0; font-size: 13px; opacity: 0.9;}
+
+        .grid-layout { display: grid; grid-template-columns: 1fr 3fr; gap: 25px; max-width: 1400px; margin: auto; }
+        
+        .card { background: white; padding: 30px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); }
+        .card h3 { margin-top: 0; color: var(--accent-admin); border-bottom: 2px solid #f0f0f0; padding-bottom: 15px; font-weight: 900; display: flex; align-items: center; gap: 10px;}
+        
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 800; color: var(--text-dark); font-size: 12px; text-transform: uppercase;}
+        input[type="email"], input[type="text"] { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-family: 'Montserrat', sans-serif; font-size: 14px;}
+        input:focus { border-color: var(--accent-admin); outline: none;}
+
+        .checkbox-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .checkbox-item { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; }
+
+        button { background: var(--accent-admin); color: white; border: none; padding: 15px; width: 100%; font-size: 15px; font-weight: 800; border-radius: 8px; cursor: pointer; transition: 0.2s;}
+        button:hover { background: #12876f; }
+
+        /* Estilos de la Tabla */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { background: #f0f9f8; color: var(--accent-admin); font-weight: 800; text-align: center; padding: 15px; font-size: 11px; text-transform: uppercase; border-bottom: 2px solid #d1efea;}
+        td { padding: 12px; border-bottom: 1px solid #eee; font-size: 13px; font-weight: 600; text-align: center;}
+        td.email-cell { text-align: left; }
+        tr:hover { background: #fafafa; }
+
+        .btn-delete { background: transparent; border: 1px solid var(--crit-color); color: var(--crit-color); padding: 6px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; transition: 0.2s; width: auto;}
+        .btn-delete:hover { background: var(--crit-color); color: white;}
+        .btn-save { background: transparent; border: 1px solid var(--ok-color); color: var(--ok-color); padding: 6px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; transition: 0.2s; width: auto;}
+        .btn-save:hover { background: var(--ok-color); color: white;}
+        
+        .action-cell { display: flex; gap: 5px; justify-content: center; }
+
+        input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="top-bar">
+    <div class="top-bar-left">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="M12 8v4"></path><path d="M12 16h.01"></path></svg>
+        <div>
+            <h2>Gestión de Accesos por Módulo</h2>
+            <p style="margin: 3px 0 0 0; font-size: 13px; opacity: 0.9;">Control de permisos corporativos mediante Entra ID</p>
+        </div>
+    </div>
+    <div style="display: flex; gap: 10px;">
+        <button class="btn-primary" onclick="window.location.href='admin.html'">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"></path><polyline points="12 19 5 12 12 5"></polyline></svg>
+            Volver a Admin
+        </button>
+        <button class="btn-primary" onclick="window.location.href='index.html'" style="background: rgba(255,255,255,0.2); color: white;">
+            Panel Principal
+        </button>
+    </div>
+</div>
+
+<div class="grid-layout">
+    
+    <div class="card">
+        <h3>➕ Nuevo Usuario</h3>
+        <form id="formPermisos">
+            <div class="form-group">
+                <label>Correo Electrónico Corporativo</label>
+                <input type="email" id="u_email" required placeholder="usuario@auricasac.com">
+            </div>
+            
+            <label style="display: block; margin: 15px 0 10px 0; font-weight: 800; font-size: 12px; color: var(--text-dark);">Seleccionar Módulos Permitidos</label>
+            <div class="checkbox-group">
+                <label class="checkbox-item"><input type="checkbox" id="chk_dash"> Dashboard</label>
+                <label class="checkbox-item"><input type="checkbox" id="chk_mante"> Gestión Flota</label>
+                <label class="checkbox-item"><input type="checkbox" id="chk_garita"> Garita</label>
+                <label class="checkbox-item"><input type="checkbox" id="chk_teso"> Tesorería</label>
+                <label class="checkbox-item"><input type="checkbox" id="chk_admin"> Administración</label>
+                <label class="checkbox-item"><input type="checkbox" id="chk_siniestros"> Siniestros</label>
+                <label class="checkbox-item"><input type="checkbox" id="chk_conta"> Contabilidad</label>
+            </div>
+            
+            <button type="submit" id="btnGuardar">Registrar Accesos</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h3>📋 Matriz de Accesos Autorizados</h3>
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="text-align: left;">Usuario / Email</th>
+                        <th>Dashboard</th>
+                        <th>Flota</th>
+                        <th>Garita</th>
+                        <th>Tesoreria</th>
+                        <th>Admin</th>
+                        <th>Siniestros</th>
+                        <th>Conta</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaPermisos">
+                    <tr><td colspan="9" style="text-align: center;">Cargando base de datos...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // 🔒 GUARD: Verificar sesión activa
+    (function(){var s=JSON.parse(sessionStorage.getItem('flotapro_session')||'null');if(!s||(Date.now()-s.timestamp>28800000)){sessionStorage.removeItem('flotapro_session');window.location.href='index.html';}})();
+
+    const API_URL = "https://flota-backend-xecu.onrender.com";
+
+    async function cargarPermisos() {
+        try {
+            const res = await fetch(`${API_URL}/permisos`);
+            const data = await res.json();
+            const tbody = document.getElementById('tablaPermisos');
+            tbody.innerHTML = '';
+
+            if(data.status === "success" && data.data.length > 0) {
+                data.data.forEach(p => {
+                    tbody.innerHTML += `
+                        <tr id="row_${p.id}">
+                            <td class="email-cell">${p.email}</td>
+                            <td><input type="checkbox" id="mod_dash_${p.id}" ${p.mod_dashboard ? 'checked' : ''}></td>
+                            <td><input type="checkbox" id="mod_mante_${p.id}" ${p.mod_mantenimiento ? 'checked' : ''}></td>
+                            <td><input type="checkbox" id="mod_garita_${p.id}" ${p.mod_garita ? 'checked' : ''}></td>
+                            <td><input type="checkbox" id="mod_teso_${p.id}" ${p.mod_tesoreria ? 'checked' : ''}></td>
+                            <td><input type="checkbox" id="mod_admin_${p.id}" ${p.mod_admin ? 'checked' : ''}></td>
+                            <td><input type="checkbox" id="mod_sinies_${p.id}" ${p.mod_siniestros ? 'checked' : ''}></td>
+                            <td><input type="checkbox" id="mod_conta_${p.id}" ${p.mod_conta ? 'checked' : ''}></td>
+                            <td class="action-cell">
+                                <button class="btn-save" onclick="actualizarPermiso('${p.id}')" title="Guardar Cambios">💾</button>
+                                <button class="btn-delete" onclick="eliminarPermiso('${p.id}', '${p.email}')" title="Revocar Acceso">❌</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } else {
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;">No hay usuarios registrados. Agregue uno.</td></tr>';
+            }
+        } catch(e) { 
+            console.error(e); 
+            document.getElementById('tablaPermisos').innerHTML = '<tr><td colspan="9" style="text-align:center; color:red;">Error de conexión. Es posible que la tabla "usuarios_permisos" no exista en Supabase.</td></tr>';
+        }
+    }
+
+    document.getElementById('formPermisos').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('btnGuardar');
+        btn.innerText = "Registrando...";
+
+        const payload = {
+            email: document.getElementById('u_email').value.toLowerCase(),
+            mod_dashboard: document.getElementById('chk_dash').checked,
+            mod_mantenimiento: document.getElementById('chk_mante').checked,
+            mod_garita: document.getElementById('chk_garita').checked,
+            mod_tesoreria: document.getElementById('chk_teso').checked,
+            mod_admin: document.getElementById('chk_admin').checked,
+            mod_siniestros: document.getElementById('chk_siniestros').checked,
+            mod_conta: document.getElementById('chk_conta').checked
+        };
+
+        try {
+            const res = await fetch(`${API_URL}/permisos`, { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify(payload) 
+            });
+            
+            if (res.ok) {
+                document.getElementById('formPermisos').reset();
+                cargarPermisos();
+                alert("Usuario y accesos registrados exitosamente.");
+            } else {
+                const error = await res.json();
+                alert("Error: " + (error.detail || "No se pudo registrar."));
+            }
+        } catch (error) { 
+            alert("Error de conexión. Compruebe que la tabla usuarios_permisos exista en Supabase."); 
+        } finally { 
+            btn.innerText = "Registrar Accesos"; 
+        }
+    });
+
+    async function actualizarPermiso(id) {
+        const payload = {
+            id: id,
+            mod_dashboard: document.getElementById(`mod_dash_${id}`).checked,
+            mod_mantenimiento: document.getElementById(`mod_mante_${id}`).checked,
+            mod_garita: document.getElementById(`mod_garita_${id}`).checked,
+            mod_tesoreria: document.getElementById(`mod_teso_${id}`).checked,
+            mod_admin: document.getElementById(`mod_admin_${id}`).checked,
+            mod_siniestros: document.getElementById(`mod_sinies_${id}`).checked,
+            mod_conta: document.getElementById(`mod_conta_${id}`).checked
+        };
+
+        try {
+            const res = await fetch(`${API_URL}/permisos`, { 
+                method: 'PATCH', 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify(payload) 
+            });
+            
+            if(res.ok) {
+                alert("Permisos actualizados correctamente.");
+            } else {
+                alert("Error al actualizar permisos.");
+            }
+        } catch(e) {
+            alert("Error de conexión.");
+        }
+    }
+
+    async function eliminarPermiso(id, email) {
+        if(confirm(`¿Estás seguro de revocar todo acceso al usuario ${email}?`)) {
+            try {
+                const res = await fetch(`${API_URL}/permisos/${id}`, { method: 'DELETE' });
+                if(res.ok) {
+                    cargarPermisos();
+                } else {
+                    alert("Error al revocar acceso.");
+                }
+            } catch(e) {
+                alert("Error de conexión.");
+            }
+        }
+    }
+
+    // Inicializar
+    cargarPermisos();
+</script>
+
+</body>
+</html>
