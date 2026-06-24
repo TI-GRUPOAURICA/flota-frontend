@@ -136,11 +136,34 @@
 
         function cerrarSesionMicrosoft() {
             sessionStorage.removeItem('flotapro_session');
+            sessionStorage.removeItem('flotapro_permisos');
             const logoutRequest = { account: msalInstance.getAllAccounts()[0] };
             msalInstance.logoutPopup(logoutRequest).then(() => {
                 document.getElementById('login-view').style.display = 'flex';
                 document.getElementById('portal-view').style.display = 'none';
             });
+        }
+
+        function renderUI(permisos, email, cards) {
+            if (permisos) {
+                if(permisos.mod_dashboard && document.getElementById('card-dash')) document.getElementById('card-dash').style.display = 'flex';
+                if(permisos.mod_mantenimiento && document.getElementById('card-mante')) document.getElementById('card-mante').style.display = 'flex';
+                if(permisos.mod_garita && document.getElementById('card-garita')) document.getElementById('card-garita').style.display = 'flex';
+                if(permisos.mod_tesoreria && document.getElementById('card-teso')) document.getElementById('card-teso').style.display = 'flex';
+                if(permisos.mod_admin && document.getElementById('card-admin')) document.getElementById('card-admin').style.display = 'flex';
+                if(permisos.mod_siniestros && document.getElementById('card-siniestros')) document.getElementById('card-siniestros').style.display = 'flex';
+                if(permisos.mod_conta && document.getElementById('card-conta')) document.getElementById('card-conta').style.display = 'flex';
+            }
+
+            // FALLBACK / VALIDACIÓN
+            const tarjetasVisibles = document.querySelectorAll('.module-card[style="display: flex;"]');
+            if(tarjetasVisibles.length === 0) { 
+                if (email === 'ti@metalabsac.com' || email === 'mpalva@metalabsac.com') {
+                    cards.forEach(c => { const el = document.getElementById(c); if (el) el.style.display = 'flex'; });
+                } else {
+                    alert("Su cuenta corporativa no tiene módulos asignados o hubo un error de red. Contacte al administrador IT."); 
+                }
+            }
         }
 
         async function mostrarPortal(email) {
@@ -160,49 +183,29 @@
                 if (elemento) elemento.style.display = 'none';
             });
 
-            // 3. OBTENER PERMISOS DESDE EL BACKEND
+            // 3. CACHÉ PARA EVITAR RETRASOS
+            const cachedPermisosStr = sessionStorage.getItem('flotapro_permisos');
+            if (cachedPermisosStr) {
+                renderUI(JSON.parse(cachedPermisosStr), email, cards);
+                return; // Salir rápido sin esperar a la BD
+            }
+
+            // 4. OBTENER PERMISOS DESDE EL BACKEND (Solo la primera vez)
             const API_URL = "https://flota-backend-xecu.onrender.com";
             try {
                 const response = await fetch(`${API_URL}/permisos/${email}`);
                 const data = await response.json();
                 
                 if (data.status === "success") {
-                    const permisos = data.data;
-                    if(permisos.mod_dashboard && document.getElementById('card-dash')) document.getElementById('card-dash').style.display = 'flex';
-                    if(permisos.mod_mantenimiento && document.getElementById('card-mante')) document.getElementById('card-mante').style.display = 'flex';
-                    if(permisos.mod_garita && document.getElementById('card-garita')) document.getElementById('card-garita').style.display = 'flex';
-                    if(permisos.mod_tesoreria && document.getElementById('card-teso')) document.getElementById('card-teso').style.display = 'flex';
-                    if(permisos.mod_admin && document.getElementById('card-admin')) document.getElementById('card-admin').style.display = 'flex';
-                    if(permisos.mod_siniestros && document.getElementById('card-siniestros')) document.getElementById('card-siniestros').style.display = 'flex';
-                    if(permisos.mod_conta && document.getElementById('card-conta')) document.getElementById('card-conta').style.display = 'flex';
-
-                    // FALLBACK: Si TI o Gerencia no se agregaron a la BD todavía
-                    if ((email === 'ti@metalabsac.com' || email === 'mpalva@metalabsac.com') && document.querySelectorAll('.module-card[style="display: flex;"]').length === 0) {
-                        cards.forEach(c => { const el = document.getElementById(c); if (el) el.style.display = 'flex'; });
-                        return;
-                    }
-
-                    // Validar si la cuenta tiene al menos un módulo asignado
-                    const tarjetasVisibles = document.querySelectorAll('.module-card[style="display: flex;"]');
-                    if(tarjetasVisibles.length === 0) { 
-                        alert("Su cuenta corporativa no tiene módulos asignados. Contacte al administrador IT."); 
-                    }
+                    // Guardar en caché
+                    sessionStorage.setItem('flotapro_permisos', JSON.stringify(data.data));
+                    renderUI(data.data, email, cards);
                 } else {
-                    // Si el endpoint responde "not_found" o similar, fallback o bloqueo
-                    if (email === 'ti@metalabsac.com' || email === 'mpalva@metalabsac.com') {
-                        cards.forEach(c => { const el = document.getElementById(c); if (el) el.style.display = 'flex'; });
-                    } else {
-                        alert("Usuario no registrado en el sistema de accesos o sin permisos. Contacte a IT.");
-                    }
+                    renderUI(null, email, cards); // Usará el fallback de ser admin
                 }
             } catch (error) {
                 console.error("Error obteniendo permisos:", error);
-                // Fallback offline o de contingencia
-                if (email === 'ti@metalabsac.com' || email === 'mpalva@metalabsac.com') {
-                    cards.forEach(c => { const el = document.getElementById(c); if (el) el.style.display = 'flex'; });
-                } else {
-                    alert("Error de conexión al verificar permisos.");
-                }
+                renderUI(null, email, cards); // Usará el fallback de ser admin
             }
         }
     </script>
