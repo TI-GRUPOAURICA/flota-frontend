@@ -95,11 +95,16 @@
     
     <div class="card" style="margin-top: 25px;">
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f5f5f5; padding-bottom: 15px; margin-bottom: 15px; flex-wrap: wrap; gap: 15px;">
-            <h4 style="margin: 0; border: none; padding: 0;">📍 Auditoría de Viajes Terminados</h4>
-            <div style="display: flex; gap: 10px;">
-                <input type="text" id="filtroPlaca" class="filter-input" placeholder="🔍 Filtrar Placa..." onkeyup="filtrarHistorial()">
-                <input type="text" id="filtroConductor" class="filter-input" placeholder="🔍 Filtrar Conductor..." onkeyup="filtrarHistorial()">
-                <button class="btn-export" onclick="abrirModalExportar('rutas')">⬇️ Descargar Sábana de Datos</button>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <h4 style="margin: 0; border: none; padding: 0;">📍 Auditoría de Viajes Terminados</h4>
+                <span id="badgeCountRutas" style="background: #e8f0fe; color: var(--aurica-blue); padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 800;">Calculando...</span>
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <input type="month" id="filtroMesRutas" class="filter-input" onchange="filtrarHistorial()" title="Filtrar por Mes">
+                <input type="text" id="filtroPlaca" class="filter-input" placeholder="🔍 Placa..." onkeyup="filtrarHistorial()" style="width: 110px;">
+                <input type="text" id="filtroConductor" class="filter-input" placeholder="🔍 Conductor..." onkeyup="filtrarHistorial()" style="width: 140px;">
+                <button class="btn-primary" style="background:#e74c3c; color:white; padding: 8px 12px; font-size: 12px; margin-right: 10px;" onclick="limpiarFiltrosRutas()" title="Limpiar Filtros">✖</button>
+                <button class="btn-export" onclick="abrirModalExportar('rutas')">⬇️ Sábana de Datos</button>
             </div>
         </div>
 
@@ -123,9 +128,14 @@
 
     <div class="card" style="margin-top: 25px;">
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f5f5f5; padding-bottom: 15px; margin-bottom: 15px; flex-wrap: wrap; gap: 15px;">
-            <h4 style="margin: 0; border: none; padding: 0; color: var(--crit-color);">🛠️ Historial de Taller e Incidentes Mecánicos</h4>
-            <div style="display: flex; gap: 10px;">
-                <input type="text" id="filtroMante" class="filter-input" placeholder="🔍 Buscar por placa o detalle..." onkeyup="filtrarIncidentes()">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <h4 style="margin: 0; border: none; padding: 0; color: var(--crit-color);">🛠️ Historial de Incidentes</h4>
+                <span id="badgeCountIncidentes" style="background: #fdeaea; color: var(--crit-color); padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 800;">Calculando...</span>
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <input type="month" id="filtroMesIncidentes" class="filter-input" onchange="filtrarIncidentes()" title="Filtrar por Mes">
+                <input type="text" id="filtroMante" class="filter-input" placeholder="🔍 Buscar por placa o detalle..." onkeyup="filtrarIncidentes()" style="width: 200px;">
+                <button class="btn-primary" style="background:#e74c3c; color:white; padding: 8px 12px; font-size: 12px; margin-right: 10px;" onclick="limpiarFiltrosIncidentes()" title="Limpiar Filtros">✖</button>
                 <button class="btn-export" onclick="abrirModalExportar('incidentes')">⬇️ Descargar Reporte</button>
             </div>
         </div>
@@ -242,9 +252,10 @@
     }
 
     function renderizarHistorial(lista) {
+        document.getElementById('badgeCountRutas').innerText = `${lista.length} registros`;
         const tbody = document.getElementById('tablaHistorial');
         tbody.innerHTML = '';
-        if(lista.length === 0) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No hay registros.</td></tr>'; return; }
+        if(lista.length === 0) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No se encontraron registros con los filtros actuales.</td></tr>'; return; }
 
         lista.forEach(viaje => {
             let fechaTexto = "N/A";
@@ -299,12 +310,27 @@
     function filtrarHistorial() {
         const txtPlaca = document.getElementById('filtroPlaca').value.toLowerCase();
         const txtConductor = document.getElementById('filtroConductor').value.toLowerCase();
+        const mesSeleccionado = document.getElementById('filtroMesRutas').value; // Formato: "YYYY-MM"
+
         historialFiltrado = historialGlobal.filter(v => {
             const placa = v.vehiculos ? v.vehiculos.placa.toLowerCase() : '';
             const conductor = v.conductores ? v.conductores.nombre.toLowerCase() : '';
-            return placa.includes(txtPlaca) && conductor.includes(txtConductor);
+            
+            let cumpleMes = true;
+            if (mesSeleccionado && v.fecha_retorno) {
+                cumpleMes = v.fecha_retorno.startsWith(mesSeleccionado);
+            }
+
+            return placa.includes(txtPlaca) && conductor.includes(txtConductor) && cumpleMes;
         });
         renderizarHistorial(historialFiltrado);
+    }
+
+    function limpiarFiltrosRutas() {
+        document.getElementById('filtroPlaca').value = '';
+        document.getElementById('filtroConductor').value = '';
+        document.getElementById('filtroMesRutas').value = '';
+        filtrarHistorial();
     }
 
     function abrirModalExportar(tipo) {
@@ -426,9 +452,10 @@
     }
 
     function renderizarIncidentes(lista) {
+        document.getElementById('badgeCountIncidentes').innerText = `${lista.length} registros`;
         const tbody = document.getElementById('tablaIncidentes');
         tbody.innerHTML = '';
-        if(lista.length === 0) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No hay incidentes reportados.</td></tr>'; return; }
+        if(lista.length === 0) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No se encontraron incidentes.</td></tr>'; return; }
 
         lista.forEach(inc => {
             let fechaTexto = "N/A";
@@ -446,12 +473,26 @@
 
     function filtrarIncidentes() {
         const txt = document.getElementById('filtroMante').value.toLowerCase();
+        const mesSeleccionado = document.getElementById('filtroMesIncidentes').value;
+
         const filtrados = incidentesGlobal.filter(inc => {
             const placa = inc.vehiculos ? inc.vehiculos.placa.toLowerCase() : '';
             const desc = inc.descripcion ? inc.descripcion.toLowerCase() : '';
-            return placa.includes(txt) || desc.includes(txt);
+            
+            let cumpleMes = true;
+            if (mesSeleccionado && inc.fecha_incidente) {
+                cumpleMes = inc.fecha_incidente.startsWith(mesSeleccionado);
+            }
+
+            return (placa.includes(txt) || desc.includes(txt)) && cumpleMes;
         });
         renderizarIncidentes(filtrados);
+    }
+
+    function limpiarFiltrosIncidentes() {
+        document.getElementById('filtroMante').value = '';
+        document.getElementById('filtroMesIncidentes').value = '';
+        filtrarIncidentes();
     }
 
     function exportarTablaVisualCSV(tablaId, nombreArchivo) {
