@@ -54,7 +54,7 @@
         </div>
     </div>
     <div style="display: flex; gap: 10px;">
-        <button class="btn-primary" onclick="window.location.href='permisos.html'" style="background: rgba(255,255,255,0.2); color: white;">
+        <button id="btnGestionPermisos" class="btn-primary" onclick="window.location.href='permisos.html'" style="background: rgba(255,255,255,0.2); color: white; display: none;">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="M12 8v4"></path><path d="M12 16h.01"></path></svg>
             Gestión de Permisos
         </button>
@@ -110,7 +110,22 @@
 
 <script>
     // 🔒 GUARD: Verificar sesión activa
-    (function(){var s=JSON.parse(sessionStorage.getItem('flotapro_session')||'null');if(!s||(Date.now()-s.timestamp>28800000)){sessionStorage.removeItem('flotapro_session');window.location.href='index.html';}})();
+    const sessionStr = sessionStorage.getItem('flotapro_session');
+    let sessionData = null;
+    if (sessionStr) {
+        sessionData = JSON.parse(sessionStr);
+    }
+    
+    if(!sessionData || (Date.now() - sessionData.timestamp > 28800000)) {
+        sessionStorage.removeItem('flotapro_session');
+        window.location.href='index.html';
+    } else {
+        // SUPER ADMIN CHECK
+        const SUPER_ADMINS = ['ti@metalabsac.com', 'mpalva@metalabsac.com'];
+        if (SUPER_ADMINS.includes(sessionData.email)) {
+            document.getElementById('btnGestionPermisos').style.display = 'flex';
+        }
+    }
 
     const API_URL = "https://flota-backend-xecu.onrender.com";
 
