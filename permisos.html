@@ -92,6 +92,11 @@
                 <label class="checkbox-item"><input type="checkbox" id="chk_conta"> Contabilidad</label>
             </div>
             
+            <label style="display: block; margin: 15px 0 10px 0; font-weight: 800; font-size: 12px; color: var(--crit-color);">Alertas de Vencimiento</label>
+            <div class="checkbox-group" style="margin-bottom: 20px;">
+                <label class="checkbox-item" style="color:var(--crit-color);"><input type="checkbox" id="chk_alertas"> Recibe Correos de Alerta (15 días)</label>
+            </div>
+            
             <button type="submit" id="btnGuardar">Registrar Accesos</button>
         </form>
     </div>
@@ -110,6 +115,7 @@
                         <th>Admin</th>
                         <th>Siniestros</th>
                         <th>Conta</th>
+                        <th style="color:var(--crit-color);">Alertas Email</th>
                         <th>Acción</th>
                     </tr>
                 </thead>
@@ -161,6 +167,7 @@
                             <td><input type="checkbox" id="mod_admin_${p.id}" ${p.mod_admin ? 'checked' : ''}></td>
                             <td><input type="checkbox" id="mod_sinies_${p.id}" ${p.mod_siniestros ? 'checked' : ''}></td>
                             <td><input type="checkbox" id="mod_conta_${p.id}" ${p.mod_conta ? 'checked' : ''}></td>
+                            <td><input type="checkbox" id="mod_alertas_${p.id}" ${p.recibe_alertas ? 'checked' : ''}></td>
                             <td class="action-cell">
                                 <button class="btn-save" onclick="actualizarPermiso('${p.id}')" title="Guardar Cambios">💾</button>
                                 <button class="btn-delete" onclick="eliminarPermiso('${p.id}', '${p.email}')" title="Revocar Acceso">❌</button>
@@ -169,11 +176,11 @@
                     `;
                 });
             } else {
-                tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;">No hay usuarios registrados. Agregue uno.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;">No hay usuarios registrados. Agregue uno.</td></tr>';
             }
         } catch(e) { 
             console.error(e); 
-            document.getElementById('tablaPermisos').innerHTML = '<tr><td colspan="9" style="text-align:center; color:red;">Error de conexión. Es posible que la tabla "usuarios_permisos" no exista en Supabase.</td></tr>';
+            document.getElementById('tablaPermisos').innerHTML = '<tr><td colspan="10" style="text-align:center; color:red;">Error de conexión. Es posible que la tabla "usuarios_permisos" no exista en Supabase.</td></tr>';
         }
     }
 
@@ -190,7 +197,8 @@
             mod_tesoreria: document.getElementById('chk_teso').checked,
             mod_admin: document.getElementById('chk_admin').checked,
             mod_siniestros: document.getElementById('chk_siniestros').checked,
-            mod_conta: document.getElementById('chk_conta').checked
+            mod_conta: document.getElementById('chk_conta').checked,
+            recibe_alertas: document.getElementById('chk_alertas').checked
         };
 
         try {
@@ -224,7 +232,8 @@
             mod_tesoreria: document.getElementById(`mod_teso_${id}`).checked,
             mod_admin: document.getElementById(`mod_admin_${id}`).checked,
             mod_siniestros: document.getElementById(`mod_sinies_${id}`).checked,
-            mod_conta: document.getElementById(`mod_conta_${id}`).checked
+            mod_conta: document.getElementById(`mod_conta_${id}`).checked,
+            recibe_alertas: document.getElementById(`mod_alertas_${id}`).checked
         };
 
         try {
