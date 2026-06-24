@@ -37,11 +37,17 @@
         .k-taller { border-color: var(--aurica-blue); color: var(--aurica-blue); }
         .k-cerrado { border-color: var(--ok-color); color: var(--ok-color); }
 
-        .s-card { background: white; border: 1px solid #eee; padding: 15px; border-radius: 8px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); border-left: 4px solid var(--crit-color); cursor: pointer; transition: 0.2s;}
+        .s-card { background: white; border: 1px solid #eee; padding: 15px; border-radius: 8px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); border-left: 4px solid var(--crit-color); cursor: grab; transition: 0.2s;}
         .s-card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.05);}
+        .s-card:active { cursor: grabbing; }
         .s-fecha { font-size: 11px; color: #888; font-weight: 600;}
         .s-vehiculo { font-size: 15px; font-weight: 900; color: var(--aurica-blue); margin: 5px 0;}
         .s-desc { font-size: 12px; color: #555; line-height: 1.4;}
+
+        .dropzone { border: 2px dashed #bdc3c7; border-radius: 12px; padding: 30px; text-align: center; cursor: pointer; transition: 0.3s; background: #fafafa;}
+        .dropzone:hover, .dropzone.dragover { background: #f0f4f8; border-color: var(--aurica-blue); }
+        .dropzone-text { font-size: 14px; color: #7f8c8d; font-weight: 600; margin-top: 10px;}
+        .file-list { margin-top: 10px; font-size: 12px; color: var(--aurica-blue); font-weight: 600; text-align: left; }
 
         /* Estilos Tabla Historial */
         .historial-section { margin-top: 40px; background: white; padding: 25px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); }
@@ -97,8 +103,13 @@
                 <textarea id="s_desc" rows="4" required placeholder="Lugar, detalles del choque, daños visibles..."></textarea>
             </div>
             <div class="form-group">
-                <label>Adjuntar Documentos (Fotos, Parte Policial en PDF o Imagen) <span style="color:#888; font-weight:400;">- Opcional</span></label>
-                <input type="file" id="s_docs" accept=".pdf,image/*">
+                <label>Adjuntar Documentos (Fotos, Parte Policial) <span style="color:#888; font-weight:400;">- Puedes seleccionar varios</span></label>
+                <div class="dropzone" id="dropzone_s" onclick="document.getElementById('s_docs').click()" ondragover="event.preventDefault(); this.classList.add('dragover');" ondragleave="this.classList.remove('dragover');" ondrop="event.preventDefault(); this.classList.remove('dragover'); document.getElementById('s_docs').files = event.dataTransfer.files; updateFileList('s_docs', 'list_s');">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#bdc3c7" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                    <div class="dropzone-text">Haz clic aquí o arrastra tus archivos (PDF, Imágenes)</div>
+                </div>
+                <input type="file" id="s_docs" accept=".pdf,image/*" multiple style="display:none;" onchange="updateFileList('s_docs', 'list_s')">
+                <div id="list_s" class="file-list"></div>
             </div>
             <button type="submit" class="btn-submit" id="btnRegistrar">Registrar Siniestro</button>
         </form>
@@ -106,15 +117,15 @@
 
     <!-- Tablero Kanban -->
     <div class="kanban-board">
-        <div class="kanban-col">
+        <div class="kanban-col" id="drop_reportado" ondrop="drop(event, 'Reportado')" ondragover="allowDrop(event)" ondragleave="leaveDrop(event)">
             <div class="col-header k-reportado">🚨 Reportado</div>
             <div id="col_reportado"></div>
         </div>
-        <div class="kanban-col">
+        <div class="kanban-col" id="drop_tramite" ondrop="drop(event, 'En Trámite Seguro')" ondragover="allowDrop(event)" ondragleave="leaveDrop(event)">
             <div class="col-header k-tramite">📄 Trámite Seguro</div>
             <div id="col_tramite"></div>
         </div>
-        <div class="kanban-col">
+        <div class="kanban-col" id="drop_taller" ondrop="drop(event, 'Taller Siniestro')" ondragover="allowDrop(event)" ondragleave="leaveDrop(event)">
             <div class="col-header k-taller">🛠️ Taller</div>
             <div id="col_taller"></div>
         </div>
@@ -161,9 +172,13 @@
                 </select>
             </div>
             <div class="form-group">
-                <label>Adjuntar Nuevo Documento (PDF/Imagen) <span style="color:#888; font-weight:400;">- Opcional</span></label>
-                <input type="file" id="u_docs" accept=".pdf,image/*">
-                <div id="u_docs_link" style="margin-top:5px; font-size:12px;"></div>
+                <label>Añadir Nuevos Documentos <span style="color:#888; font-weight:400;">- Opcional</span></label>
+                <div class="dropzone" style="padding: 15px;" id="dropzone_u" onclick="document.getElementById('u_docs').click()" ondragover="event.preventDefault(); this.classList.add('dragover');" ondragleave="this.classList.remove('dragover');" ondrop="event.preventDefault(); this.classList.remove('dragover'); document.getElementById('u_docs').files = event.dataTransfer.files; updateFileList('u_docs', 'list_u');">
+                    <div class="dropzone-text" style="margin-top:0;">Haz clic o arrastra más archivos aquí</div>
+                </div>
+                <input type="file" id="u_docs" accept=".pdf,image/*" multiple style="display:none;" onchange="updateFileList('u_docs', 'list_u')">
+                <div id="list_u" class="file-list"></div>
+                <div id="u_docs_link" style="margin-top:10px; font-size:12px; border-top:1px solid #eee; padding-top:10px;"></div>
             </div>
             <button type="submit" class="btn-submit" style="background: var(--aurica-blue);" id="btnUpdate">Guardar Cambios</button>
             <button type="button" class="btn-cancelar" onclick="cerrarModal()">Cancelar</button>
@@ -292,7 +307,7 @@
                 if(s.estado === 'Taller Siniestro') { colorBorde = 'var(--aurica-blue)'; colId = 'col_taller'; }
 
                 const cardHTML = `
-                    <div class="s-card" style="border-left-color: ${colorBorde};" onclick="abrirModal('${s.id}')">
+                    <div class="s-card" style="border-left-color: ${colorBorde};" draggable="true" ondragstart="drag(event, '${s.id}')" onclick="abrirModal('${s.id}')">
                         <div class="s-fecha">📅 ${f} | 👤 ${conductorNombre}</div>
                         <div class="s-vehiculo">${placa}</div>
                         <div class="s-desc">${s.descripcion}</div>
@@ -365,32 +380,56 @@
         cerrarModalExportar();
     }
 
-    document.getElementById('formSiniestro').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const btn = document.getElementById('btnRegistrar'); btn.innerText = "Registrando...";
+    function updateFileList(inputId, listId) {
+        const files = document.getElementById(inputId).files;
+        let html = '';
+        for(let i=0; i<files.length; i++) {
+            html += `📄 ${files[i].name}<br>`;
+        }
+        document.getElementById(listId).innerHTML = html;
+    }
+
+    async function uploadMultipleFiles(fileInput, btnElement, initialText) {
+        const files = fileInput.files;
+        if (files.length === 0) return "";
         
-        let urlDocs = "";
-        const fileInput = document.getElementById('s_docs');
-        if (fileInput.files.length > 0) {
-            btn.innerText = "Subiendo archivo...";
+        let urls = [];
+        for (let i = 0; i < files.length; i++) {
+            btnElement.innerText = `Subiendo archivo ${i+1} de ${files.length}...`;
             const formData = new FormData();
-            formData.append("file", fileInput.files[0]);
+            formData.append("file", files[i]);
             try {
                 const uploadRes = await fetch(`${API_URL}/subir-documento-siniestro`, { method: 'POST', body: formData });
                 if(uploadRes.ok) {
                     const uploadData = await uploadRes.json();
-                    urlDocs = uploadData.url;
+                    urls.push(uploadData.url);
                 } else {
-                    alert("Error subiendo el archivo. Asegúrate que existe el bucket 'documentos' en Supabase.");
-                    btn.innerText = "Registrar Siniestro";
-                    return; // IMPORTANTE: Se detiene la ejecución si falla el archivo
+                    alert(`Error al procesar el archivo: ${files[i].name}`);
+                    btnElement.innerText = initialText;
+                    return null;
                 }
             } catch(e) { 
-                console.error("Error subiendo archivo"); 
-                alert("Error de conexión al intentar subir el archivo.");
-                btn.innerText = "Registrar Siniestro";
-                return;
+                alert(`Error de red al subir: ${files[i].name}`);
+                btnElement.innerText = initialText;
+                return null;
             }
+        }
+        return urls.join(",");
+    }
+
+    document.getElementById('formSiniestro').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('btnRegistrar'); 
+        const originalText = "Registrar Siniestro";
+        btn.innerText = "Registrando...";
+        
+        const fileInput = document.getElementById('s_docs');
+        let urlDocs = "";
+        
+        if (fileInput.files.length > 0) {
+            const resultUrls = await uploadMultipleFiles(fileInput, btn, originalText);
+            if (resultUrls === null) return; // Falló la subida
+            urlDocs = resultUrls;
         }
 
         const payload = {
@@ -407,6 +446,7 @@
             if (res.ok) { 
                 alert("✅ Siniestro registrado. El vehículo ha pasado a estado 'Siniestro'."); 
                 document.getElementById('formSiniestro').reset(); 
+                document.getElementById('list_s').innerHTML = ''; // Limpiar visualmente
                 cargarSiniestros(); 
             }
         } catch (error) { alert("Error al conectar."); } finally { btn.innerText = "Registrar Siniestro"; }
@@ -437,33 +477,20 @@
 
     document.getElementById('formUpdate').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const btn = document.getElementById('btnUpdate'); btn.innerText = "Guardando...";
+        const btn = document.getElementById('btnUpdate'); 
+        const originalText = "Guardar Cambios";
+        btn.innerText = "Guardando...";
         
         let urlDocs = document.getElementById('u_docs').dataset.currentUrl || "";
         const fileInput = document.getElementById('u_docs');
+        
         if (fileInput.files.length > 0) {
-            btn.innerText = "Subiendo archivo...";
-            const formData = new FormData();
-            formData.append("file", fileInput.files[0]);
-            try {
-                const uploadRes = await fetch(`${API_URL}/subir-documento-siniestro`, { method: 'POST', body: formData });
-                if(uploadRes.ok) {
-                    const uploadData = await uploadRes.json();
-                    if (urlDocs !== "") {
-                        urlDocs = urlDocs + "," + uploadData.url;
-                    } else {
-                        urlDocs = uploadData.url;
-                    }
-                } else {
-                    alert("Error subiendo archivo nuevo. La actualización ha sido cancelada.");
-                    btn.innerText = "Guardar Cambios";
-                    return;
-                }
-            } catch(e) { 
-                console.error("Error subiendo archivo"); 
-                alert("Error de conexión al intentar subir el archivo.");
-                btn.innerText = "Guardar Cambios";
-                return;
+            const resultUrls = await uploadMultipleFiles(fileInput, btn, originalText);
+            if (resultUrls === null) return; // Falló la subida
+            if (urlDocs !== "") {
+                urlDocs = urlDocs + "," + resultUrls;
+            } else {
+                urlDocs = resultUrls;
             }
         }
         
@@ -477,9 +504,52 @@
 
         try {
             const res = await fetch(`${API_URL}/actualizar-siniestro`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-            if (res.ok) { cerrarModal(); cargarSiniestros(); }
+            if (res.ok) { 
+                cerrarModal(); 
+                document.getElementById('list_u').innerHTML = ''; // Limpiar visualmente
+                cargarSiniestros(); 
+            }
         } catch (error) { alert("Error al conectar."); } finally { btn.innerText = "Guardar Cambios"; }
     });
+
+    // DRAG AND DROP KANBAN LOGIC
+    function allowDrop(ev) {
+        ev.preventDefault();
+        ev.currentTarget.style.background = "#eef2f5";
+    }
+
+    function leaveDrop(ev) {
+        ev.currentTarget.style.background = "#f8f9fa";
+    }
+
+    function drag(ev, id) {
+        ev.dataTransfer.setData("text/plain", id);
+    }
+
+    async function drop(ev, nuevoEstado) {
+        ev.preventDefault();
+        ev.currentTarget.style.background = "#f8f9fa";
+        const id = ev.dataTransfer.getData("text/plain");
+        
+        const s = siniestrosData.find(x => x.id === id);
+        if(!s || s.estado === nuevoEstado) return;
+
+        // Actualizar en BD
+        try {
+            const res = await fetch(`${API_URL}/actualizar-siniestro`, { 
+                method: 'PATCH', 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify({ id: id, estado: nuevoEstado }) 
+            });
+            if (res.ok) { 
+                cargarSiniestros(); 
+            } else {
+                alert("Error al actualizar el estado");
+            }
+        } catch (error) { 
+            alert("Error de red al actualizar estado."); 
+        }
+    }
 
     inicializar();
 </script>
