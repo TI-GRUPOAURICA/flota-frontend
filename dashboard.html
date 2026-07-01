@@ -257,6 +257,21 @@
     </div>
 </div>
 
+<!-- Modal Auditoría Consumo -->
+<div class="modal-overlay" id="modalAuditoriaConsumo">
+    <div class="modal" style="max-width: 450px;">
+        <h3 style="color: var(--aurica-blue); margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px;">⛽ Auditoría de Consumo</h3>
+        <div id="ac_box" style="background: #f8fbff; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 5px solid var(--aurica-blue);">
+            <p style="margin: 0 0 10px 0; font-size: 13px;"><strong>Vehículo / Placa:</strong> <span id="ac_vehiculo" style="color:var(--aurica-blue); font-weight:800;"></span></p>
+            <p style="margin: 0 0 10px 0; font-size: 13px;"><strong>Distancia Recorrida:</strong> <span id="ac_km"></span></p>
+            <p style="margin: 0 0 10px 0; font-size: 13px;"><strong>Combustible Consumido:</strong> <span id="ac_porcentaje"></span></p>
+            <p style="margin: 0 0 10px 0; font-size: 13px;"><strong>Ratio de Rendimiento:</strong> <span id="ac_ratio" style="font-weight:900;"></span></p>
+            <p style="margin: 0; font-size: 13px;"><strong>Evaluación del Sistema:</strong> <span id="ac_eval"></span></p>
+        </div>
+        <button type="button" class="btn-cancelar" style="margin-top:10px;" onclick="document.getElementById('modalAuditoriaConsumo').style.display='none'">Cerrar Detalle</button>
+    </div>
+</div>
+
 <script>
     // 🔒 GUARD: Verificar sesión activa
     (function(){var s=JSON.parse(sessionStorage.getItem('flotapro_session')||'null');if(!s||(Date.now()-s.timestamp>28800000)){sessionStorage.removeItem('flotapro_session');window.location.href='index.html';}})();
@@ -366,12 +381,25 @@
             const combSalida = viaje.combustible_salida; 
             const combRetorno = viaje.combustible_retorno;
             let consumoTexto = "N/A"; let colorConsumo = ""; let tooltipComb = "Sin datos";
+            let actionOnClick = "";
             
             if (combSalida !== null && combRetorno !== null) {
                 tooltipComb = `Salió con: ${combSalida}% | Llegó con: ${combRetorno}%`;
                 let diferencia = combSalida - combRetorno;
-                if (diferencia < 0) { consumoTexto = `⛽ Recargó en ruta`; colorConsumo = "color: var(--route-color); font-weight: 700;"; } 
-                else { consumoTexto = `↓ ${diferencia}%`; colorConsumo = diferencia > 30 ? 'color: var(--crit-color); font-weight: 900;' : ''; }
+                
+                if (diferencia < 0) { 
+                    consumoTexto = `⛽ Recargó en ruta`; 
+                    colorConsumo = "color: var(--route-color); font-weight: 700;"; 
+                } else { 
+                    let ratio = (diferencia > 0 && kmRecorridos > 0) ? (kmRecorridos / diferencia).toFixed(1) : 0;
+                    consumoTexto = `↓ ${diferencia}% 🔍`;
+                    if(diferencia > 0 && ratio < 1.5) { 
+                        colorConsumo = 'color: var(--crit-color); font-weight: 900; background:#fdeaea; padding:3px 8px; border-radius:12px; border: 1px solid #fad2d2; cursor:pointer;';
+                    } else {
+                        colorConsumo = 'color: var(--ok-color); font-weight: 700; background:#eafaf1; padding:3px 8px; border-radius:12px; cursor:pointer;';
+                    }
+                    actionOnClick = `onclick="abrirAuditoriaConsumo('${placa}', ${kmRecorridos}, ${diferencia}, ${ratio})"`;
+                }
             }
             
             let incidencias = [];
@@ -385,7 +413,7 @@
                     <td><strong style="color:var(--aurica-blue);">${placa}</strong></td>
                     <td>${conductor}</td>
                     <td title="${tooltipKm}" style="cursor: help; border-bottom: 1px dashed #ccc;">${kmRecorridos} Km</td>
-                    <td title="${tooltipComb}" style="cursor: help; border-bottom: 1px dashed #ccc; ${colorConsumo}">${consumoTexto}</td>
+                    <td title="${tooltipComb}" ${actionOnClick} style="${actionOnClick ? '' : 'cursor: help; border-bottom: 1px dashed #ccc;'} ${colorConsumo}">${consumoTexto}</td>
                     <td>${rutaCompleta}</td>
                     <td style="font-size:11px;">${textoAuditoria}</td>
                 </tr>
@@ -425,6 +453,29 @@
         document.getElementById('exp_mes').value = String(hoy.getMonth() + 1).padStart(2, '0');
         document.getElementById('exp_anio').value = String(hoy.getFullYear());
         document.getElementById('modalExportar').style.display = 'flex';
+    }
+
+    function abrirAuditoriaConsumo(placa, km, porcentaje, ratio) {
+        document.getElementById('ac_vehiculo').innerText = placa;
+        document.getElementById('ac_km').innerText = km + " Km";
+        document.getElementById('ac_porcentaje').innerText = porcentaje + "% del tanque";
+        document.getElementById('ac_ratio').innerText = ratio + " Km por cada 1%";
+        
+        let evalSpan = document.getElementById('ac_eval');
+        let box = document.getElementById('ac_box');
+        if (ratio < 1.5) {
+            evalSpan.innerHTML = "🚩 <strong>Consumo Excesivo / Sospechoso.</strong> El vehículo recorrió muy poca distancia para la cantidad de combustible reportada como consumida. Requiere investigación.";
+            evalSpan.style.color = "var(--crit-color)";
+            box.style.borderLeftColor = "var(--crit-color)";
+            box.style.background = "#fdeaea";
+        } else {
+            evalSpan.innerHTML = "✅ <strong>Consumo Normal.</strong> El ratio de rendimiento está dentro de los parámetros esperados.";
+            evalSpan.style.color = "var(--ok-color)";
+            box.style.borderLeftColor = "var(--ok-color)";
+            box.style.background = "#eafaf1";
+        }
+        
+        document.getElementById('modalAuditoriaConsumo').style.display = 'flex';
     }
 
     function cerrarModalExportar() {
