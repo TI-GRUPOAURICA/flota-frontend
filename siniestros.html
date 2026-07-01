@@ -117,15 +117,15 @@
 
     <!-- Tablero Kanban -->
     <div class="kanban-board">
-        <div class="kanban-col" id="drop_reportado" ondrop="drop(event, 'Reportado')" ondragover="allowDrop(event)" ondragleave="leaveDrop(event)">
+        <div class="kanban-col" id="col_wrapper_reportado">
             <div class="col-header k-reportado">🚨 Reportado</div>
             <div id="col_reportado"></div>
         </div>
-        <div class="kanban-col" id="drop_tramite" ondrop="drop(event, 'En Trámite Seguro')" ondragover="allowDrop(event)" ondragleave="leaveDrop(event)">
+        <div class="kanban-col" id="col_wrapper_tramite">
             <div class="col-header k-tramite">📄 Trámite Seguro</div>
             <div id="col_tramite"></div>
         </div>
-        <div class="kanban-col" id="drop_taller" ondrop="drop(event, 'Taller Siniestro')" ondragover="allowDrop(event)" ondragleave="leaveDrop(event)">
+        <div class="kanban-col" id="col_wrapper_taller">
             <div class="col-header k-taller">🛠️ Taller</div>
             <div id="col_taller"></div>
         </div>
@@ -163,8 +163,8 @@
         <form id="formUpdate">
             <input type="hidden" id="u_id">
             <div class="form-group">
-                <label>Estado Asignado</label>
-                <select id="u_estado" disabled style="background: #eef2f5; cursor: not-allowed; opacity: 0.8;">
+                <label>Nuevo Estado</label>
+                <select id="u_estado">
                     <option value="Reportado">Reportado</option>
                     <option value="En Trámite Seguro">En Trámite Seguro</option>
                     <option value="Taller Siniestro">Taller Siniestro</option>
@@ -311,7 +311,7 @@
                 if(s.estado === 'Taller Siniestro') { colorBorde = 'var(--aurica-blue)'; colId = 'col_taller'; }
 
                 const cardHTML = `
-                    <div class="s-card" style="border-left-color: ${colorBorde};" draggable="true" ondragstart="drag(event, '${s.id}')" onclick="abrirModal('${s.id}')">
+                    <div class="s-card" style="border-left-color: ${colorBorde}; cursor: pointer;" onclick="abrirModal('${s.id}')">
                         <div class="s-fecha">📅 ${f} | 👤 ${conductorNombre}</div>
                         <div class="s-vehiculo">${placa}</div>
                         <div class="s-desc">${s.descripcion}</div>
@@ -456,11 +456,54 @@
         } catch (error) { alert("Error al conectar."); } finally { btn.innerText = "Registrar Siniestro"; }
     });
 
+    const ESTADOS_ORDEN = {
+        "Reportado": 0,
+        "En Trámite Seguro": 1,
+        "Taller Siniestro": 2,
+        "Cerrado": 3
+    };
+
     function abrirModal(id) {
         const s = siniestrosData.find(x => x.id === id);
         if(!s) return;
         document.getElementById('u_id').value = s.id;
-        document.getElementById('u_estado').value = s.estado;
+        
+        const selectEstado = document.getElementById('u_estado');
+        const estadoActual = s.estado;
+        const indiceActual = ESTADOS_ORDEN[estadoActual] !== undefined ? ESTADOS_ORDEN[estadoActual] : -1;
+        
+        let encontroHabilitado = false;
+        
+        for (let i = 0; i < selectEstado.options.length; i++) {
+            const opt = selectEstado.options[i];
+            const indiceOpt = ESTADOS_ORDEN[opt.value];
+            
+            if (indiceOpt <= indiceActual) {
+                opt.disabled = true;
+                opt.style.color = '#aaa';
+                opt.text = (opt.value === 'Cerrado') ? 'Cerrado (Resuelto)' : opt.value;
+                opt.text += (indiceOpt === indiceActual ? " (Actual)" : " (Completado)");
+            } else {
+                opt.disabled = false;
+                opt.style.color = '#000';
+                opt.text = (opt.value === 'Cerrado') ? 'Cerrado (Resuelto)' : opt.value;
+                if (!encontroHabilitado) {
+                    selectEstado.value = opt.value;
+                    encontroHabilitado = true;
+                }
+            }
+        }
+        
+        if (!encontroHabilitado) {
+            selectEstado.value = estadoActual;
+            selectEstado.disabled = true;
+            document.getElementById('btnUpdate').disabled = true;
+            document.getElementById('btnUpdate').innerText = "Siniestro Finalizado";
+        } else {
+            selectEstado.disabled = false;
+            document.getElementById('btnUpdate').disabled = false;
+            document.getElementById('btnUpdate').innerText = "Guardar Cambios";
+        }
         
         document.getElementById('u_docs').dataset.currentUrl = s.url_documentos || "";
         document.getElementById('u_docs').value = ""; // Clear file input
@@ -522,34 +565,6 @@
             }
         } catch (error) { alert("Error al conectar."); } finally { btn.innerText = "Guardar Cambios"; }
     });
-
-    // DRAG AND DROP KANBAN LOGIC
-    function allowDrop(ev) {
-        ev.preventDefault();
-        ev.currentTarget.style.background = "#eef2f5";
-    }
-
-    function leaveDrop(ev) {
-        ev.currentTarget.style.background = "#f8f9fa";
-    }
-
-    function drag(ev, id) {
-        ev.dataTransfer.setData("text/plain", id);
-    }
-
-    async function drop(ev, nuevoEstado) {
-        ev.preventDefault();
-        ev.currentTarget.style.background = "#f8f9fa";
-        const id = ev.dataTransfer.getData("text/plain");
-        
-        const s = siniestrosData.find(x => x.id === id);
-        if(!s || s.estado === nuevoEstado) return;
-
-        // Abrir modal en vez de actualizar BD directo para obligar observación
-        abrirModal(id);
-        document.getElementById('u_estado').value = nuevoEstado;
-        return;
-    }
 
     inicializar();
 </script>
