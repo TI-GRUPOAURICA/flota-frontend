@@ -129,7 +129,7 @@
     <div class="card" style="margin-top: 25px;">
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f5f5f5; padding-bottom: 15px; margin-bottom: 15px; flex-wrap: wrap; gap: 15px;">
             <div style="display: flex; align-items: center; gap: 15px;">
-                <h4 style="margin: 0; border: none; padding: 0; color: var(--crit-color);">🛠️ Historial de Incidentes</h4>
+                <h4 style="margin: 0; border: none; padding: 0; color: var(--crit-color);">🛠️ Historial Global de Incidencias</h4>
                 <span id="badgeCountIncidentes" style="background: #fdeaea; color: var(--crit-color); padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 800;">Calculando...</span>
             </div>
             <div style="display: flex; gap: 8px;">
@@ -146,11 +146,12 @@
                         <th>Fecha de Registro</th>
                         <th>Placa</th>
                         <th>Vehículo</th>
-                        <th>Origen del Reporte</th>
-                        <th>Descripción / Detalle Clínico</th>
+                        <th>Tipo / Origen</th>
+                        <th>Descripción</th>
+                        <th>Acción</th>
                     </tr>
                 </thead>
-                <tbody id="tablaIncidentes"><tr><td colspan="5" style="text-align: center;">Cargando historial mecánico...</td></tr></tbody>
+                <tbody id="tablaIncidentes"><tr><td colspan="6" style="text-align: center;">Cargando historial...</td></tr></tbody>
             </table>
         </div>
     </div>
@@ -185,6 +186,28 @@
 
         <button type="button" class="btn-submit" style="background: #27ae60;" onclick="ejecutarExportacion()">⬇️ Descargar Excel</button>
         <button type="button" class="btn-cancelar" onclick="cerrarModalExportar()">Cancelar</button>
+    </div>
+</div>
+
+<!-- Modal Detalle Incidencia -->
+<div class="modal-overlay" id="modalDetalleIncidencia">
+    <div class="modal" style="max-width: 550px;">
+        <h3 id="di_title" style="margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px;">Ficha Técnica del Suceso</h3>
+        <div style="background: #f8fbff; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+            <p style="margin: 0 0 10px 0; font-size: 13px;"><strong>Fecha:</strong> <span id="di_fecha"></span></p>
+            <p style="margin: 0 0 10px 0; font-size: 13px;"><strong>Vehículo:</strong> <span id="di_vehiculo"></span></p>
+            <p style="margin: 0 0 10px 0; font-size: 13px;"><strong>Tipo de Suceso:</strong> <span id="di_tipo"></span></p>
+            <p style="margin: 0 0 10px 0; font-size: 13px;"><strong>Conductor/Responsable:</strong> <span id="di_conductor"></span></p>
+            <p style="margin: 0 0 10px 0; font-size: 13px;"><strong>Estado Actual:</strong> <span id="di_estado"></span></p>
+        </div>
+        <div class="form-group">
+            <label>Descripción / Detalle Completo:</label>
+            <div id="di_descripcion" style="background:#f4f4f4; padding:15px; border-radius:8px; font-size:13px; line-height:1.5; max-height:200px; overflow-y:auto; border:1px solid #e1e1e1;"></div>
+        </div>
+        <div id="di_evidencia_box" style="margin-top:10px; display:none;">
+            <a id="di_evidencia_link" href="#" target="_blank" style="color:var(--aurica-blue); font-weight:800; font-size:13px;">🔗 Ver Evidencia Adjunta</a>
+        </div>
+        <button type="button" class="btn-cancelar" style="margin-top:20px;" onclick="document.getElementById('modalDetalleIncidencia').style.display='none'">Cerrar Ficha</button>
     </div>
 </div>
 
@@ -295,7 +318,7 @@
             const res = await fetch(`${API_URL}/historial-rutas`);
             const data = await res.json();
             historialGlobal = data.data;
-            historialFiltrado = data.data; // Al inicio el filtro es todo
+            historialFiltrado = data.data; 
             renderizarHistorial(historialFiltrado);
         } catch (e) { document.getElementById('tablaHistorial').innerHTML = '<tr><td colspan="7" style="text-align:center; color:red;">Falta backend de historial.</td></tr>'; }
     }
@@ -320,7 +343,6 @@
             if(origenReal === 'Otros' && viaje.origen_detalle) { origenReal = `🏠 ${viaje.origen_detalle}`; }
             const rutaCompleta = `<span style="font-size:11px; color:#7f8c8d;">${origenReal}</span><br>➔ <strong>${destino}</strong>`;
 
-            // MATEMÁTICA Y TOOLTIPS RESTAURADOS
             const kmSalida = viaje.km_salida || 0; 
             const kmRetorno = viaje.km_retorno || 0;
             const kmRecorridos = (kmRetorno && kmSalida) ? (kmRetorno - kmSalida) : 0;
@@ -359,7 +381,7 @@
     function filtrarHistorial() {
         const txtPlaca = document.getElementById('filtroPlaca').value.toLowerCase();
         const txtConductor = document.getElementById('filtroConductor').value.toLowerCase();
-        const mesSeleccionado = document.getElementById('filtroMesRutas').value; // Formato: "YYYY-MM"
+        const mesSeleccionado = document.getElementById('filtroMesRutas').value; 
 
         historialFiltrado = historialGlobal.filter(v => {
             const placa = v.vehiculos ? v.vehiculos.placa.toLowerCase() : '';
@@ -405,7 +427,6 @@
         cerrarModalExportar();
     }
 
-    // --- 3. EXPORTACIÓN A EXCEL AVANZADA (DATOS CRUDOS) ---
     function exportarRutasCSV(mes, anio) {
         let filtrados = historialGlobal;
 
@@ -459,64 +480,74 @@
 
         if (mes !== "ALL") {
             filtrados = incidentesGlobal.filter(inc => {
-                if(!inc.fecha_incidente) return false;
-                const f = new Date(inc.fecha_incidente);
+                if(!inc.fecha) return false;
+                const f = new Date(inc.fecha);
                 const sMes = String(f.getMonth() + 1).padStart(2, '0');
                 const sAnio = String(f.getFullYear());
                 return sMes === mes && sAnio === anio;
             });
         }
 
-        if(filtrados.length === 0) { alert(`No hay incidentes mecánicos para ${mes === "ALL" ? "el histórico" : mes + "/" + anio}.`); return; }
+        if(filtrados.length === 0) { alert(`No hay registros para ${mes === "ALL" ? "el histórico" : mes + "/" + anio}.`); return; }
 
-        let csv = "Fecha de Registro,Placa,Vehiculo,Origen del Reporte,Descripcion / Detalle Clinico\n";
+        let csv = "Fecha de Registro,Tipo,Placa,Vehiculo,Conductor,Descripcion Completa,Estado Actual\n";
         
         filtrados.forEach(inc => {
-            const fecha = inc.fecha_incidente ? new Date(inc.fecha_incidente).toLocaleString() : "N/A";
-            const placa = inc.vehiculos ? inc.vehiculos.placa : "S/P";
-            const vehNombre = inc.vehiculos ? inc.vehiculos.nombre : "S/N";
-            const origen = inc.origen || "N/A";
+            const fecha = inc.fecha ? new Date(inc.fecha).toLocaleString() : "N/A";
+            const tipo = inc.tipo || "N/A";
+            const placa = inc.placa || "N/A";
+            const vehNombre = inc.vehiculo || "N/A";
+            const conductor = inc.conductor || "N/A";
             const desc = inc.descripcion ? inc.descripcion.replace(/(\r\n|\n|\r)/gm, " ").replace(/,/g, ";") : "";
+            const estado = inc.estado || "N/A";
 
-            csv += `"${fecha}","${placa}","${vehNombre}","${origen}","${desc}"\n`;
+            csv += `"${fecha}","${tipo}","${placa}","${vehNombre}","${conductor}","${desc}","${estado}"\n`;
         });
 
         let csvData = new Blob(["\uFEFF"+csv], { type: 'text/csv;charset=utf-8;' });
         let link = document.createElement("a");
         link.href = window.URL.createObjectURL(csvData);
-        link.download = `Reporte_Historial_Mecanico_${mes}_${anio}.csv`;
+        link.download = `Reporte_Historial_Global_${mes}_${anio}.csv`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
     }
 
-    // --- 4. LÓGICA DE INCIDENTES MECÁNICOS ---
+    // --- 4. LÓGICA DE HISTORIAL UNIFICADO ---
     async function cargarIncidentes() {
         try {
-            const res = await fetch(`${API_URL}/todos-incidentes`);
+            const res = await fetch(`${API_URL}/historial-global-unificado`);
             const data = await res.json();
             incidentesGlobal = data.data;
             renderizarIncidentes(incidentesGlobal);
-        } catch (e) { document.getElementById('tablaIncidentes').innerHTML = '<tr><td colspan="5" style="text-align:center;color:#e74c3c;">Error al cargar incidentes.</td></tr>'; }
+        } catch (e) { document.getElementById('tablaIncidentes').innerHTML = '<tr><td colspan="6" style="text-align:center;color:#e74c3c;">Error al cargar el historial.</td></tr>'; }
     }
 
     function renderizarIncidentes(lista) {
         document.getElementById('badgeCountIncidentes').innerText = `${lista.length} registros`;
         const tbody = document.getElementById('tablaIncidentes');
         tbody.innerHTML = '';
-        if(lista.length === 0) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No se encontraron incidentes.</td></tr>'; return; }
+        if(lista.length === 0) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No se encontraron registros.</td></tr>'; return; }
 
         lista.forEach(inc => {
             let fechaTexto = "N/A";
-            if(inc.fecha_incidente) {
-                const f = new Date(inc.fecha_incidente);
+            if(inc.fecha) {
+                const f = new Date(inc.fecha);
                 fechaTexto = f.toLocaleDateString() + ' ' + f.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
             }
-            const placa = inc.vehiculos ? inc.vehiculos.placa : 'N/A';
-            const vehNombre = inc.vehiculos ? inc.vehiculos.nombre : 'S/N';
-            const colorOrigen = inc.origen === 'Mantenimiento' ? 'var(--ok-color)' : 'var(--crit-color)';
+            
+            const colorTipo = inc.tipo === 'Siniestro' ? 'var(--crit-color)' : 'var(--warn-color)';
+            const bgTipo = inc.tipo === 'Siniestro' ? '#fdeaea' : '#fdf2e9';
+            const descCorta = inc.descripcion ? (inc.descripcion.substring(0, 45) + (inc.descripcion.length > 45 ? '...' : '')) : 'Sin detalles';
 
-            tbody.innerHTML += `<tr><td style="font-size:11px; color:#666;">${fechaTexto}</td><td><strong>${placa}</strong></td><td>${vehNombre}</td><td><span style="background:#f0f4f8; padding:4px 8px; border-radius:4px; font-size:11px; color:${colorOrigen}; font-weight:800;">${inc.origen.toUpperCase()}</span></td><td>${inc.descripcion}</td></tr>`;
+            tbody.innerHTML += `<tr>
+                <td style="font-size:11px; color:#666;">${fechaTexto}</td>
+                <td><strong>${inc.placa}</strong></td>
+                <td>${inc.vehiculo}</td>
+                <td><span style="background:${bgTipo}; padding:4px 8px; border-radius:4px; font-size:11px; color:${colorTipo}; font-weight:800;">${inc.tipo.toUpperCase()}</span></td>
+                <td style="font-size:12px;">${descCorta}</td>
+                <td><button class="btn-primary" style="padding:4px 8px; font-size:11px; background:#f0f0f0; border:1px solid #ccc; display:inline-flex;" onclick="verDetalleIncidente('${inc.id_unico}')" title="Ver Detalles">👁️ Ver</button></td>
+            </tr>`;
         });
     }
 
@@ -525,12 +556,12 @@
         const mesSeleccionado = document.getElementById('filtroMesIncidentes').value;
 
         const filtrados = incidentesGlobal.filter(inc => {
-            const placa = inc.vehiculos ? inc.vehiculos.placa.toLowerCase() : '';
+            const placa = inc.placa ? inc.placa.toLowerCase() : '';
             const desc = inc.descripcion ? inc.descripcion.toLowerCase() : '';
             
             let cumpleMes = true;
-            if (mesSeleccionado && inc.fecha_incidente) {
-                cumpleMes = inc.fecha_incidente.startsWith(mesSeleccionado);
+            if (mesSeleccionado && inc.fecha) {
+                cumpleMes = inc.fecha.startsWith(mesSeleccionado);
             }
 
             return (placa.includes(txt) || desc.includes(txt)) && cumpleMes;
@@ -544,9 +575,32 @@
         filtrarIncidentes();
     }
 
-    function exportarTablaVisualCSV(tablaId, nombreArchivo) {
-        // Función obsoleta - Se reemplaza por exportarIncidentesCSV para exportación de data cruda profesional.
+    function verDetalleIncidente(id_unico) {
+        const inc = incidentesGlobal.find(x => x.id_unico === id_unico);
+        if(!inc) return;
+        
+        document.getElementById('di_title').innerText = `Ficha Técnica - ${inc.tipo.toUpperCase()}`;
+        document.getElementById('di_title').style.color = inc.tipo === 'Siniestro' ? 'var(--crit-color)' : 'var(--warn-color)';
+        
+        const f = inc.fecha ? new Date(inc.fecha) : null;
+        document.getElementById('di_fecha').innerText = f ? f.toLocaleDateString() + ' ' + f.toLocaleTimeString() : 'N/A';
+        document.getElementById('di_vehiculo').innerText = `${inc.placa} - ${inc.vehiculo}`;
+        document.getElementById('di_tipo').innerText = inc.tipo;
+        document.getElementById('di_conductor').innerText = inc.conductor;
+        document.getElementById('di_estado').innerText = inc.estado;
+        
+        document.getElementById('di_descripcion').innerHTML = (inc.descripcion || 'Sin detalles proporcionados.').replace(/\n/g, '<br>');
+        
+        if (inc.docs) {
+            document.getElementById('di_evidencia_box').style.display = 'block';
+            document.getElementById('di_evidencia_link').href = inc.docs;
+        } else {
+            document.getElementById('di_evidencia_box').style.display = 'none';
+        }
+        
+        document.getElementById('modalDetalleIncidencia').style.display = 'flex';
     }
+
 
     inicializarDashboard();
     cargarHistorial();
@@ -618,7 +672,6 @@
             const mesFiltro = document.getElementById('ai_mes').value; // YYYY-MM
             let html = '';
             
-            // Permitir ver el histórico completo si el input de mes se borra
             const filtrados = mesFiltro ? data.data.filter(i => {
                 if(!i.fecha) return false;
                 return i.fecha.substring(0, 7) === mesFiltro;
