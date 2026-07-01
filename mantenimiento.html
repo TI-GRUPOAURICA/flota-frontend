@@ -126,7 +126,8 @@
 
             <!-- Alerta Mantenimiento -->
             <div id="alerta_taller" style="display:none; background: #fdf2e9; padding: 15px; border-radius: 8px; border-left: 4px solid #e67e22; margin-bottom: 20px;">
-                🚨 ATENCIÓN: Este vehículo fue bloqueado y requiere liberación.
+                <strong style="color: #d35400;">🚨 VEHÍCULO BLOQUEADO EN TALLER</strong>
+                <p id="alerta_taller_texto" style="margin: 5px 0 0 0; font-size: 13px;"></p>
             </div>
 
             <div class="form-group">
@@ -402,6 +403,8 @@
             document.getElementById('edit_estado').disabled = false;
             if (["Mantenimiento Correctivo", "Mantenimiento Preventivo", 144280001, "144280001", 144280003, "144280003"].includes(estadoOriginal)) { 
                 document.getElementById('alerta_taller').style.display = 'block'; 
+                const motivo = v.notas_mantenimiento ? v.notas_mantenimiento : 'Ingresado al taller sin un diagnóstico inicial especificado.';
+                document.getElementById('alerta_taller_texto').innerHTML = `Este vehículo no puede salir de base hasta que termine sus reparaciones y sea devuelto al estado "Disponible".<br><br><b>Detalle / Motivo de Ingreso:</b> <span style="color:#333; font-weight:600;">${motivo}</span>`;
             } else { 
                 document.getElementById('alerta_taller').style.display = 'none'; 
             }
