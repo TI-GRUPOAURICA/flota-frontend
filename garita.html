@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Garita de Control - Grupo Aurica</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800;900&display=swap" rel="stylesheet">
     <style>
         :root { --aurica-blue: #305da0; --aurica-bg: #eceded; --text-dark: #2c3e50; --ok-color: #27ae60; --crit-color: #e74c3c; --warn-color: #f39c12; }
@@ -221,11 +222,28 @@
             div.innerHTML = `✅ ${parte.nombre}`;
             div.onclick = function() {
                 if (this.dataset.estado === 'true') {
-                    this.dataset.estado = 'false';
-                    this.className = 'check-item falla';
-                    this.innerHTML = `❌ ${parte.nombre}`;
+                    Swal.fire({
+                        title: `Falla en ${parte.nombre}`,
+                        input: 'text',
+                        inputLabel: 'Describa el daño o problema:',
+                        inputPlaceholder: 'Ej. Foco roto, raspon, etc.',
+                        showCancelButton: true,
+                        confirmButtonText: 'Registrar',
+                        cancelButtonText: 'Cancelar',
+                        inputValidator: (value) => {
+                            if (!value) return '¡Debe ingresar un detalle obligatorio!';
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            this.dataset.estado = 'false';
+                            this.dataset.observacion = result.value;
+                            this.className = 'check-item falla';
+                            this.innerHTML = `❌ ${parte.nombre}`;
+                        }
+                    });
                 } else {
                     this.dataset.estado = 'true';
+                    delete this.dataset.observacion;
                     this.className = 'check-item ok';
                     this.innerHTML = `✅ ${parte.nombre}`;
                 }
@@ -371,7 +389,21 @@
             chk_limpieza: document.getElementById('chk_s_limpieza').dataset.estado === 'true',
             chk_guardafangos: document.getElementById('chk_s_guardafangos').dataset.estado === 'true',
             chk_capo: document.getElementById('chk_s_capo').dataset.estado === 'true',
-            chk_cinturon: document.getElementById('chk_s_cinturon').dataset.estado === 'true'
+            chk_cinturon: document.getElementById('chk_s_cinturon').dataset.estado === 'true',
+            detalles_checklist: {
+                brisas: document.getElementById('chk_s_brisas').dataset.observacion || "",
+                parachoques: document.getElementById('chk_s_parachoques').dataset.observacion || "",
+                llantas: document.getElementById('chk_s_llantas').dataset.observacion || "",
+                puertas: document.getElementById('chk_s_puertas').dataset.observacion || "",
+                luces: document.getElementById('chk_s_luces').dataset.observacion || "",
+                bocina: document.getElementById('chk_s_bocina').dataset.observacion || "",
+                maletero: document.getElementById('chk_s_maletero').dataset.observacion || "",
+                lunas: document.getElementById('chk_s_lunas').dataset.observacion || "",
+                limpieza: document.getElementById('chk_s_limpieza').dataset.observacion || "",
+                guardafangos: document.getElementById('chk_s_guardafangos').dataset.observacion || "",
+                capo: document.getElementById('chk_s_capo').dataset.observacion || "",
+                cinturon: document.getElementById('chk_s_cinturon').dataset.observacion || ""
+            }
         };
         try {
             const res = await fetch(`${API_URL}/registrar-salida`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
@@ -404,7 +436,21 @@
             chk_limpieza: document.getElementById('chk_r_limpieza').dataset.estado === 'true',
             chk_guardafangos: document.getElementById('chk_r_guardafangos').dataset.estado === 'true',
             chk_capo: document.getElementById('chk_r_capo').dataset.estado === 'true',
-            chk_cinturon: document.getElementById('chk_r_cinturon').dataset.estado === 'true'
+            chk_cinturon: document.getElementById('chk_r_cinturon').dataset.estado === 'true',
+            detalles_checklist: {
+                brisas: document.getElementById('chk_r_brisas').dataset.observacion || "",
+                parachoques: document.getElementById('chk_r_parachoques').dataset.observacion || "",
+                llantas: document.getElementById('chk_r_llantas').dataset.observacion || "",
+                puertas: document.getElementById('chk_r_puertas').dataset.observacion || "",
+                luces: document.getElementById('chk_r_luces').dataset.observacion || "",
+                bocina: document.getElementById('chk_r_bocina').dataset.observacion || "",
+                maletero: document.getElementById('chk_r_maletero').dataset.observacion || "",
+                lunas: document.getElementById('chk_r_lunas').dataset.observacion || "",
+                limpieza: document.getElementById('chk_r_limpieza').dataset.observacion || "",
+                guardafangos: document.getElementById('chk_r_guardafangos').dataset.observacion || "",
+                capo: document.getElementById('chk_r_capo').dataset.observacion || "",
+                cinturon: document.getElementById('chk_r_cinturon').dataset.observacion || ""
+            }
         };
         
         if (!payload.chk_brisas || !payload.chk_llantas || !payload.chk_luces || !payload.chk_bocina) { payload.estado_llegada = "Mantenimiento Correctivo"; }
