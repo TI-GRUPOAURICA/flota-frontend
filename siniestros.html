@@ -163,8 +163,8 @@
         <form id="formUpdate">
             <input type="hidden" id="u_id">
             <div class="form-group">
-                <label>Nuevo Estado</label>
-                <select id="u_estado">
+                <label>Estado Asignado</label>
+                <select id="u_estado" disabled style="background: #eef2f5; cursor: not-allowed; opacity: 0.8;">
                     <option value="Reportado">Reportado</option>
                     <option value="En Trámite Seguro">En Trámite Seguro</option>
                     <option value="Taller Siniestro">Taller Siniestro</option>
@@ -482,6 +482,11 @@
 
     document.getElementById('formUpdate').addEventListener('submit', async (e) => {
         e.preventDefault();
+
+        if (!confirm("¿Está seguro de guardar este estado y observación? Una vez registrado en el historial, no podrá ser modificado.")) {
+            return;
+        }
+
         const btn = document.getElementById('btnUpdate'); 
         const originalText = "Guardar Cambios";
         btn.innerText = "Guardando...";
