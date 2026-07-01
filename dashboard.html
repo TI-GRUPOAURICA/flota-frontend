@@ -382,6 +382,7 @@
             const combRetorno = viaje.combustible_retorno;
             let consumoTexto = "N/A"; let colorConsumo = ""; let tooltipComb = "Sin datos";
             let actionOnClick = "";
+            const capTanque = viaje.vehiculos ? viaje.vehiculos.capacidad_tanque : null;
             
             if (combSalida !== null && combRetorno !== null) {
                 tooltipComb = `Salió con: ${combSalida}% | Llegó con: ${combRetorno}%`;
@@ -391,14 +392,28 @@
                     consumoTexto = `⛽ Recargó en ruta`; 
                     colorConsumo = "color: var(--route-color); font-weight: 700;"; 
                 } else { 
-                    let ratio = (diferencia > 0 && kmRecorridos > 0) ? (kmRecorridos / diferencia).toFixed(1) : 0;
-                    consumoTexto = `↓ ${diferencia}% 🔍`;
-                    if(diferencia > 0 && ratio < 1.5) { 
-                        colorConsumo = 'color: var(--crit-color); font-weight: 900; background:#fdeaea; padding:3px 8px; border-radius:12px; border: 1px solid #fad2d2; cursor:pointer;';
+                    if(capTanque) {
+                        let litrosConsumidos = (diferencia / 100) * capTanque;
+                        let ratio = (litrosConsumidos > 0 && kmRecorridos > 0) ? (kmRecorridos / litrosConsumidos).toFixed(1) : 0;
+                        consumoTexto = `↓ ${litrosConsumidos.toFixed(1)} L 🔍`;
+                        
+                        if(litrosConsumidos > 0 && ratio < 6) { // Ejemplo: Menos de 6 Km/L es sospechoso
+                            colorConsumo = 'color: var(--crit-color); font-weight: 900; background:#fdeaea; padding:3px 8px; border-radius:12px; border: 1px solid #fad2d2; cursor:pointer;';
+                        } else {
+                            colorConsumo = 'color: var(--ok-color); font-weight: 700; background:#eafaf1; padding:3px 8px; border-radius:12px; cursor:pointer;';
+                        }
+                        actionOnClick = `onclick="abrirAuditoriaConsumo('${placa}', ${kmRecorridos}, '${litrosConsumidos.toFixed(1)} Litros', '${ratio} Km/L', true, ${ratio})"`;
                     } else {
-                        colorConsumo = 'color: var(--ok-color); font-weight: 700; background:#eafaf1; padding:3px 8px; border-radius:12px; cursor:pointer;';
+                        // Fallback a % si no hay capacidad registrada
+                        let ratio = (diferencia > 0 && kmRecorridos > 0) ? (kmRecorridos / diferencia).toFixed(1) : 0;
+                        consumoTexto = `↓ ${diferencia}% 🔍`;
+                        if(diferencia > 0 && ratio < 1.5) { 
+                            colorConsumo = 'color: var(--crit-color); font-weight: 900; background:#fdeaea; padding:3px 8px; border-radius:12px; border: 1px solid #fad2d2; cursor:pointer;';
+                        } else {
+                            colorConsumo = 'color: var(--ok-color); font-weight: 700; background:#eafaf1; padding:3px 8px; border-radius:12px; cursor:pointer;';
+                        }
+                        actionOnClick = `onclick="abrirAuditoriaConsumo('${placa}', ${kmRecorridos}, '${diferencia}% del tanque', '${ratio} Km por cada 1%', false, ${ratio})"`;
                     }
-                    actionOnClick = `onclick="abrirAuditoriaConsumo('${placa}', ${kmRecorridos}, ${diferencia}, ${ratio})"`;
                 }
             }
             
@@ -455,15 +470,23 @@
         document.getElementById('modalExportar').style.display = 'flex';
     }
 
-    function abrirAuditoriaConsumo(placa, km, porcentaje, ratio) {
+    function abrirAuditoriaConsumo(placa, km, porcentajeTexto, ratioTexto, isLiters, rawRatio) {
         document.getElementById('ac_vehiculo').innerText = placa;
         document.getElementById('ac_km').innerText = km + " Km";
-        document.getElementById('ac_porcentaje').innerText = porcentaje + "% del tanque";
-        document.getElementById('ac_ratio').innerText = ratio + " Km por cada 1%";
+        document.getElementById('ac_porcentaje').innerText = porcentajeTexto;
+        document.getElementById('ac_ratio').innerText = ratioTexto;
         
         let evalSpan = document.getElementById('ac_eval');
         let box = document.getElementById('ac_box');
-        if (ratio < 1.5) {
+        
+        let isSuspicious = false;
+        if(isLiters) {
+            isSuspicious = parseFloat(rawRatio) < 6;
+        } else {
+            isSuspicious = parseFloat(rawRatio) < 1.5;
+        }
+
+        if (isSuspicious) {
             evalSpan.innerHTML = "🚩 <strong>Consumo Excesivo / Sospechoso.</strong> El vehículo recorrió muy poca distancia para la cantidad de combustible reportada como consumida. Requiere investigación.";
             evalSpan.style.color = "var(--crit-color)";
             box.style.borderLeftColor = "var(--crit-color)";
