@@ -172,6 +172,10 @@
                 </select>
             </div>
             <div class="form-group">
+                <label>Observaciones / Detalle del Estado <span style="color:#e74c3c">*</span></label>
+                <textarea id="u_observacion" rows="3" required placeholder="Motivo o detalle obligatorio de este estado..."></textarea>
+            </div>
+            <div class="form-group">
                 <label>Añadir Nuevos Documentos <span style="color:#888; font-weight:400;">- Opcional</span></label>
                 <div class="dropzone" style="padding: 15px;" id="dropzone_u" onclick="document.getElementById('u_docs').click()" ondragover="event.preventDefault(); this.classList.add('dragover');" ondragleave="this.classList.remove('dragover');" ondrop="event.preventDefault(); this.classList.remove('dragover'); document.getElementById('u_docs').files = event.dataTransfer.files; updateFileList('u_docs', 'list_u');">
                     <div class="dropzone-text" style="margin-top:0;">Haz clic o arrastra más archivos aquí</div>
@@ -460,6 +464,7 @@
         
         document.getElementById('u_docs').dataset.currentUrl = s.url_documentos || "";
         document.getElementById('u_docs').value = ""; // Clear file input
+        document.getElementById('u_observacion').value = ""; // Clear observacion
         if (s.url_documentos) {
             const urls = s.url_documentos.split(',');
             const links = urls.map((url, i) => `<a href="${url}" target="_blank" style="color:var(--aurica-blue); margin-right:8px;">Doc ${i+1}</a>`).join('');
@@ -497,7 +502,8 @@
         const payload = {
             id: document.getElementById('u_id').value,
             estado: document.getElementById('u_estado').value,
-            url_documentos: urlDocs
+            url_documentos: urlDocs,
+            observacion: document.getElementById('u_observacion').value
         };
         
         if (payload.estado === 'Cerrado') { payload.fecha_cierre = new Date().toISOString(); }
@@ -534,21 +540,10 @@
         const s = siniestrosData.find(x => x.id === id);
         if(!s || s.estado === nuevoEstado) return;
 
-        // Actualizar en BD
-        try {
-            const res = await fetch(`${API_URL}/actualizar-siniestro`, { 
-                method: 'PATCH', 
-                headers: { 'Content-Type': 'application/json' }, 
-                body: JSON.stringify({ id: id, estado: nuevoEstado }) 
-            });
-            if (res.ok) { 
-                cargarSiniestros(); 
-            } else {
-                alert("Error al actualizar el estado");
-            }
-        } catch (error) { 
-            alert("Error de red al actualizar estado."); 
-        }
+        // Abrir modal en vez de actualizar BD directo para obligar observación
+        abrirModal(id);
+        document.getElementById('u_estado').value = nuevoEstado;
+        return;
     }
 
     inicializar();
