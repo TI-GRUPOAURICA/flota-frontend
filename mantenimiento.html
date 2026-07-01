@@ -268,10 +268,19 @@
                 if (v.cr596_lunaspolarizadas === 144280000) estLunas = { clase: 'green', texto: 'Sí' };
                 else if (v.cr596_lunaspolarizadas === 144280001) estLunas = { clase: 'gray', texto: 'No' }; 
                 
+                let docsVencidos = (estSOAT.clase === 'red' || estRT.clase === 'red' || estSeguro.clase === 'red' || estGPS.clase === 'red' || estMante.clase === 'red');
                 let badgeHTML = ""; 
-                if(v.cr596_estadooperativo === "En uso") badgeHTML = `<div class="op-badge" style="background:#f39c12">En Ruta</div>`;
-                if(["Mantenimiento Correctivo", "Mantenimiento Preventivo", "Siniestro"].includes(v.cr596_estadooperativo)) badgeHTML = `<div class="op-badge" style="background:#e74c3c">${v.cr596_estadooperativo}</div>`;
-                if(["Baja Temporal", "Dado de Baja"].includes(v.cr596_estadooperativo)) badgeHTML = `<div class="op-badge" style="background:#34495e">${v.cr596_estadooperativo}</div>`;
+                if(v.cr596_estadooperativo === "Siniestro") {
+                    badgeHTML = `<div class="op-badge" style="background:#e74c3c; text-transform: uppercase;">SINIESTRO</div>`;
+                } else if(["Mantenimiento Correctivo", "Mantenimiento Preventivo"].includes(v.cr596_estadooperativo)) {
+                    badgeHTML = `<div class="op-badge" style="background:#e74c3c; text-transform: uppercase;">TALLER/CRÍTICO</div>`;
+                } else if (docsVencidos) {
+                    badgeHTML = `<div class="op-badge" style="background:#e74c3c; text-transform: uppercase;">DOC. VENCIDOS</div>`;
+                } else if(v.cr596_estadooperativo === "En uso") {
+                    badgeHTML = `<div class="op-badge" style="background:#f39c12; text-transform: uppercase;">En Ruta</div>`;
+                } else if(["Baja Temporal", "Dado de Baja"].includes(v.cr596_estadooperativo)) {
+                    badgeHTML = `<div class="op-badge" style="background:#34495e; text-transform: uppercase;">${v.cr596_estadooperativo}</div>`;
+                }
 
                 const fuelNivel = v.cr596_nivelcombustible || 0; 
                 const fuelTipo = v.cr596_tipocombustible || "Gasolina"; 
