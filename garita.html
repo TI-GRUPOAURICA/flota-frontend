@@ -38,6 +38,8 @@
         .check-item { display: flex; align-items: center; justify-content: center; padding: 10px; font-size: 12px; font-weight: 700; border-radius: 6px; cursor: pointer; transition: 0.2s; user-select: none; text-align: center; border: 2px solid transparent;}
         .check-item.ok { background: #e8f8f5; color: var(--ok-color); border-color: #a3e4d7; }
         .check-item.falla { background: #fdeaea; color: var(--crit-color); border-color: #f5b7b1; }
+        .check-item.otros-ok { background: #e2e6ea; color: #383d41; border-color: #dae0e5; }
+        .check-item.otros-falla { background: #fcf8e3; color: #8a6d3b; border-color: #faebcc; }
         .alerta-error { display: none; background: #fdeaea; color: var(--crit-color); padding: 15px; border-radius: 8px; font-weight: 800; font-size: 13px; margin-bottom: 15px; border-left: 5px solid var(--crit-color);}
     </style>
 </head>
@@ -208,7 +210,8 @@
         { id: 'luces', nombre: 'Luces' }, { id: 'bocina', nombre: 'Bocina' },
         { id: 'maletero', nombre: 'Maletero' }, { id: 'lunas', nombre: 'Lunas' },
         { id: 'limpieza', nombre: 'Limpieza' }, { id: 'guardafangos', nombre: 'Guardafangos' },
-        { id: 'capo', nombre: 'Capó' }, { id: 'cinturon', nombre: 'Cinturones' }
+        { id: 'capo', nombre: 'Capó' }, { id: 'cinturon', nombre: 'Cinturones' },
+        { id: 'otros', nombre: 'Otra Obs.' }
     ];
 
     function generarGridChecklist(contenedorId, prefijo) {
@@ -216,10 +219,17 @@
         contenedor.innerHTML = '';
         partesVehiculo.forEach(parte => {
             const div = document.createElement('div');
-            div.className = 'check-item ok';
+            
+            if (parte.id === 'otros') {
+                div.className = 'check-item otros-ok';
+                div.innerHTML = `📝 ${parte.nombre}`;
+            } else {
+                div.className = 'check-item ok';
+                div.innerHTML = `✅ ${parte.nombre}`;
+            }
+            
             div.id = `chk_${prefijo}_${parte.id}`;
             div.dataset.estado = 'true';
-            div.innerHTML = `✅ ${parte.nombre}`;
             div.onclick = function() {
                 if (this.dataset.estado === 'true') {
                     Swal.fire({
@@ -237,15 +247,25 @@
                         if (result.isConfirmed) {
                             this.dataset.estado = 'false';
                             this.dataset.observacion = result.value;
-                            this.className = 'check-item falla';
-                            this.innerHTML = `❌ ${parte.nombre}`;
+                            if (parte.id === 'otros') {
+                                this.className = 'check-item otros-falla';
+                                this.innerHTML = `⚠️ Anotado`;
+                            } else {
+                                this.className = 'check-item falla';
+                                this.innerHTML = `❌ ${parte.nombre}`;
+                            }
                         }
                     });
                 } else {
                     this.dataset.estado = 'true';
                     delete this.dataset.observacion;
-                    this.className = 'check-item ok';
-                    this.innerHTML = `✅ ${parte.nombre}`;
+                    if (parte.id === 'otros') {
+                        this.className = 'check-item otros-ok';
+                        this.innerHTML = `📝 ${parte.nombre}`;
+                    } else {
+                        this.className = 'check-item ok';
+                        this.innerHTML = `✅ ${parte.nombre}`;
+                    }
                 }
             };
             contenedor.appendChild(div);
@@ -390,6 +410,7 @@
             chk_guardafangos: document.getElementById('chk_s_guardafangos').dataset.estado === 'true',
             chk_capo: document.getElementById('chk_s_capo').dataset.estado === 'true',
             chk_cinturon: document.getElementById('chk_s_cinturon').dataset.estado === 'true',
+            chk_otros: document.getElementById('chk_s_otros').dataset.estado === 'true',
             detalles_checklist: {
                 brisas: document.getElementById('chk_s_brisas').dataset.observacion || "",
                 parachoques: document.getElementById('chk_s_parachoques').dataset.observacion || "",
@@ -402,7 +423,8 @@
                 limpieza: document.getElementById('chk_s_limpieza').dataset.observacion || "",
                 guardafangos: document.getElementById('chk_s_guardafangos').dataset.observacion || "",
                 capo: document.getElementById('chk_s_capo').dataset.observacion || "",
-                cinturon: document.getElementById('chk_s_cinturon').dataset.observacion || ""
+                cinturon: document.getElementById('chk_s_cinturon').dataset.observacion || "",
+                otros: document.getElementById('chk_s_otros').dataset.observacion || ""
             }
         };
         try {
@@ -437,6 +459,7 @@
             chk_guardafangos: document.getElementById('chk_r_guardafangos').dataset.estado === 'true',
             chk_capo: document.getElementById('chk_r_capo').dataset.estado === 'true',
             chk_cinturon: document.getElementById('chk_r_cinturon').dataset.estado === 'true',
+            chk_otros: document.getElementById('chk_r_otros').dataset.estado === 'true',
             detalles_checklist: {
                 brisas: document.getElementById('chk_r_brisas').dataset.observacion || "",
                 parachoques: document.getElementById('chk_r_parachoques').dataset.observacion || "",
@@ -449,7 +472,8 @@
                 limpieza: document.getElementById('chk_r_limpieza').dataset.observacion || "",
                 guardafangos: document.getElementById('chk_r_guardafangos').dataset.observacion || "",
                 capo: document.getElementById('chk_r_capo').dataset.observacion || "",
-                cinturon: document.getElementById('chk_r_cinturon').dataset.observacion || ""
+                cinturon: document.getElementById('chk_r_cinturon').dataset.observacion || "",
+                otros: document.getElementById('chk_r_otros').dataset.observacion || ""
             }
         };
         
