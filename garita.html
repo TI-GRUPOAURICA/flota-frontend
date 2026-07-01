@@ -274,7 +274,19 @@
             const data = await res.json();
             const select = document.getElementById('s_conductor');
             select.innerHTML = '<option value="">Seleccione al conductor...</option>';
-            data.data.forEach(c => { select.innerHTML += `<option value="${c.id}">${c.nombre} (Brevete: ${c.brevete})</option>`; });
+            data.data.forEach(c => { 
+                const hoy = new Date();
+                let docVencido = false;
+                if (c.vencimiento_brevete && new Date(c.vencimiento_brevete) < hoy) {
+                    docVencido = true;
+                }
+                
+                if (docVencido) {
+                    select.innerHTML += `<option value="${c.id}" disabled>⛔ ${c.nombre} (Brevete Vencido: ${c.vencimiento_brevete})</option>`; 
+                } else {
+                    select.innerHTML += `<option value="${c.id}">${c.nombre} (Brevete: ${c.brevete})</option>`; 
+                }
+            });
         } catch(e) { console.error(e); document.getElementById('s_conductor').innerHTML = '<option>Error al cargar conductores</option>'; }
     }
 
@@ -288,7 +300,21 @@
             memoriaVehiculos.forEach(v => {
                 const est = v.cr596_estadooperativo;
                 if(est === "Disponible" || est == 144280000 || est === "144280000") { 
-                    select.innerHTML += `<option value="${v.cr596_flota_vehiculoid}">[${v.cr596_placa}] - ${v.cr596_nombre}</option>`; 
+                    let docVencido = false;
+                    const hoy = new Date();
+                    const fechas = [v.cr596_vencimientosoat, v.cr596_vencimientorevisiontecnica, v.cr596_vencimientoseguro, v.cr596_vencimientogps];
+                    for (let f of fechas) {
+                        if (f && new Date(f) < hoy) { docVencido = true; break; }
+                    }
+                    const kmActual = v.cr596_kilometrajeactual || 0;
+                    const proxMante = v.cr596_proximomantenimientokm || 0;
+                    if (proxMante > 0 && kmActual >= proxMante) docVencido = true;
+
+                    if (docVencido) {
+                        select.innerHTML += `<option value="${v.cr596_flota_vehiculoid}" disabled>⛔ [${v.cr596_placa}] - ${v.cr596_nombre} (Doc/Mantenimiento Vencido)</option>`; 
+                    } else {
+                        select.innerHTML += `<option value="${v.cr596_flota_vehiculoid}">[${v.cr596_placa}] - ${v.cr596_nombre}</option>`; 
+                    }
                 }
             });
         } catch(e) { console.error(e); document.getElementById('s_vehiculo').innerHTML = '<option>Error al cargar veh\u00edculos</option>'; }

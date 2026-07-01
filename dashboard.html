@@ -280,9 +280,22 @@
             lista.forEach(v => {
                 let txtEstado = ""; let claseDot = "";
                 const estado = v.cr596_estadooperativo;
-                if(estado === "Disponible" || estado == 144280000 || estado === "144280000") { disponible++; txtEstado = "Disponible"; claseDot = "status-0"; }
+                
+                let docVencido = false;
+                const hoy = new Date();
+                const fechas = [v.cr596_vencimientosoat, v.cr596_vencimientorevisiontecnica, v.cr596_vencimientoseguro, v.cr596_vencimientogps];
+                for (let f of fechas) {
+                    if (f && new Date(f) < hoy) { docVencido = true; break; }
+                }
+                const kmActual = v.cr596_kilometrajeactual || 0;
+                const proxMante = v.cr596_proximomantenimientokm || 0;
+                if (proxMante > 0 && kmActual >= proxMante) docVencido = true;
+
+                if(estado === "Siniestro") { siniestros++; txtEstado = "Siniestrado"; claseDot = "status-2"; }
+                else if(["Mantenimiento Correctivo", "Mantenimiento Preventivo"].includes(estado)) { taller++; txtEstado = estado; claseDot = "status-2"; }
                 else if(estado === "En uso" || estado == 144280002 || estado === "144280002") { enRuta++; txtEstado = "En Ruta"; claseDot = "status-1"; }
-                else if(estado === "Siniestro") { siniestros++; txtEstado = "Siniestrado"; claseDot = "status-2"; }
+                else if (docVencido) { taller++; txtEstado = "Doc. Vencidos"; claseDot = "status-2"; }
+                else if(estado === "Disponible" || estado == 144280000 || estado === "144280000") { disponible++; txtEstado = "Disponible"; claseDot = "status-0"; }
                 else { taller++; txtEstado = estado || "Desconocido"; claseDot = "status-2"; }
 
                 tbody.innerHTML += `<tr><td><strong>${v.cr596_placa}</strong></td><td>${v.cr596_nombre}</td><td>${v.cr596_kilometrajeactual.toLocaleString()} Km</td><td>${v.cr596_nivelcombustible}%</td><td><span class="status-dot ${claseDot}"></span> ${txtEstado}</td>
