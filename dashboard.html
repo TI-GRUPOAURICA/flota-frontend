@@ -383,6 +383,7 @@
             let consumoTexto = "N/A"; let colorConsumo = ""; let tooltipComb = "Sin datos";
             let actionOnClick = "";
             const capTanque = viaje.vehiculos ? viaje.vehiculos.capacidad_tanque : null;
+            const rendEsperado = viaje.vehiculos ? viaje.vehiculos.rendimiento_esperado : null;
             
             if (combSalida !== null && combRetorno !== null) {
                 tooltipComb = `Salió con: ${combSalida}% | Llegó con: ${combRetorno}%`;
@@ -397,12 +398,14 @@
                         let ratio = (litrosConsumidos > 0 && kmRecorridos > 0) ? (kmRecorridos / litrosConsumidos).toFixed(1) : 0;
                         consumoTexto = `↓ ${litrosConsumidos.toFixed(1)} L 🔍`;
                         
-                        if(litrosConsumidos > 0 && ratio < 6) { // Ejemplo: Menos de 6 Km/L es sospechoso
+                        let umbralSospechoso = rendEsperado ? rendEsperado : 5;
+                        
+                        if(litrosConsumidos > 0 && ratio < umbralSospechoso) { 
                             colorConsumo = 'color: var(--crit-color); font-weight: 900; background:#fdeaea; padding:3px 8px; border-radius:12px; border: 1px solid #fad2d2; cursor:pointer;';
                         } else {
                             colorConsumo = 'color: var(--ok-color); font-weight: 700; background:#eafaf1; padding:3px 8px; border-radius:12px; cursor:pointer;';
                         }
-                        actionOnClick = `onclick="abrirAuditoriaConsumo('${placa}', ${kmRecorridos}, '${litrosConsumidos.toFixed(1)} Litros', '${ratio} Km/L', true, ${ratio})"`;
+                        actionOnClick = `onclick="abrirAuditoriaConsumo('${placa}', ${kmRecorridos}, '${litrosConsumidos.toFixed(1)} Litros', '${ratio} Km/L', true, ${ratio}, ${umbralSospechoso})"`;
                     } else {
                         // Fallback a % si no hay capacidad registrada
                         let ratio = (diferencia > 0 && kmRecorridos > 0) ? (kmRecorridos / diferencia).toFixed(1) : 0;
@@ -412,7 +415,7 @@
                         } else {
                             colorConsumo = 'color: var(--ok-color); font-weight: 700; background:#eafaf1; padding:3px 8px; border-radius:12px; cursor:pointer;';
                         }
-                        actionOnClick = `onclick="abrirAuditoriaConsumo('${placa}', ${kmRecorridos}, '${diferencia}% del tanque', '${ratio} Km por cada 1%', false, ${ratio})"`;
+                        actionOnClick = `onclick="abrirAuditoriaConsumo('${placa}', ${kmRecorridos}, '${diferencia}% del tanque', '${ratio} Km por cada 1%', false, ${ratio}, 1.5)"`;
                     }
                 }
             }
@@ -470,7 +473,7 @@
         document.getElementById('modalExportar').style.display = 'flex';
     }
 
-    function abrirAuditoriaConsumo(placa, km, porcentajeTexto, ratioTexto, isLiters, rawRatio) {
+    function abrirAuditoriaConsumo(placa, km, porcentajeTexto, ratioTexto, isLiters, rawRatio, umbral) {
         document.getElementById('ac_vehiculo').innerText = placa;
         document.getElementById('ac_km').innerText = km + " Km";
         document.getElementById('ac_porcentaje').innerText = porcentajeTexto;
@@ -479,20 +482,15 @@
         let evalSpan = document.getElementById('ac_eval');
         let box = document.getElementById('ac_box');
         
-        let isSuspicious = false;
-        if(isLiters) {
-            isSuspicious = parseFloat(rawRatio) < 6;
-        } else {
-            isSuspicious = parseFloat(rawRatio) < 1.5;
-        }
+        let isSuspicious = parseFloat(rawRatio) < umbral;
 
         if (isSuspicious) {
-            evalSpan.innerHTML = "🚩 <strong>Consumo Excesivo / Sospechoso.</strong> El vehículo recorrió muy poca distancia para la cantidad de combustible reportada como consumida. Requiere investigación.";
+            evalSpan.innerHTML = `🚩 <strong>Consumo Excesivo / Sospechoso.</strong> El vehículo rindió por debajo del mínimo esperado (${umbral} ${isLiters ? 'Km/L' : 'Km/%'}). Requiere investigación técnica o revisión de control de combustible.`;
             evalSpan.style.color = "var(--crit-color)";
             box.style.borderLeftColor = "var(--crit-color)";
             box.style.background = "#fdeaea";
         } else {
-            evalSpan.innerHTML = "✅ <strong>Consumo Normal.</strong> El ratio de rendimiento está dentro de los parámetros esperados.";
+            evalSpan.innerHTML = `✅ <strong>Consumo Normal.</strong> El ratio de rendimiento cumple o supera los parámetros configurados (Min: ${umbral} ${isLiters ? 'Km/L' : 'Km/%'}).`;
             evalSpan.style.color = "var(--ok-color)";
             box.style.borderLeftColor = "var(--ok-color)";
             box.style.background = "#eafaf1";

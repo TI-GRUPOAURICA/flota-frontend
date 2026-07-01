@@ -160,6 +160,7 @@
                     <div class="form-group" style="margin: 0;"><label>Año de Fab.</label><input type="number" id="edit_ano" placeholder="Ej. 2022"></div>
                     <div class="form-group" style="margin: 0;"><label>Tipo</label><input type="text" id="edit_tipo" placeholder="Ej. Camioneta / Furgón"></div>
                     <div class="form-group" style="margin: 0;"><label>Cap. Tanque (L)</label><input type="number" id="edit_tanque" placeholder="Ej. 60"></div>
+                    <div class="form-group" style="margin: 0;"><label>Rendimiento Base (Km/L)</label><input type="number" step="0.1" id="edit_rendimiento" placeholder="Ej. 12.5"></div>
                     <div class="form-group" style="margin: 0; grid-column: span 2;">
                         <label>Propietario</label>
                         <select id="edit_propietario">
@@ -308,6 +309,7 @@
                             <span class="tag-item">TIPO: ${v.cr596_tipo || '-'}</span>
                             <span class="tag-item">AÑO: ${v.cr596_ano || '-'}</span>
                             <span class="tag-item">TANQUE: ${v.cr596_capacidadtanquelitros ? v.cr596_capacidadtanquelitros + ' L' : 'N/A'}</span>
+                            <span class="tag-item">REND: ${v.cr596_rendimientoesperado ? v.cr596_rendimientoesperado + ' Km/L' : 'N/A'}</span>
                             <span class="tag-empresa">🏢 ${empresaNombre}</span>
                         </div>
                         <div class="info-box">
@@ -420,6 +422,7 @@
         document.getElementById('edit_ano').value = v.cr596_ano || "";
         document.getElementById('edit_tipo').value = v.cr596_tipo || "";
         document.getElementById('edit_tanque').value = v.cr596_capacidadtanquelitros || "";
+        document.getElementById('edit_rendimiento').value = v.cr596_rendimientoesperado || "";
         document.getElementById('edit_propietario').value = v.cr596_tipopropiedad || "";
         document.getElementById('edit_freq').value = v.cr596_frecuenciamantenimiento || "";
         document.getElementById('edit_ultimo').value = v.cr596_ultimomantenimientokm || "";
@@ -489,6 +492,7 @@
             ano: document.getElementById('edit_ano').value ? parseInt(document.getElementById('edit_ano').value) : null,
             tipo: document.getElementById('edit_tipo').value || null,
             capacidad_tanque: document.getElementById('edit_tanque').value ? parseInt(document.getElementById('edit_tanque').value) : null,
+            rendimiento_esperado: document.getElementById('edit_rendimiento').value ? parseFloat(document.getElementById('edit_rendimiento').value) : null,
             tipo_propiedad: document.getElementById('edit_propietario').value ? parseInt(document.getElementById('edit_propietario').value) : null,
             frecuencia_mantenimiento: parseInt(document.getElementById('edit_freq').value) || null,
             ultimo_mantenimiento_km: parseInt(document.getElementById('edit_ultimo').value) || null,
