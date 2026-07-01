@@ -16,7 +16,7 @@
         .top-bar-left { display: flex; align-items: center; gap: 15px; }
         .top-bar h2 { margin: 0; font-size: 24px; font-weight: 900; text-transform: uppercase;}
         
-        .kpi-container { display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; max-width: 1200px; margin: 0 auto 25px auto; }
+        .kpi-container { display: grid; grid-template-columns: repeat(6, 1fr); gap: 20px; max-width: 1200px; margin: 0 auto 25px auto; }
         .kpi-card { background: white; padding: 20px 25px; border-radius: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border-left: 6px solid var(--aurica-blue); }
         .kpi-card p { margin: 0; font-size: 11px; text-transform: uppercase; font-weight: 800; color: #888; }
         .kpi-card h3 { margin: 5px 0 0 0; font-size: 28px; font-weight: 900; color: var(--text-dark); }
@@ -73,6 +73,7 @@
     <div class="kpi-card" style="border-left-color: var(--route-color);"><p>Unidades en Ruta</p><h3 id="kpi-ruta">0</h3></div>
     <div class="kpi-card" style="border-left-color: var(--warn-color);"><p>En Taller</p><h3 id="kpi_taller">0</h3></div>
     <div class="kpi-card" style="border-left-color: var(--crit-color);"><p>Siniestrados</p><h3 id="kpi_siniestros">0</h3></div>
+    <div class="kpi-card" style="border-left-color: #8e44ad;"><p>Doc. Vencidos</p><h3 id="kpi_vencidos">0</h3></div>
 </div>
 
 <div class="dashboard-grid">
@@ -273,7 +274,7 @@
             const data = await res.json();
             const lista = data.data;
 
-            let disponible = 0, enRuta = 0, taller = 0, siniestros = 0;
+            let disponible = 0, enRuta = 0, taller = 0, siniestros = 0, vencidos = 0;
             const tbody = document.getElementById('tablaEstatus');
             tbody.innerHTML = '';
 
@@ -294,7 +295,7 @@
                 if(estado === "Siniestro") { siniestros++; txtEstado = "Siniestrado"; claseDot = "status-2"; }
                 else if(["Mantenimiento Correctivo", "Mantenimiento Preventivo"].includes(estado)) { taller++; txtEstado = estado; claseDot = "status-2"; }
                 else if(estado === "En uso" || estado == 144280002 || estado === "144280002") { enRuta++; txtEstado = "En Ruta"; claseDot = "status-1"; }
-                else if (docVencido) { taller++; txtEstado = "Doc. Vencidos"; claseDot = "status-2"; }
+                else if (docVencido) { vencidos++; txtEstado = "Doc. Vencidos"; claseDot = "status-2"; }
                 else if(estado === "Disponible" || estado == 144280000 || estado === "144280000") { disponible++; txtEstado = "Disponible"; claseDot = "status-0"; }
                 else { taller++; txtEstado = estado || "Desconocido"; claseDot = "status-2"; }
 
@@ -310,6 +311,7 @@
             document.getElementById('kpi-ruta').innerText = enRuta;
             document.getElementById('kpi_taller').innerText = taller;
             document.getElementById('kpi_siniestros').innerText = siniestros;
+            document.getElementById('kpi_vencidos').innerText = vencidos;
 
             const ctx = document.getElementById('chartEstatus').getContext('2d');
             if(chartInstance) { chartInstance.destroy(); }
@@ -317,8 +319,8 @@
             chartInstance = new Chart(ctx, {
                 type: 'doughnut',
                 data: { 
-                    labels: ['Disponible', 'En Ruta', 'Taller', 'Siniestro'], 
-                    datasets: [{ data: [disponible, enRuta, taller, siniestros], backgroundColor: ['#27ae60', '#3498db', '#e67e22', '#c0392b'], borderWidth: 2 }] 
+                    labels: ['Disponible', 'En Ruta', 'Taller', 'Siniestro', 'Doc. Vencidos'], 
+                    datasets: [{ data: [disponible, enRuta, taller, siniestros, vencidos], backgroundColor: ['#27ae60', '#3498db', '#e67e22', '#c0392b', '#8e44ad'], borderWidth: 2 }] 
                 },
                 options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { font: { family: 'Montserrat', weight: 600 } } } } }
             });
