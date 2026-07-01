@@ -84,7 +84,7 @@
         <h4>Estatus Detallado de Unidades en Tiempo Real</h4>
         <div style="overflow-x: auto; flex: 1;">
             <table>
-                <thead><tr><th>Placa</th><th>Vehículo</th><th>Kilometraje</th><th>Tanque</th><th>Estado</th></tr></thead>
+                <thead><tr><th>Placa</th><th>Vehículo</th><th>Kilometraje</th><th>Tanque</th><th>Estado</th><th>Auditoría</th></tr></thead>
                 <tbody id="tablaEstatus"><tr><td colspan="5" style="text-align: center;">Procesando analíticas...</td></tr></tbody>
             </table>
         </div>
@@ -188,6 +188,51 @@
     </div>
 </div>
 
+<!-- Modal Auditoría Gastos -->
+<div class="modal-overlay" id="modalAuditoriaGastos">
+    <div class="modal" style="max-width: 600px;">
+        <h3 style="color: var(--aurica-blue); margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px;">💰 Auditoría de Gastos - <span id="ag_placa"></span></h3>
+        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+            <input type="month" id="ag_mes" class="filter-input" onchange="cargarAuditoriaGastos()">
+        </div>
+        <div style="overflow-y: auto; max-height: 300px; border: 1px solid #eee; border-radius: 8px;">
+            <table style="font-size:11px;">
+                <thead>
+                    <tr><th>Fecha</th><th>Concepto / Proveedor</th><th>Monto</th><th>Documento</th></tr>
+                </thead>
+                <tbody id="ag_tbody">
+                    <tr><td colspan="4" style="text-align: center; color: #888;">Cargando...</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div style="margin-top: 15px; text-align: right;">
+            <h4 style="margin:0; color:var(--text-dark);">Total: <span id="ag_total" style="color:var(--aurica-blue);">S/ 0.00</span></h4>
+        </div>
+        <button type="button" class="btn-cancelar" onclick="document.getElementById('modalAuditoriaGastos').style.display='none'">Cerrar</button>
+    </div>
+</div>
+
+<!-- Modal Auditoría Incidencias -->
+<div class="modal-overlay" id="modalAuditoriaIncidencias">
+    <div class="modal" style="max-width: 700px;">
+        <h3 style="color: var(--aurica-blue); margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px;">🛠️ Historial Médico/Mecánico - <span id="ai_placa"></span></h3>
+        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+            <input type="month" id="ai_mes" class="filter-input" onchange="cargarAuditoriaIncidencias()" title="Filtrar por Mes">
+        </div>
+        <div style="overflow-y: auto; max-height: 350px; border: 1px solid #eee; border-radius: 8px;">
+            <table style="font-size:11px;">
+                <thead>
+                    <tr><th>Fecha</th><th>Tipo</th><th>Estado</th><th>Conductor / Origen</th><th>Descripción / Detalle</th></tr>
+                </thead>
+                <tbody id="ai_tbody">
+                    <tr><td colspan="5" style="text-align: center; color: #888;">Cargando...</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <button type="button" class="btn-cancelar" onclick="document.getElementById('modalAuditoriaIncidencias').style.display='none'">Cerrar</button>
+    </div>
+</div>
+
 <script>
     // 🔒 GUARD: Verificar sesión activa
     (function(){var s=JSON.parse(sessionStorage.getItem('flotapro_session')||'null');if(!s||(Date.now()-s.timestamp>28800000)){sessionStorage.removeItem('flotapro_session');window.location.href='index.html';}})();
@@ -217,7 +262,11 @@
                 else if(estado === "Siniestro") { siniestros++; txtEstado = "Siniestrado"; claseDot = "status-2"; }
                 else { taller++; txtEstado = estado || "Desconocido"; claseDot = "status-2"; }
 
-                tbody.innerHTML += `<tr><td><strong>${v.cr596_placa}</strong></td><td>${v.cr596_nombre}</td><td>${v.cr596_kilometrajeactual.toLocaleString()} Km</td><td>${v.cr596_nivelcombustible}%</td><td><span class="status-dot ${claseDot}"></span> ${txtEstado}</td></tr>`;
+                tbody.innerHTML += `<tr><td><strong>${v.cr596_placa}</strong></td><td>${v.cr596_nombre}</td><td>${v.cr596_kilometrajeactual.toLocaleString()} Km</td><td>${v.cr596_nivelcombustible}%</td><td><span class="status-dot ${claseDot}"></span> ${txtEstado}</td>
+                <td>
+                    <button class="btn-primary" style="display:inline-flex; padding:5px 8px; font-size:14px; background:#f0f0f0; border:1px solid #ddd; margin-right:5px;" onclick="abrirAuditoriaGastos('${v.cr596_flota_vehiculoid}', '${v.cr596_placa}')" title="Auditoría de Gastos">💰</button>
+                    <button class="btn-primary" style="display:inline-flex; padding:5px 8px; font-size:14px; background:#f0f0f0; border:1px solid #ddd;" onclick="abrirAuditoriaIncidencias('${v.cr596_flota_vehiculoid}', '${v.cr596_placa}')" title="Historial Médico / Siniestros">🛠️</button>
+                </td></tr>`;
             });
 
             document.getElementById('kpi-total').innerText = lista.length;
@@ -502,6 +551,99 @@
     inicializarDashboard();
     cargarHistorial();
     cargarIncidentes();
+
+    // --- 5. AUDITORIAS POR VEHICULO ---
+    let currentAuditoriaVehiculoId = null;
+
+    function abrirAuditoriaGastos(vehiculoId, placa) {
+        currentAuditoriaVehiculoId = vehiculoId;
+        document.getElementById('ag_placa').innerText = placa;
+        const hoy = new Date();
+        document.getElementById('ag_mes').value = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}`;
+        document.getElementById('modalAuditoriaGastos').style.display = 'flex';
+        cargarAuditoriaGastos();
+    }
+
+    async function cargarAuditoriaGastos() {
+        const tbody = document.getElementById('ag_tbody');
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #888;">Cargando gastos...</td></tr>';
+        document.getElementById('ag_total').innerText = 'S/ 0.00';
+        try {
+            const res = await fetch(`${API_URL}/vehiculo-gastos/${currentAuditoriaVehiculoId}`);
+            if(!res.ok) throw new Error();
+            const data = await res.json();
+            
+            const mesFiltro = document.getElementById('ag_mes').value; // YYYY-MM
+            let total = 0;
+            let html = '';
+            
+            const filtrados = data.data.filter(g => {
+                if(!g.fecha_gasto) return false;
+                return g.fecha_gasto.substring(0, 7) === mesFiltro;
+            });
+
+            filtrados.forEach(g => {
+                total += parseFloat(g.monto || 0);
+                const fecha = new Date(g.fecha_gasto).toLocaleDateString();
+                let doc = g.comprobante_url ? `<a href="${g.comprobante_url}" target="_blank" style="color:var(--aurica-blue);">Ver Doc</a>` : 'N/A';
+                html += `<tr><td>${fecha}</td><td>${g.concepto || ''} ${g.proveedor ? '- '+g.proveedor : ''}</td><td>S/ ${parseFloat(g.monto||0).toFixed(2)}</td><td>${doc}</td></tr>`;
+            });
+
+            if(filtrados.length === 0) html = '<tr><td colspan="4" style="text-align: center; color: #888;">No hay gastos registrados en este mes.</td></tr>';
+            
+            tbody.innerHTML = html;
+            document.getElementById('ag_total').innerText = `S/ ${total.toFixed(2)}`;
+        } catch(e) {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #e74c3c;">Error al cargar datos.</td></tr>';
+        }
+    }
+
+    function abrirAuditoriaIncidencias(vehiculoId, placa) {
+        currentAuditoriaVehiculoId = vehiculoId;
+        document.getElementById('ai_placa').innerText = placa;
+        const hoy = new Date();
+        document.getElementById('ai_mes').value = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}`;
+        document.getElementById('modalAuditoriaIncidencias').style.display = 'flex';
+        cargarAuditoriaIncidencias();
+    }
+
+    async function cargarAuditoriaIncidencias() {
+        const tbody = document.getElementById('ai_tbody');
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #888;">Cargando historial...</td></tr>';
+        try {
+            const res = await fetch(`${API_URL}/vehiculo-historial-completo/${currentAuditoriaVehiculoId}`);
+            if(!res.ok) throw new Error();
+            const data = await res.json();
+            
+            const mesFiltro = document.getElementById('ai_mes').value; // YYYY-MM
+            let html = '';
+            
+            // Permitir ver el histórico completo si el input de mes se borra
+            const filtrados = mesFiltro ? data.data.filter(i => {
+                if(!i.fecha) return false;
+                return i.fecha.substring(0, 7) === mesFiltro;
+            }) : data.data;
+
+            filtrados.forEach(i => {
+                const fecha = i.fecha ? new Date(i.fecha).toLocaleDateString() : 'N/A';
+                const tipoStyle = i.tipo === 'Siniestro' ? 'color:var(--crit-color);font-weight:bold;' : 'color:var(--warn-color);font-weight:bold;';
+                html += `<tr>
+                    <td>${fecha}</td>
+                    <td style="${tipoStyle}">${i.tipo}</td>
+                    <td>${i.estado}</td>
+                    <td>${i.conductor}</td>
+                    <td style="max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${i.descripcion}">${i.descripcion}</td>
+                </tr>`;
+            });
+
+            if(filtrados.length === 0) html = '<tr><td colspan="5" style="text-align: center; color: #888;">No hay incidencias registradas en este periodo.</td></tr>';
+            
+            tbody.innerHTML = html;
+        } catch(e) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #e74c3c;">Error al cargar historial.</td></tr>';
+        }
+    }
+    
     setInterval(inicializarDashboard, 30000); 
 </script>
 
