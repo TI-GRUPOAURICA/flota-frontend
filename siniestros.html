@@ -141,6 +141,7 @@
         <p id="m_detalle" style="font-size: 13px; color: #666;"></p>
         <form id="formUpdate">
             <input type="hidden" id="u_id">
+            <input type="hidden" id="u_is_garita">
             <div class="form-group">
                 <label>Nuevo Estado</label>
                 <select id="u_estado">
@@ -151,7 +152,7 @@
                 </select>
             </div>
             <div class="form-group">
-                <label>Observaciones / Detalle del Estado <span style="color:#e74c3c">*</span></label>
+                <label id="lbl_observacion">Observaciones / Detalle del Estado <span style="color:#e74c3c">*</span></label>
                 <textarea id="u_observacion" rows="3" required placeholder="Motivo o detalle obligatorio de este estado..."></textarea>
             </div>
             <div class="form-group">
@@ -289,8 +290,14 @@
                 if(s.estado === 'En Trámite Seguro') { colorBorde = 'var(--warn-color)'; colId = 'col_tramite'; }
                 if(s.estado === 'Taller Siniestro') { colorBorde = 'var(--aurica-blue)'; colId = 'col_taller'; }
 
+                let badgeGarita = '';
+                if (s.descripcion && s.descripcion.includes("Reportado desde Garita")) {
+                    badgeGarita = `<div style="background:var(--crit-color); color:white; font-size:10px; font-weight:900; padding:3px 8px; border-radius:10px; display:inline-block; margin-bottom:5px;"><i class="fa-solid fa-bell"></i> ALERTA GARITA</div>`;
+                }
+
                 const cardHTML = `
                     <div class="s-card" style="border-left-color: ${colorBorde}; cursor: pointer;" onclick="abrirModal('${s.id}')">
+                        ${badgeGarita}
                         <div class="s-fecha"><i class="fa-solid fa-calendar-days"></i> ${f} | <i class="fa-solid fa-user"></i> ${conductorNombre}</div>
                         <div class="s-vehiculo">${placa}</div>
                         <div class="s-desc">${s.descripcion}</div>
@@ -484,6 +491,18 @@
             document.getElementById('btnUpdate').innerText = "Guardar Cambios";
         }
         
+        const is_garita_report = (s.descripcion && s.descripcion.includes("Reportado desde Garita"));
+        document.getElementById('u_is_garita').value = is_garita_report ? 'true' : 'false';
+        
+        if (is_garita_report) {
+            document.getElementById('lbl_observacion').innerHTML = 'Descripción Detallada del Siniestro <span style="color:#e74c3c">*</span>';
+            document.getElementById('u_observacion').placeholder = "Ingrese los detalles completos del siniestro reportado por garita...";
+            if (encontroHabilitado) selectEstado.value = 'Reportado';
+        } else {
+            document.getElementById('lbl_observacion').innerHTML = 'Observaciones / Detalle del Estado <span style="color:#e74c3c">*</span>';
+            document.getElementById('u_observacion').placeholder = "Motivo o detalle obligatorio de este estado...";
+        }
+        
         document.getElementById('u_docs').dataset.currentUrl = s.url_documentos || "";
         document.getElementById('u_docs').value = ""; // Clear file input
         document.getElementById('u_observacion').value = ""; // Clear observacion
@@ -530,7 +549,8 @@
             id: document.getElementById('u_id').value,
             estado: document.getElementById('u_estado').value,
             url_documentos: urlDocs,
-            observacion: document.getElementById('u_observacion').value
+            observacion: document.getElementById('u_observacion').value,
+            sobrescribir_descripcion: document.getElementById('u_is_garita').value === 'true'
         };
         
         if (payload.estado === 'Cerrado') { payload.fecha_cierre = new Date().toISOString(); }
