@@ -230,7 +230,7 @@
             <p style="margin: 0 0 10px 0; font-size: 13px;"><strong>Vehículo / Placa:</strong> <span id="ac_vehiculo" style="color:var(--aurica-blue); font-weight:800;"></span></p>
             <p style="margin: 0 0 10px 0; font-size: 13px;"><strong>Distancia Recorrida:</strong> <span id="ac_km"></span></p>
             <p style="margin: 0 0 10px 0; font-size: 13px;"><strong>Combustible Consumido:</strong> <span id="ac_porcentaje"></span></p>
-            <p style="margin: 0 0 10px 0; font-size: 13px;"><strong>Ratio de Rendimiento:</strong> <span id="ac_ratio" style="font-weight:900;"></span></p>
+            <p style="margin: 0 0 10px 0; font-size: 13px;"><strong id="ac_ratio_label">Ratio de Rendimiento:</strong> <span id="ac_ratio" style="font-weight:900;"></span></p>
             <p style="margin: 0; font-size: 13px;"><strong>Evaluación del Sistema:</strong> <span id="ac_eval"></span></p>
         </div>
         <button type="button" class="btn-cancelar" style="margin-top:10px;" onclick="document.getElementById('modalAuditoriaConsumo').style.display='none'">Cerrar Detalle</button>
@@ -354,33 +354,49 @@
                 tooltipComb = `Salió con: ${combSalida}% | Llegó con: ${combRetorno}%`;
                 let diferencia = combSalida - combRetorno;
                 
-                if (diferencia < 0) { 
-                    consumoTexto = `<i class="fa-solid fa-gas-pump"></i> Recargó en ruta`; 
-                    colorConsumo = "color: var(--route-color); font-weight: 700;"; 
-                } else { 
-                    if(capTanque) {
+                if (diferencia < 0) {
+                    // CASO: Recargó combustible en ruta (nivel llegada > nivel salida)
+                    let recargaEst = Math.abs(diferencia);
+                    consumoTexto = `<i class="fa-solid fa-gas-pump"></i> Recargó en ruta`;
+                    colorConsumo = "color: var(--route-color); font-weight: 700; background:#ebf5fb; padding:3px 8px; border-radius:12px; cursor:pointer;";
+                    tooltipComb = `Salió: ${combSalida}% | Llegó: ${combRetorno}% (+${recargaEst}%). Indica recarga durante la ruta.`;
+                    actionOnClick = `onclick="abrirAuditoriaConsumo('${placa}', ${kmRecorridos}, 'Recarga en ruta (+${recargaEst}% estimado)', '—', 'recharge', 0, 0, ${combSalida}, ${combRetorno})"` ;
+                } else if (diferencia === 0) {
+                    // CASO: Sin variación medible (misma lectura al salir y llegar)
+                    if (kmRecorridos > 0 && kmRecorridos < 30) {
+                        // Viaje corto: la aguja del tanque no detecta variaciones pequeñas — es NORMAL
+                        consumoTexto = `<i class="fa-solid fa-equals"></i> 0% <i class="fa-solid fa-magnifying-glass"></i>`;
+                        colorConsumo = 'color: #7f8c8d; font-weight: 700; background:#f4f6f7; padding:3px 8px; border-radius:12px; cursor:pointer;';
+                        actionOnClick = `onclick="abrirAuditoriaConsumo('${placa}', ${kmRecorridos}, '0% del tanque (Sin variación)', '—', 'zero_short', 0, 0, ${combSalida}, ${combRetorno})"` ;
+                    } else {
+                        // Viaje largo o km=0: Sin cambio en el nivel es sospechoso
+                        consumoTexto = `<i class="fa-solid fa-circle-exclamation"></i> 0% <i class="fa-solid fa-magnifying-glass"></i>`;
+                        colorConsumo = 'color: var(--warn-color); font-weight: 900; background:#fff5e6; padding:3px 8px; border-radius:12px; border: 1px solid #ffd8a8; cursor:pointer;';
+                        actionOnClick = `onclick="abrirAuditoriaConsumo('${placa}', ${kmRecorridos}, '0% del tanque (Sin variación)', '—', 'zero_long', 0, 0, ${combSalida}, ${combRetorno})"` ;
+                    }
+                } else {
+                    // CASO: Consumo positivo — calcular y evaluar eficiencia
+                    if (capTanque) {
                         let litrosConsumidos = (diferencia / 100) * capTanque;
                         let ratio = (litrosConsumidos > 0 && kmRecorridos > 0) ? (kmRecorridos / litrosConsumidos).toFixed(1) : 0;
                         consumoTexto = `<i class="fa-solid fa-arrow-down"></i> ${litrosConsumidos.toFixed(1)} L <i class="fa-solid fa-magnifying-glass"></i>`;
-                        
                         let umbralSospechoso = rendEsperado ? rendEsperado : 5;
-                        
-                        if(litrosConsumidos > 0 && ratio < umbralSospechoso) { 
+                        if (litrosConsumidos > 0 && kmRecorridos > 0 && parseFloat(ratio) < umbralSospechoso) {
                             colorConsumo = 'color: var(--crit-color); font-weight: 900; background:#fdeaea; padding:3px 8px; border-radius:12px; border: 1px solid #fad2d2; cursor:pointer;';
                         } else {
                             colorConsumo = 'color: var(--ok-color); font-weight: 700; background:#eafaf1; padding:3px 8px; border-radius:12px; cursor:pointer;';
                         }
-                        actionOnClick = `onclick="abrirAuditoriaConsumo('${placa}', ${kmRecorridos}, '${litrosConsumidos.toFixed(1)} Litros', '${ratio} Km/L', true, ${ratio}, ${umbralSospechoso})"`;
+                        actionOnClick = `onclick="abrirAuditoriaConsumo('${placa}', ${kmRecorridos}, '${litrosConsumidos.toFixed(1)} Litros (${diferencia}% del tanque)', '${ratio} Km/L', 'liters', ${ratio}, ${umbralSospechoso}, ${combSalida}, ${combRetorno})"` ;
                     } else {
-                        // Fallback a % si no hay capacidad registrada
+                        // Fallback a % si no hay capacidad de tanque registrada
                         let ratio = (diferencia > 0 && kmRecorridos > 0) ? (kmRecorridos / diferencia).toFixed(1) : 0;
                         consumoTexto = `<i class="fa-solid fa-arrow-down"></i> ${diferencia}% <i class="fa-solid fa-magnifying-glass"></i>`;
-                        if(diferencia > 0 && ratio < 1.5) { 
+                        if (diferencia > 0 && kmRecorridos > 0 && parseFloat(ratio) < 1.5) {
                             colorConsumo = 'color: var(--crit-color); font-weight: 900; background:#fdeaea; padding:3px 8px; border-radius:12px; border: 1px solid #fad2d2; cursor:pointer;';
                         } else {
                             colorConsumo = 'color: var(--ok-color); font-weight: 700; background:#eafaf1; padding:3px 8px; border-radius:12px; cursor:pointer;';
                         }
-                        actionOnClick = `onclick="abrirAuditoriaConsumo('${placa}', ${kmRecorridos}, '${diferencia}% del tanque', '${ratio} Km por cada 1%', false, ${ratio}, 1.5)"`;
+                        actionOnClick = `onclick="abrirAuditoriaConsumo('${placa}', ${kmRecorridos}, '${diferencia}% del tanque', '${ratio} Km por cada 1%', 'percent', ${ratio}, 1.5, ${combSalida}, ${combRetorno})"` ;
                     }
                 }
             }
@@ -438,7 +454,7 @@
         document.getElementById('modalExportar').style.display = 'flex';
     }
 
-    function abrirAuditoriaConsumo(placa, km, porcentajeTexto, ratioTexto, isLiters, rawRatio, umbral) {
+    function abrirAuditoriaConsumo(placa, km, porcentajeTexto, ratioTexto, caseType, rawRatio, umbral, nivelSalida, nivelRetorno) {
         document.getElementById('ac_vehiculo').innerText = placa;
         document.getElementById('ac_km').innerText = km + " Km";
         document.getElementById('ac_porcentaje').innerText = porcentajeTexto;
@@ -447,18 +463,66 @@
         let evalSpan = document.getElementById('ac_eval');
         let box = document.getElementById('ac_box');
         
-        let isSuspicious = parseFloat(rawRatio) < umbral;
+        // Reset label for 'Ratio de Rendimiento'
+        document.getElementById('ac_ratio_label').innerText = 'Ratio de Rendimiento:';
 
-        if (isSuspicious) {
-            evalSpan.innerHTML = `<i class="fa-solid fa-flag"></i> <strong>Consumo Excesivo / Sospechoso.</strong> El vehículo rindió por debajo del mínimo esperado (${umbral} ${isLiters ? 'Km/L' : 'Km/%'}). Requiere investigación técnica o revisión de control de combustible.`;
-            evalSpan.style.color = "var(--crit-color)";
-            box.style.borderLeftColor = "var(--crit-color)";
-            box.style.background = "#fdeaea";
+        if (caseType === 'recharge') {
+            // CASO: Recargó combustible en ruta
+            const ganancia = (nivelRetorno - nivelSalida);
+            evalSpan.innerHTML = `<i class="fa-solid fa-gas-pump"></i> <strong>Recarga durante la ruta detectada.</strong> El vehículo salió con ${nivelSalida}% y regresó con ${nivelRetorno}% (+${ganancia}%). Esto indica que se realizó una carga de combustible durante el viaje. Verifique que exista un comprobante de compra registrado en el módulo de Tesorería.`;
+            evalSpan.style.color = "var(--route-color)";
+            box.style.borderLeftColor = "var(--route-color)";
+            box.style.background = "#ebf5fb";
+            document.getElementById('ac_ratio_label').innerText = 'Nota:';
+            document.getElementById('ac_ratio').innerText = 'Verifique comprobante en Tesorería.';
+
+        } else if (caseType === 'zero_short') {
+            // CASO: 0% consumido en viaje corto — NORMAL
+            evalSpan.innerHTML = `<i class="fa-solid fa-circle-info"></i> <strong>Sin variación medible — Viaje corto.</strong> El vehículo salió y regresó con el mismo nivel de combustible (${nivelSalida}%). Para un recorrido de solo ${km} Km, esto es normal: el indicador de nivel no es lo suficientemente preciso para detectar variaciones pequeñas. No se requiere acción.`;
+            evalSpan.style.color = "#555";
+            box.style.borderLeftColor = "#bdc3c7";
+            box.style.background = "#f4f6f7";
+            document.getElementById('ac_ratio_label').innerText = 'Evaluación:';
+            document.getElementById('ac_ratio').innerText = 'Normal para viaje corto.';
+
+        } else if (caseType === 'zero_long') {
+            // CASO: 0% consumido en viaje largo — SOSPECHOSO
+            evalSpan.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> <strong>Sin variación en viaje largo — Revisar.</strong> El vehículo recorrió ${km} Km y regresó con el mismo nivel de combustible (${nivelSalida}%). Para un viaje de esta distancia, no registrar consumo es inusual. Posibles causas: (1) El conductor recargó combustible sin declararlo, (2) El sensor de nivel del tanque presenta falla, (3) Error en el registro de niveles en garita.`;
+            evalSpan.style.color = "var(--warn-color)";
+            box.style.borderLeftColor = "var(--warn-color)";
+            box.style.background = "#fff5e6";
+            document.getElementById('ac_ratio_label').innerText = 'Acción recomendada:';
+            document.getElementById('ac_ratio').innerText = 'Verificar sensor y boletas del conductor.';
+
+        } else if (caseType === 'liters') {
+            // CASO: Consumo en litros (tiene capacidad de tanque configurada)
+            const isSuspicious = parseFloat(rawRatio) < umbral && parseFloat(rawRatio) > 0;
+            if (isSuspicious) {
+                evalSpan.innerHTML = `<i class="fa-solid fa-flag"></i> <strong>Rendimiento por debajo del mínimo.</strong> Se esperaba al menos ${umbral} Km/L pero el vehículo obtuvo ${rawRatio} Km/L. Esto puede indicar: motor con problemas mecánicos, uso fuera de ruta autorizada, o sobrecarga del vehículo. Se recomienda revisión técnica.`;
+                evalSpan.style.color = "var(--crit-color)";
+                box.style.borderLeftColor = "var(--crit-color)";
+                box.style.background = "#fdeaea";
+            } else {
+                evalSpan.innerHTML = `<i class="fa-solid fa-check"></i> <strong>Consumo Normal.</strong> El vehículo obtuvo ${rawRatio} Km/L, superando el mínimo configurado de ${umbral} Km/L. El rendimiento es aceptable para este recorrido.`;
+                evalSpan.style.color = "var(--ok-color)";
+                box.style.borderLeftColor = "var(--ok-color)";
+                box.style.background = "#eafaf1";
+            }
+
         } else {
-            evalSpan.innerHTML = `<i class="fa-solid fa-check"></i> <strong>Consumo Normal.</strong> El ratio de rendimiento cumple o supera los parámetros configurados (Min: ${umbral} ${isLiters ? 'Km/L' : 'Km/%'}).`;
-            evalSpan.style.color = "var(--ok-color)";
-            box.style.borderLeftColor = "var(--ok-color)";
-            box.style.background = "#eafaf1";
+            // CASO: Consumo en % (fallback sin capacidad de tanque)
+            const isSuspicious = parseFloat(rawRatio) < umbral && parseFloat(rawRatio) > 0;
+            if (isSuspicious) {
+                evalSpan.innerHTML = `<i class="fa-solid fa-flag"></i> <strong>Rendimiento por debajo del mínimo.</strong> Se esperaba al menos ${umbral} Km por cada 1% pero se obtuvo ${rawRatio} Km/%. <small style="display:block; margin-top:6px; color:#999;">Nota: Para mayor precisión en este cálculo, configure la capacidad del tanque (en litros) en el módulo de Mantenimiento.</small>`;
+                evalSpan.style.color = "var(--crit-color)";
+                box.style.borderLeftColor = "var(--crit-color)";
+                box.style.background = "#fdeaea";
+            } else {
+                evalSpan.innerHTML = `<i class="fa-solid fa-check"></i> <strong>Consumo Normal.</strong> El vehículo obtuvo ${rawRatio} Km/%, superando el mínimo de ${umbral} Km/%. <small style="display:block; margin-top:6px; color:#999;">Nota: Para mayor precisión, configure la capacidad del tanque en litros en el módulo de Mantenimiento.</small>`;
+                evalSpan.style.color = "var(--ok-color)";
+                box.style.borderLeftColor = "var(--ok-color)";
+                box.style.background = "#eafaf1";
+            }
         }
         
         document.getElementById('modalAuditoriaConsumo').style.display = 'flex';
