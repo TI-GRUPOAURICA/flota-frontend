@@ -1,0 +1,368 @@
+/* global.css - Sistema de Diseño Grupo Aurica (FlotaPro) */
+
+:root { 
+    /* Colores Corporativos */
+    --aurica-blue: #345D9D;
+    --aurica-blue-hover: #2a4c82;
+    --aurica-blue-light: rgba(52, 93, 157, 0.1);
+    --aurica-gold: #B78C30;
+    --aurica-gold-hover: #9c7528;
+    --aurica-dark: #222222;
+    --aurica-brown: #5F504D;
+    --aurica-orange: #a04d24;
+    --aurica-gray: #9BA1A8;
+    --aurica-gray-light: #e0e3e6;
+
+    /* Fondos y Textos */
+    --aurica-bg: #f4f6f9; /* Fondo muy sutil y moderno */
+    --card-bg: #ffffff;
+    --text-dark: #222222; 
+    --text-muted: #5F504D;
+    --text-gray: #7f8c8d;
+    --card-hover: #fcfcfc;
+    
+    /* Semantic Colors */
+    --ok-color: #27ae60; 
+    --ok-bg: #eafaf1;
+    --warn-color: #f39c12; 
+    --warn-bg: #fef5e7;
+    --crit-color: #e74c3c; 
+    --crit-bg: #fdeaea;
+    --route-color: #3498db;
+    --route-bg: #ebf5fb;
+
+    /* Shadows & Radii */
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.04);
+    --shadow-md: 0 6px 16px rgba(52, 93, 157, 0.08);
+    --shadow-lg: 0 15px 35px rgba(52, 93, 157, 0.12);
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 24px;
+}
+
+/* Reset y Base */
+body { 
+    font-family: 'Montserrat', sans-serif; 
+    background: var(--aurica-bg); 
+    margin: 0; 
+    padding: 20px; 
+    color: var(--text-dark); 
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    box-sizing: border-box;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: var(--aurica-dark);
+}
+
+/* Scrollbar moderno */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--aurica-bg); border-radius: 4px; }
+::-webkit-scrollbar-thumb { background: var(--aurica-gray); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--aurica-brown); }
+
+/* Contenedores Genéricos */
+.container { 
+    max-width: 1200px; 
+    margin: auto; 
+    width: 100%;
+}
+
+.dashboard-grid { 
+    display: grid; 
+    grid-template-columns: 1fr 2fr; 
+    gap: 25px; 
+    max-width: 1200px; 
+    margin: auto; 
+}
+@media(max-width: 900px) {
+    .dashboard-grid { grid-template-columns: 1fr; }
+}
+
+/* Top Bar Global */
+.top-bar { 
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
+    gap: 15px; 
+    background: var(--aurica-blue); 
+    color: white; 
+    padding: 20px 30px; 
+    border-radius: var(--radius-lg); 
+    margin-bottom: 25px; 
+    max-width: 1400px; 
+    margin: 0 auto 25px auto;
+    box-shadow: var(--shadow-md);
+}
+.top-bar-left { 
+    display: flex; 
+    align-items: center; 
+    gap: 15px; 
+}
+.top-bar h2 { 
+    margin: 0; 
+    font-size: 24px; 
+    font-weight: 900; 
+    text-transform: uppercase;
+    color: white;
+}
+.top-bar p {
+    margin: 3px 0 0 0; 
+    font-size: 13px; 
+    opacity: 0.9;
+}
+
+/* Tarjetas (Cards) */
+.card { 
+    background: var(--card-bg); 
+    padding: 25px; 
+    border-radius: var(--radius-lg); 
+    box-shadow: var(--shadow-sm); 
+    display: flex; 
+    flex-direction: column; 
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0,0,0,0.02);
+}
+.card:hover {
+    box-shadow: var(--shadow-md);
+}
+.card h3, .card h4 { 
+    margin-top: 0; 
+    border-bottom: 2px solid var(--aurica-bg); 
+    padding-bottom: 12px; 
+    font-weight: 900; 
+    color: var(--aurica-blue); 
+    letter-spacing: 0.2px;
+}
+.card h4 {
+    text-transform: uppercase; 
+    font-size: 14px; 
+}
+
+/* Botones */
+.btn-primary { 
+    background: white; 
+    color: var(--aurica-blue); 
+    border: none; 
+    padding: 10px 20px; 
+    border-radius: var(--radius-sm); 
+    font-family: 'Montserrat', sans-serif; 
+    font-weight: 800; 
+    font-size: 13px; 
+    cursor: pointer; 
+    transition: all 0.2s ease; 
+    display: inline-flex; 
+    align-items: center; 
+    justify-content: center;
+    gap: 8px; 
+    white-space: nowrap;
+    box-shadow: var(--shadow-sm);
+}
+.btn-primary:hover { 
+    background: var(--aurica-bg); 
+    transform: translateY(-2px); 
+    box-shadow: var(--shadow-md);
+}
+
+.btn-guardar, button[type="submit"] { 
+    background: var(--aurica-blue); 
+    color: white; 
+    border: none; 
+    padding: 15px; 
+    width: 100%; 
+    font-size: 15px; 
+    font-weight: 800; 
+    border-radius: var(--radius-sm); 
+    cursor: pointer; 
+    margin-top: 10px;
+    transition: all 0.2s ease;
+}
+.btn-guardar:hover, button[type="submit"]:hover { 
+    background: var(--aurica-blue-hover); 
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-cancelar { 
+    background: var(--aurica-gray); 
+    color: white; 
+    border: none; 
+    padding: 10px; 
+    width: 100%; 
+    font-size: 14px; 
+    font-weight: 600; 
+    border-radius: var(--radius-sm); 
+    cursor: pointer; 
+    margin-top: 10px;
+    transition: 0.2s;
+}
+.btn-cancelar:hover {
+    background: var(--aurica-brown);
+}
+
+/* Export / Acción Secundaria */
+.btn-export { 
+    background: var(--aurica-gold); 
+    color: white; 
+    border: none; 
+    padding: 8px 15px; 
+    border-radius: var(--radius-sm); 
+    font-size: 12px; 
+    font-weight: 800; 
+    cursor: pointer; 
+    display: flex; 
+    align-items: center; 
+    gap: 5px; 
+    transition: all 0.2s;
+}
+.btn-export:hover { 
+    background: var(--aurica-gold-hover); 
+    transform: translateY(-1px);
+}
+.btn-delete { 
+    background: transparent; 
+    border: 1px solid var(--crit-color); 
+    color: var(--crit-color); 
+    padding: 8px 12px; 
+    border-radius: var(--radius-sm); 
+    font-size: 12px; 
+    font-weight: 700; 
+    cursor: pointer; 
+    transition: 0.2s;
+}
+.btn-delete:hover { 
+    background: var(--crit-color); 
+    color: white;
+}
+
+/* Formularios */
+.form-group { margin-bottom: 15px; }
+.form-group label { 
+    display: block; 
+    font-size: 12px; 
+    font-weight: 800; 
+    color: var(--text-dark); 
+    margin-bottom: 5px;
+    text-transform: uppercase;
+}
+input, select, textarea, .filter-input { 
+    width: 100%; 
+    padding: 12px; 
+    border: 1px solid var(--aurica-gray-light); 
+    border-radius: var(--radius-sm); 
+    box-sizing: border-box; 
+    font-family: 'Montserrat', sans-serif;
+    font-size: 13px;
+    background-color: var(--card-bg);
+    transition: all 0.2s;
+}
+input:focus, select:focus, textarea:focus, .filter-input:focus { 
+    border-color: var(--aurica-blue); 
+    outline: none;
+    box-shadow: 0 0 0 3px var(--aurica-blue-light);
+}
+
+/* Tablas */
+table { 
+    width: 100%; 
+    border-collapse: collapse; 
+    margin-top: 10px;
+}
+th { 
+    background: var(--aurica-bg); 
+    color: var(--aurica-blue); 
+    font-weight: 800; 
+    text-align: left; 
+    padding: 12px 15px; 
+    font-size: 12px; 
+    border-bottom: 2px solid var(--aurica-gray-light);
+    text-transform: uppercase;
+}
+td { 
+    padding: 12px 15px; 
+    border-bottom: 1px solid #eee; 
+    font-size: 13px; 
+    font-weight: 600;
+}
+tbody tr {
+    transition: background 0.2s;
+}
+tbody tr:hover { 
+    background: #fdfdfd; 
+}
+
+/* Modales */
+.modal-overlay { 
+    display: none; 
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%; 
+    background: rgba(34, 34, 34, 0.4); 
+    z-index: 1000; 
+    justify-content: center; 
+    align-items: center;
+    backdrop-filter: blur(4px);
+}
+.modal { 
+    background: var(--card-bg); 
+    width: 100%; 
+    max-width: 550px; 
+    border-radius: var(--radius-lg); 
+    padding: 30px; 
+    box-shadow: var(--shadow-lg);
+    max-height: 90vh; 
+    overflow-y: auto;
+    border: 1px solid rgba(255,255,255,0.2);
+}
+.modal h3 { 
+    margin-top: 0; 
+    color: var(--aurica-blue); 
+    border-bottom: 2px solid var(--aurica-bg); 
+    padding-bottom: 10px; 
+    font-weight: 900;
+}
+
+/* Indicadores de Estado y Badges */
+.status-dot { 
+    width: 10px; 
+    height: 10px; 
+    border-radius: 50%; 
+    display: inline-block; 
+    margin-right: 6px; 
+}
+.status-0 { background: var(--ok-color); box-shadow: 0 0 5px var(--ok-color); }
+.status-1 { background: var(--route-color); box-shadow: 0 0 5px var(--route-color); }
+.status-2 { background: var(--crit-color); box-shadow: 0 0 5px var(--crit-color); }
+
+.badge { 
+    padding: 6px 12px; 
+    border-radius: 20px; 
+    font-size: 11px; 
+    font-weight: 800; 
+    text-transform: uppercase;
+}
+.badge.vigente { background: var(--ok-bg); color: var(--ok-color); border: 1px solid #a3e4d7;}
+.badge.vencido { background: var(--crit-bg); color: var(--crit-color); border: 1px solid #f5b7b1;}
+
+/* Layout Utilities */
+.grid-layout { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+    gap: 25px; 
+    max-width: 1200px; 
+    margin: auto; 
+}
+
+/* Cajas de Alerta Info (mante-box, etc) */
+.info-alert-box {
+    background: var(--aurica-blue-light); 
+    border: 1px solid #cce0ff; 
+    padding: 15px; 
+    border-radius: var(--radius-md); 
+    margin-bottom: 15px;
+}

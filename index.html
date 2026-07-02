@@ -6,37 +6,38 @@
     <title>Portal ERP - Grupo Aurica</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800;900&display=swap" rel="stylesheet">
     <script src="https://alcdn.msauth.net/browser/2.30.0/js/msal-browser.min.js"></script>
+    <link rel="stylesheet" href="assets/css/global.css">
     <style>
-        :root { --aurica-blue: #305da0; --aurica-bg: #eceded; --text-dark: #2c3e50; --card-hover: #f8fbff; --accent-dash: #8e44ad; --accent-admin: #16a085; }
-        body { font-family: 'Montserrat', sans-serif; background: var(--aurica-bg); margin: 0; padding: 0; color: var(--text-dark); display: flex; flex-direction: column; min-height: 100vh;}
-        
+        /* Estilos específicos de index.html */
         #login-view { flex: 1; display: flex; justify-content: center; align-items: center; background: var(--aurica-bg); }
-        .login-box { background: white; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.05); display: flex; overflow: hidden; max-width: 650px; width: 90%; }
-        .login-left { padding: 40px; flex: 1.5; display: flex; flex-direction: column; justify-content: center; text-align: center;}
-        .login-logo { display: flex; align-items: center; justify-content: center; gap: 10px; color: var(--aurica-blue); font-size: 26px; font-weight: 900; margin-bottom: 20px;}
+        .login-box { background: var(--card-bg); border-radius: var(--radius-xl); box-shadow: var(--shadow-lg); display: flex; overflow: hidden; max-width: 650px; width: 90%; border: 1px solid rgba(255,255,255,0.4); backdrop-filter: blur(10px);}
+        .login-left { padding: 50px 40px; flex: 1.5; display: flex; flex-direction: column; justify-content: center; text-align: center;}
+        .login-logo { display: flex; align-items: center; justify-content: center; gap: 12px; color: var(--aurica-blue); font-size: 28px; font-weight: 900; margin-bottom: 15px; letter-spacing: -0.5px;}
         
-        .btn-microsoft { background: white; border: 1px solid #8c8c8c; color: #5e5e5e; padding: 12px 20px; font-size: 15px; font-weight: 600; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 12px; transition: 0.2s; font-family: 'Segoe UI', Tahoma, sans-serif;}
-        .btn-microsoft:hover { background: #f3f3f3; }
-        .btn-microsoft img { width: 20px; }
+        .btn-microsoft { background: white; border: 1px solid var(--aurica-gray-light); color: var(--text-dark); padding: 14px 20px; font-size: 15px; font-weight: 700; border-radius: var(--radius-sm); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 12px; transition: all 0.3s ease; box-shadow: var(--shadow-sm);}
+        .btn-microsoft:hover { background: #fdfdfd; transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: #d0d0d0;}
+        .btn-microsoft img { width: 22px; }
 
         #portal-view { display: none; padding: 30px; max-width: 1200px; margin: auto; width: 100%; box-sizing: border-box;}
-        .portal-header { background: var(--aurica-blue); color: white; border-radius: 16px; padding: 25px 35px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; box-shadow: 0 5px 15px rgba(48, 93, 160, 0.2);}
+        .portal-header { background: linear-gradient(135deg, var(--aurica-blue) 0%, #2a4c82 100%); color: white; border-radius: var(--radius-lg); padding: 25px 35px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; box-shadow: var(--shadow-md);}
         .portal-title { display: flex; align-items: center; gap: 15px;}
-        .portal-title h1 { margin: 0; font-size: 26px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px;}
-        .portal-title p { margin: 5px 0 0 0; font-size: 14px; font-weight: 400;}
+        .portal-title h1 { margin: 0; font-size: 26px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px; color: white;}
+        .portal-title p { margin: 5px 0 0 0; font-size: 14px; font-weight: 400; opacity: 0.9;}
         
-        .user-info { display: flex; align-items: center; gap: 15px; background: rgba(255,255,255,0.15); padding: 8px 20px; border-radius: 30px;}
+        .user-info { display: flex; align-items: center; gap: 15px; background: rgba(255,255,255,0.15); padding: 10px 20px; border-radius: 30px; backdrop-filter: blur(5px);}
         .user-email { font-weight: 600; font-size: 14px;}
-        .btn-logout { background: transparent; border: 1px solid white; color: white; padding: 5px 15px; border-radius: 15px; font-family: 'Montserrat', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s;}
-        .btn-logout:hover { background: white; color: var(--aurica-blue);}
+        .btn-logout { background: transparent; border: 1px solid rgba(255,255,255,0.6); color: white; padding: 6px 16px; border-radius: 20px; font-family: 'Montserrat', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s ease;}
+        .btn-logout:hover { background: white; color: var(--aurica-blue); border-color: white; transform: translateX(2px);}
 
         .modules-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px;}
-        .module-card { background: white; border-radius: 20px; padding: 35px 20px; text-align: center; text-decoration: none; color: var(--text-dark); box-shadow: 0 5px 15px rgba(0,0,0,0.03); transition: 0.3s; border-bottom: 6px solid var(--aurica-blue); display: none; flex-direction: column; align-items: center;}
-        .module-card:hover { transform: translateY(-8px); box-shadow: 0 15px 25px rgba(48, 93, 160, 0.1); background: var(--card-hover);}
-        .module-icon { color: var(--aurica-blue); margin-bottom: 20px;}
-        .module-card h3 { margin: 0 0 10px 0; font-size: 20px; font-weight: 900;}
-        .module-card p { margin: 0; font-size: 13px; color: #666; font-weight: 600; line-height: 1.5;}
-        .footer-cert { text-align: center; font-size: 12px; color: #888; font-weight: 600; margin-top: 50px; display: flex; justify-content: center; align-items: center; gap: 5px;}
+        .module-card { background: var(--card-bg); border-radius: var(--radius-lg); padding: 35px 20px; text-align: center; text-decoration: none; color: var(--text-dark); box-shadow: var(--shadow-sm); transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); border-bottom: 6px solid var(--aurica-blue); display: none; flex-direction: column; align-items: center; border-top: 1px solid rgba(0,0,0,0.02); border-left: 1px solid rgba(0,0,0,0.02); border-right: 1px solid rgba(0,0,0,0.02);}
+        .module-card:hover { transform: translateY(-8px); box-shadow: var(--shadow-lg); background: var(--card-hover);}
+        .module-icon { color: var(--aurica-blue); margin-bottom: 20px; transition: transform 0.3s ease;}
+        .module-card:hover .module-icon { transform: scale(1.1); }
+        .module-card h3 { margin: 0 0 10px 0; font-size: 20px; font-weight: 900; color: var(--aurica-blue);}
+        .module-card p { margin: 0; font-size: 13px; color: var(--text-gray); font-weight: 600; line-height: 1.5;}
+        
+        .footer-cert { text-align: center; font-size: 12px; color: var(--aurica-gray); font-weight: 600; margin-top: 50px; display: flex; justify-content: center; align-items: center; gap: 6px; padding-bottom: 20px;}
     </style>
 </head>
 <body>
