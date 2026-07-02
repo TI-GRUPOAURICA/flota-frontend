@@ -357,7 +357,10 @@
             data.data.forEach(inc => {
                 const f = new Date(inc.fecha_incidente);
                 const fechaFormat = f.toLocaleDateString() + ' ' + f.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                const colorTexto = inc.origen === 'Mantenimiento' ? '#27ae60' : '#e74c3c';
+                
+                let colorTexto = '#e74c3c'; // Rojo por defecto para Checklist de Garita
+                if (inc.origen === 'Mantenimiento') colorTexto = '#27ae60'; // Verde
+                if (inc.origen === 'Siniestro') colorTexto = '#8e44ad'; // Morado para Siniestros
                 
                 tbody.innerHTML += `
                     <tr style="border-bottom:1px solid #ddd;">
