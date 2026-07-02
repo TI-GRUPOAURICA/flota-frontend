@@ -87,10 +87,10 @@ h1, h2, h3, h4, h5, h6 {
     gap: 15px; 
     background: var(--aurica-blue); 
     color: white; 
-    padding: 20px 30px; 
+    padding: 15px 30px; 
     border-radius: var(--radius-lg); 
     margin-bottom: 25px; 
-    max-width: 1400px; 
+    max-width: 1200px; 
     margin: 0 auto 25px auto;
     box-shadow: var(--shadow-md);
 }
@@ -144,7 +144,7 @@ h1, h2, h3, h4, h5, h6 {
     background: white; 
     color: var(--aurica-blue); 
     border: none; 
-    padding: 10px 20px; 
+    padding: 8px 16px; 
     border-radius: var(--radius-sm); 
     font-family: 'Montserrat', sans-serif; 
     font-weight: 800; 
@@ -168,7 +168,7 @@ h1, h2, h3, h4, h5, h6 {
     background: var(--aurica-blue); 
     color: white; 
     border: none; 
-    padding: 15px; 
+    padding: 12px; 
     width: 100%; 
     font-size: 15px; 
     font-weight: 800; 
@@ -205,7 +205,7 @@ h1, h2, h3, h4, h5, h6 {
     background: var(--aurica-gold); 
     color: white; 
     border: none; 
-    padding: 8px 15px; 
+    padding: 6px 12px; 
     border-radius: var(--radius-sm); 
     font-size: 12px; 
     font-weight: 800; 
@@ -247,7 +247,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 input, select, textarea, .filter-input { 
     width: 100%; 
-    padding: 12px; 
+    padding: 10px 12px; 
     border: 1px solid var(--aurica-gray-light); 
     border-radius: var(--radius-sm); 
     box-sizing: border-box; 
