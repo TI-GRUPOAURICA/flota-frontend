@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard y Auditoría - Grupo Aurica</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="assets/css/global.css">
     <style>
@@ -61,15 +62,15 @@
     <div class="card" style="margin-top: 25px;">
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f5f5f5; padding-bottom: 15px; margin-bottom: 15px; flex-wrap: wrap; gap: 15px;">
             <div style="display: flex; align-items: center; gap: 15px;">
-                <h4 style="margin: 0; border: none; padding: 0;">📍 Auditoría de Viajes Terminados</h4>
+                <h4 style="margin: 0; border: none; padding: 0;"><i class="fa-solid fa-location-dot"></i> Auditoría de Viajes Terminados</h4>
                 <span id="badgeCountRutas" style="background: #e8f0fe; color: var(--aurica-blue); padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 800;">Calculando...</span>
             </div>
             <div style="display: flex; gap: 8px;">
                 <input type="month" id="filtroMesRutas" class="filter-input" onchange="filtrarHistorial()" title="Filtrar por Mes">
-                <input type="text" id="filtroPlaca" class="filter-input" placeholder="🔍 Placa..." onkeyup="filtrarHistorial()" style="width: 110px;">
-                <input type="text" id="filtroConductor" class="filter-input" placeholder="🔍 Conductor..." onkeyup="filtrarHistorial()" style="width: 140px;">
-                <button class="btn-primary" style="background:#e74c3c; color:white; padding: 8px 12px; font-size: 12px; margin-right: 10px;" onclick="limpiarFiltrosRutas()" title="Limpiar Filtros">✖</button>
-                <button class="btn-export" onclick="abrirModalExportar('rutas')">⬇️ Sábana de Datos</button>
+                <input type="text" id="filtroPlaca" class="filter-input" placeholder="Buscar Placa..." onkeyup="filtrarHistorial()" style="width: 130px;">
+                <input type="text" id="filtroConductor" class="filter-input" placeholder="Buscar Conductor..." onkeyup="filtrarHistorial()" style="width: 160px;">
+                <button class="btn-primary" style="background:#e74c3c; color:white; padding: 8px 12px; font-size: 12px; margin-right: 10px;" onclick="limpiarFiltrosRutas()" title="Limpiar Filtros"><i class="fa-solid fa-xmark"></i></button>
+                <button class="btn-export" onclick="abrirModalExportar('rutas')"><i class="fa-solid fa-file-export"></i> Sábana de Datos</button>
             </div>
         </div>
 
@@ -94,14 +95,14 @@
     <div class="card" style="margin-top: 25px;">
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f5f5f5; padding-bottom: 15px; margin-bottom: 15px; flex-wrap: wrap; gap: 15px;">
             <div style="display: flex; align-items: center; gap: 15px;">
-                <h4 style="margin: 0; border: none; padding: 0; color: var(--crit-color);">🛠️ Historial Global de Incidencias</h4>
+                <h4 style="margin: 0; border: none; padding: 0; color: var(--crit-color);"><i class="fa-solid fa-wrench"></i> Historial Global de Incidencias</h4>
                 <span id="badgeCountIncidentes" style="background: #fdeaea; color: var(--crit-color); padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 800;">Calculando...</span>
             </div>
             <div style="display: flex; gap: 8px;">
                 <input type="month" id="filtroMesIncidentes" class="filter-input" onchange="filtrarIncidentes()" title="Filtrar por Mes">
-                <input type="text" id="filtroMante" class="filter-input" placeholder="🔍 Buscar por placa o detalle..." onkeyup="filtrarIncidentes()" style="width: 200px;">
-                <button class="btn-primary" style="background:#e74c3c; color:white; padding: 8px 12px; font-size: 12px; margin-right: 10px;" onclick="limpiarFiltrosIncidentes()" title="Limpiar Filtros">✖</button>
-                <button class="btn-export" onclick="abrirModalExportar('incidentes')">⬇️ Descargar Reporte</button>
+                <input type="text" id="filtroMante" class="filter-input" placeholder="Buscar por placa o detalle..." onkeyup="filtrarIncidentes()" style="width: 220px;">
+                <button class="btn-primary" style="background:#e74c3c; color:white; padding: 8px 12px; font-size: 12px; margin-right: 10px;" onclick="limpiarFiltrosIncidentes()" title="Limpiar Filtros"><i class="fa-solid fa-xmark"></i></button>
+                <button class="btn-export" onclick="abrirModalExportar('incidentes')"><i class="fa-solid fa-file-export"></i> Descargar Reporte</button>
             </div>
         </div>
         <div style="overflow-x: auto;">
@@ -126,7 +127,7 @@
 <!-- Modal Exportar -->
 <div class="modal-overlay" id="modalExportar">
     <div class="modal" style="max-width: 400px;">
-        <h3 style="color: var(--aurica-blue); margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px;">📊 Exportar Reporte</h3>
+        <h3 style="color: var(--aurica-blue); margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px;"><i class="fa-solid fa-chart-pie"></i> Exportar Reporte</h3>
         <p style="font-size: 13px; color: #666; margin-bottom: 20px;">Seleccione el periodo para descargar los datos en Excel.</p>
         
         <input type="hidden" id="exp_tipo_reporte">
@@ -149,7 +150,7 @@
             </select>
         </div>
 
-        <button type="button" class="btn-submit" style="background: #27ae60;" onclick="ejecutarExportacion()">⬇️ Descargar Excel</button>
+        <button type="button" class="btn-submit" style="background: #27ae60;" onclick="ejecutarExportacion()"><i class="fa-solid fa-file-excel"></i> Descargar Excel</button>
         <button type="button" class="btn-cancelar" onclick="cerrarModalExportar()">Cancelar</button>
     </div>
 </div>
@@ -170,7 +171,7 @@
             <div id="di_descripcion" style="background:#f4f4f4; padding:15px; border-radius:8px; font-size:13px; line-height:1.5; max-height:200px; overflow-y:auto; border:1px solid #e1e1e1;"></div>
         </div>
         <div id="di_evidencia_box" style="margin-top:10px; display:none;">
-            <a id="di_evidencia_link" href="#" target="_blank" style="color:var(--aurica-blue); font-weight:800; font-size:13px;">🔗 Ver Evidencia Adjunta</a>
+            <a id="di_evidencia_link" href="#" target="_blank" style="color:var(--aurica-blue); font-weight:800; font-size:13px;"><i class="fa-solid fa-link"></i> Ver Evidencia Adjunta</a>
         </div>
         <button type="button" class="btn-cancelar" style="margin-top:20px;" onclick="document.getElementById('modalDetalleIncidencia').style.display='none'">Cerrar Ficha</button>
     </div>
@@ -179,7 +180,7 @@
 <!-- Modal Auditoría Gastos -->
 <div class="modal-overlay" id="modalAuditoriaGastos">
     <div class="modal" style="max-width: 600px;">
-        <h3 style="color: var(--aurica-blue); margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px;">💰 Auditoría de Gastos - <span id="ag_placa"></span></h3>
+        <h3 style="color: var(--aurica-blue); margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px;"><i class="fa-solid fa-sack-dollar"></i> Auditoría de Gastos - <span id="ag_placa"></span></h3>
         <div style="display: flex; gap: 10px; margin-bottom: 15px;">
             <input type="month" id="ag_mes" class="filter-input" onchange="cargarAuditoriaGastos()">
         </div>
@@ -203,7 +204,7 @@
 <!-- Modal Auditoría Incidencias -->
 <div class="modal-overlay" id="modalAuditoriaIncidencias">
     <div class="modal" style="max-width: 700px;">
-        <h3 style="color: var(--aurica-blue); margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px;">🛠️ Historial Médico/Mecánico - <span id="ai_placa"></span></h3>
+        <h3 style="color: var(--aurica-blue); margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px;"><i class="fa-solid fa-wrench"></i> Historial Médico/Mecánico - <span id="ai_placa"></span></h3>
         <div style="display: flex; gap: 10px; margin-bottom: 15px;">
             <input type="month" id="ai_mes" class="filter-input" onchange="cargarAuditoriaIncidencias()" title="Filtrar por Mes">
         </div>
@@ -224,7 +225,7 @@
 <!-- Modal Auditoría Consumo -->
 <div class="modal-overlay" id="modalAuditoriaConsumo">
     <div class="modal" style="max-width: 450px;">
-        <h3 style="color: var(--aurica-blue); margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px;">⛽ Auditoría de Consumo</h3>
+        <h3 style="color: var(--aurica-blue); margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px;"><i class="fa-solid fa-gas-pump"></i> Auditoría de Consumo</h3>
         <div id="ac_box" style="background: #f8fbff; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 5px solid var(--aurica-blue);">
             <p style="margin: 0 0 10px 0; font-size: 13px;"><strong>Vehículo / Placa:</strong> <span id="ac_vehiculo" style="color:var(--aurica-blue); font-weight:800;"></span></p>
             <p style="margin: 0 0 10px 0; font-size: 13px;"><strong>Distancia Recorrida:</strong> <span id="ac_km"></span></p>
@@ -280,8 +281,8 @@
 
                 tbody.innerHTML += `<tr><td><strong>${v.cr596_placa}</strong></td><td>${v.cr596_nombre}</td><td>${v.cr596_kilometrajeactual.toLocaleString()} Km</td><td>${v.cr596_nivelcombustible}%</td><td><span class="status-dot ${claseDot}"></span> ${txtEstado}</td>
                 <td>
-                    <button class="btn-primary" style="display:inline-flex; padding:5px 8px; font-size:14px; background:#f0f0f0; border:1px solid #ddd; margin-right:5px;" onclick="abrirAuditoriaGastos('${v.cr596_flota_vehiculoid}', '${v.cr596_placa}')" title="Auditoría de Gastos">💰</button>
-                    <button class="btn-primary" style="display:inline-flex; padding:5px 8px; font-size:14px; background:#f0f0f0; border:1px solid #ddd;" onclick="abrirAuditoriaIncidencias('${v.cr596_flota_vehiculoid}', '${v.cr596_placa}')" title="Historial Médico / Siniestros">🛠️</button>
+                    <button class="btn-primary" style="display:inline-flex; padding:5px 8px; font-size:14px; background:#f0f0f0; border:1px solid #ddd; margin-right:5px;" onclick="abrirAuditoriaGastos('${v.cr596_flota_vehiculoid}', '${v.cr596_placa}')" title="Auditoría de Gastos"><i class="fa-solid fa-sack-dollar"></i></button>
+                    <button class="btn-primary" style="display:inline-flex; padding:5px 8px; font-size:14px; background:#f0f0f0; border:1px solid #ddd;" onclick="abrirAuditoriaIncidencias('${v.cr596_flota_vehiculoid}', '${v.cr596_placa}')" title="Historial Médico / Siniestros"><i class="fa-solid fa-wrench"></i></button>
                 </td></tr>`;
             });
 
@@ -334,7 +335,7 @@
             const destino = viaje.destino || 'No registrado';
             
             let origenReal = viaje.origen || 'Sede Principal';
-            if(origenReal === 'Otros' && viaje.origen_detalle) { origenReal = `🏠 ${viaje.origen_detalle}`; }
+            if(origenReal === 'Otros' && viaje.origen_detalle) { origenReal = `<i class="fa-solid fa-house"></i> ${viaje.origen_detalle}`; }
             const rutaCompleta = `<span style="font-size:11px; color:#7f8c8d;">${origenReal}</span><br>➔ <strong>${destino}</strong>`;
 
             const kmSalida = viaje.km_salida || 0; 
@@ -354,13 +355,13 @@
                 let diferencia = combSalida - combRetorno;
                 
                 if (diferencia < 0) { 
-                    consumoTexto = `⛽ Recargó en ruta`; 
+                    consumoTexto = `<i class="fa-solid fa-gas-pump"></i> Recargó en ruta`; 
                     colorConsumo = "color: var(--route-color); font-weight: 700;"; 
                 } else { 
                     if(capTanque) {
                         let litrosConsumidos = (diferencia / 100) * capTanque;
                         let ratio = (litrosConsumidos > 0 && kmRecorridos > 0) ? (kmRecorridos / litrosConsumidos).toFixed(1) : 0;
-                        consumoTexto = `↓ ${litrosConsumidos.toFixed(1)} L 🔍`;
+                        consumoTexto = `<i class="fa-solid fa-arrow-down"></i> ${litrosConsumidos.toFixed(1)} L <i class="fa-solid fa-magnifying-glass"></i>`;
                         
                         let umbralSospechoso = rendEsperado ? rendEsperado : 5;
                         
@@ -373,7 +374,7 @@
                     } else {
                         // Fallback a % si no hay capacidad registrada
                         let ratio = (diferencia > 0 && kmRecorridos > 0) ? (kmRecorridos / diferencia).toFixed(1) : 0;
-                        consumoTexto = `↓ ${diferencia}% 🔍`;
+                        consumoTexto = `<i class="fa-solid fa-arrow-down"></i> ${diferencia}% <i class="fa-solid fa-magnifying-glass"></i>`;
                         if(diferencia > 0 && ratio < 1.5) { 
                             colorConsumo = 'color: var(--crit-color); font-weight: 900; background:#fdeaea; padding:3px 8px; border-radius:12px; border: 1px solid #fad2d2; cursor:pointer;';
                         } else {
@@ -449,12 +450,12 @@
         let isSuspicious = parseFloat(rawRatio) < umbral;
 
         if (isSuspicious) {
-            evalSpan.innerHTML = `🚩 <strong>Consumo Excesivo / Sospechoso.</strong> El vehículo rindió por debajo del mínimo esperado (${umbral} ${isLiters ? 'Km/L' : 'Km/%'}). Requiere investigación técnica o revisión de control de combustible.`;
+            evalSpan.innerHTML = `<i class="fa-solid fa-flag"></i> <strong>Consumo Excesivo / Sospechoso.</strong> El vehículo rindió por debajo del mínimo esperado (${umbral} ${isLiters ? 'Km/L' : 'Km/%'}). Requiere investigación técnica o revisión de control de combustible.`;
             evalSpan.style.color = "var(--crit-color)";
             box.style.borderLeftColor = "var(--crit-color)";
             box.style.background = "#fdeaea";
         } else {
-            evalSpan.innerHTML = `✅ <strong>Consumo Normal.</strong> El ratio de rendimiento cumple o supera los parámetros configurados (Min: ${umbral} ${isLiters ? 'Km/L' : 'Km/%'}).`;
+            evalSpan.innerHTML = `<i class="fa-solid fa-check"></i> <strong>Consumo Normal.</strong> El ratio de rendimiento cumple o supera los parámetros configurados (Min: ${umbral} ${isLiters ? 'Km/L' : 'Km/%'}).`;
             evalSpan.style.color = "var(--ok-color)";
             box.style.borderLeftColor = "var(--ok-color)";
             box.style.background = "#eafaf1";
@@ -597,7 +598,7 @@
                 <td>${inc.vehiculo}</td>
                 <td><span style="background:${bgTipo}; padding:4px 8px; border-radius:4px; font-size:11px; color:${colorTipo}; font-weight:800;">${inc.tipo.toUpperCase()}</span></td>
                 <td style="font-size:12px;">${descCorta}</td>
-                <td><button class="btn-primary" style="padding:4px 8px; font-size:11px; background:#f0f0f0; border:1px solid #ccc; display:inline-flex;" onclick="verDetalleIncidente('${inc.id_unico}')" title="Ver Detalles">👁️ Ver</button></td>
+                <td><button class="btn-primary" style="padding:4px 8px; font-size:11px; background:#f0f0f0; border:1px solid #ccc; display:inline-flex; align-items:center; gap:5px;" onclick="verDetalleIncidente('${inc.id_unico}')" title="Ver Detalles"><i class="fa-solid fa-eye"></i> Ver</button></td>
             </tr>`;
         });
     }

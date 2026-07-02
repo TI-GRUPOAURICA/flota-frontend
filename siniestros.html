@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Siniestros - Grupo Aurica</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="assets/css/global.css">
     <style>
         /* Estilos específicos de siniestros.html */
@@ -54,7 +55,7 @@
         </div>
     </div>
     <div style="display: flex; gap: 10px;">
-        <button class="btn-primary" style="background: #27ae60; color: white;" onclick="abrirModalExportar()">⬇️ Descargar Reporte</button>
+        <button class="btn-primary" style="background: #27ae60; color: white;" onclick="abrirModalExportar()"><i class="fa-solid fa-file-export"></i> Descargar Reporte</button>
         <button class="btn-primary" onclick="window.location.href='index.html'">Volver al Portal</button>
     </div>
 </div>
@@ -62,7 +63,7 @@
 <div class="container">
     <!-- Formulario de Registro -->
     <div class="card">
-        <h3>💥 Reportar Nuevo Siniestro</h3>
+        <h3><i class="fa-solid fa-burst"></i> Reportar Nuevo Siniestro</h3>
         <form id="formSiniestro">
             <div class="form-group">
                 <label>Vehículo Afectado</label>
@@ -96,15 +97,15 @@
     <!-- Tablero Kanban -->
     <div class="kanban-board">
         <div class="kanban-col" id="col_wrapper_reportado">
-            <div class="col-header k-reportado">🚨 Reportado</div>
+            <div class="col-header k-reportado"><i class="fa-solid fa-triangle-exclamation"></i> Reportado</div>
             <div id="col_reportado"></div>
         </div>
         <div class="kanban-col" id="col_wrapper_tramite">
-            <div class="col-header k-tramite">📄 Trámite Seguro</div>
+            <div class="col-header k-tramite"><i class="fa-solid fa-file-invoice"></i> Trámite Seguro</div>
             <div id="col_tramite"></div>
         </div>
         <div class="kanban-col" id="col_wrapper_taller">
-            <div class="col-header k-taller">🛠️ Taller</div>
+            <div class="col-header k-taller"><i class="fa-solid fa-screwdriver-wrench"></i> Taller</div>
             <div id="col_taller"></div>
         </div>
     </div>
@@ -113,7 +114,7 @@
 <div class="container" style="display: block;">
     <!-- Historial Cerrados -->
     <div class="historial-section">
-        <h3>✅ Historial de Siniestros Cerrados</h3>
+        <h3><i class="fa-solid fa-check-circle"></i> Historial de Siniestros Cerrados</h3>
         <div style="overflow-x: auto;">
             <table class="table-cerrados">
                 <thead>
@@ -171,7 +172,7 @@
 <!-- Modal Exportar -->
 <div class="modal-overlay" id="modalExportar">
     <div class="modal" style="max-width: 400px;">
-        <h3 style="color: var(--aurica-blue); margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px;">📊 Exportar Reporte</h3>
+        <h3 style="color: var(--aurica-blue); margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px;"><i class="fa-solid fa-chart-pie"></i> Exportar Reporte</h3>
         <p style="font-size: 13px; color: #666; margin-bottom: 20px;">Seleccione el periodo para descargar los datos consolidados en Excel.</p>
         
         <div class="form-group">
@@ -192,7 +193,7 @@
             </select>
         </div>
 
-        <button type="button" class="btn-submit" style="background: #27ae60;" onclick="ejecutarExportacion()">⬇️ Descargar Excel</button>
+        <button type="button" class="btn-submit" style="background: #27ae60;" onclick="ejecutarExportacion()"><i class="fa-solid fa-file-excel"></i> Descargar Excel</button>
         <button type="button" class="btn-cancelar" onclick="cerrarModalExportar()">Cancelar</button>
     </div>
 </div>
@@ -259,7 +260,7 @@
             if (s.url_documentos) {
                 const urls = s.url_documentos.split(',');
                 urls.forEach((url, i) => {
-                    docsHTML += `<a href="${url}" target="_blank" style="font-size:11px; color:#3498db; text-decoration:none; display:block; margin-top:5px;">🔗 Ver Doc ${i+1}</a>`;
+                    docsHTML += `<a href="${url}" target="_blank" style="font-size:11px; color:#3498db; text-decoration:none; display:block; margin-top:5px;"><i class="fa-solid fa-link"></i> Ver Doc ${i+1}</a>`;
                 });
             }
             
@@ -269,7 +270,7 @@
                 let btnDoc = '<span style="color:#aaa; font-size:11px;">Sin adjunto</span>';
                 if (s.url_documentos) {
                     const urls = s.url_documentos.split(',');
-                    btnDoc = urls.map((url, i) => `<a href="${url}" target="_blank" class="btn-ver-doc" style="margin-right: 4px; margin-bottom: 4px;">📄 Doc ${i+1}</a>`).join('');
+                    btnDoc = urls.map((url, i) => `<a href="${url}" target="_blank" class="btn-ver-doc" style="margin-right: 4px; margin-bottom: 4px;"><i class="fa-solid fa-file"></i> Doc ${i+1}</a>`).join('');
                 }
                 
                 document.getElementById('tabla_cerrados').innerHTML += `
@@ -290,7 +291,7 @@
 
                 const cardHTML = `
                     <div class="s-card" style="border-left-color: ${colorBorde}; cursor: pointer;" onclick="abrirModal('${s.id}')">
-                        <div class="s-fecha">📅 ${f} | 👤 ${conductorNombre}</div>
+                        <div class="s-fecha"><i class="fa-solid fa-calendar-days"></i> ${f} | <i class="fa-solid fa-user"></i> ${conductorNombre}</div>
                         <div class="s-vehiculo">${placa}</div>
                         <div class="s-desc">${s.descripcion}</div>
                         ${docsHTML}
@@ -366,7 +367,7 @@
         const files = document.getElementById(inputId).files;
         let html = '';
         for(let i=0; i<files.length; i++) {
-            html += `📄 ${files[i].name}<br>`;
+            html += `<i class="fa-solid fa-file"></i> ${files[i].name}<br>`;
         }
         document.getElementById(listId).innerHTML = html;
     }
@@ -426,7 +427,7 @@
         try {
             const res = await fetch(`${API_URL}/registrar-siniestro`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
             if (res.ok) { 
-                alert("✅ Siniestro registrado. El vehículo ha pasado a estado 'Siniestro'."); 
+                alert("Siniestro registrado exitosamente. El vehículo ha pasado a estado 'Siniestro'."); 
                 document.getElementById('formSiniestro').reset(); 
                 document.getElementById('list_s').innerHTML = ''; // Limpiar visualmente
                 cargarSiniestros(); 

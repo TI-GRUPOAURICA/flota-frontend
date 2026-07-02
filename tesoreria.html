@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tesorería - Grupo Aurica</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="assets/css/global.css">
     <style>
         /* Estilos específicos de tesoreria.html */
@@ -50,7 +51,7 @@
         </div>
     </div>
     <div style="display: flex; gap: 10px;">
-        <button class="btn-primary" style="background: #27ae60; color: white;" onclick="abrirModalExportar()">⬇️ Descargar Reporte</button>
+        <button class="btn-primary" style="background: #27ae60; color: white;" onclick="abrirModalExportar()"><i class="fa-solid fa-file-export"></i> Descargar Reporte</button>
         <button class="btn-primary" onclick="window.location.href='index.html'">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"></path><polyline points="12 19 5 12 12 5"></polyline></svg>
             Panel Principal
@@ -62,13 +63,13 @@
 <div id="panel-registro" style="max-width: 1200px; margin: auto;">
     <div class="grid-layout">
         <div class="card">
-            <h3>🚨 Reembolsos de Garita</h3>
+            <h3><i class="fa-solid fa-triangle-exclamation"></i> Reembolsos de Garita</h3>
             <p style="font-size: 12px; color: #666;">Seleccione una alerta para procesar el pago del conductor.</p>
             <div id="listaAlertas"><div style="text-align: center; padding: 20px; color: #888;">Buscando alertas...</div></div>
         </div>
 
         <div class="card">
-            <h3>💵 Detalle del Gasto</h3>
+            <h3><i class="fa-solid fa-money-bill-wave"></i> Detalle del Gasto</h3>
             <form id="formGasto">
                 <input type="hidden" id="viaje_id"> 
 
@@ -103,7 +104,7 @@
                 </div>
 
                 <div class="caja-combustible" id="caja_combustible">
-                    <h4>⛽ Parámetros de Combustible y Rendimiento</h4>
+                    <h4><i class="fa-solid fa-gas-pump"></i> Parámetros de Combustible y Rendimiento</h4>
                     <div class="form-row">
                         <div class="form-group">
                             <label>Kilometraje Actual (Odómetro)</label>
@@ -185,7 +186,7 @@
 <!-- Modal Exportar -->
 <div class="modal-overlay" id="modalExportar">
     <div class="modal" style="max-width: 400px;">
-        <h3 style="color: var(--aurica-blue); margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px;">📊 Exportar Reporte</h3>
+        <h3 style="color: var(--aurica-blue); margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px;"><i class="fa-solid fa-chart-pie"></i> Exportar Reporte</h3>
         <p style="font-size: 13px; color: #666; margin-bottom: 20px;">Seleccione el periodo para descargar los datos de gastos en Excel.</p>
         
         <div class="form-group">
@@ -206,7 +207,7 @@
             </select>
         </div>
 
-        <button type="button" class="btn-submit" style="background: #27ae60;" onclick="ejecutarExportacion()">⬇️ Descargar Excel</button>
+        <button type="button" class="btn-submit" style="background: #27ae60;" onclick="ejecutarExportacion()"><i class="fa-solid fa-file-excel"></i> Descargar Excel</button>
         <button type="button" class="btn-cancelar" onclick="cerrarModalExportar()">Cancelar</button>
     </div>
 </div>
@@ -270,7 +271,7 @@
         if (!id) { card.className = "vehiculo-preview empty"; card.innerHTML = "Seleccione un vehículo arriba para ver sus datos"; return; }
         const v = memoriaFlota.find(x => x.cr596_flota_vehiculoid === id);
         card.className = "vehiculo-preview";
-        card.innerHTML = `<div class="v-icon">🚐</div><div class="v-data"><h4>${v.cr596_nombre} [${v.cr596_placa}]</h4><p><span class="v-tag">Mod: ${v.cr596_modelo || 'N/A'}</span><span class="v-tag">Año: ${v.cr596_ano || 'N/A'}</span></p></div>`;
+        card.innerHTML = `<div class="v-icon"><i class="fa-solid fa-van-shuttle"></i></div><div class="v-data"><h4>${v.cr596_nombre} [${v.cr596_placa}]</h4><p><span class="v-tag">Mod: ${v.cr596_modelo || 'N/A'}</span><span class="v-tag">Año: ${v.cr596_ano || 'N/A'}</span></p></div>`;
     }
 
     async function cargarAlertas() {
@@ -278,12 +279,12 @@
         try {
             const res = await fetch(`${API_URL}/viajes-con-gastos`);
             const data = await res.json();
-            if(data.data.length === 0) { lista.innerHTML = '<div style="text-align:center; padding:20px; color:#27ae60; font-weight:800;">✅ Tesorería al día.</div>'; return; }
+            if(data.data.length === 0) { lista.innerHTML = '<div style="text-align:center; padding:20px; color:#27ae60; font-weight:800;"><i class="fa-solid fa-check"></i> Tesorería al día.</div>'; return; }
             lista.innerHTML = '';
             data.data.forEach(v => {
                 let vehiculoId = v._cr596_vehiculo_value;
                 let auto = memoriaFlota.find(x => x.cr596_flota_vehiculoid === vehiculoId);
-                let placa = auto ? auto.cr596_placa : '🚗';
+                let placa = auto ? auto.cr596_placa : '<i class="fa-solid fa-car"></i>';
                 lista.innerHTML += `<div class="alerta-item" onclick="seleccionarAlerta('${v.cr596_flota_movimientoid}', '${vehiculoId}', '${v.cr596_observacionesretorno}')"><div class="alerta-placa">[${placa}] <span style="font-size:10px; background:var(--warn-color); color:white; padding:3px 8px; border-radius:10px;">Pendiente</span></div><div class="alerta-detalle">"Reporte de Garita: ${v.cr596_observacionesretorno || "Gastos sin detallar"}"</div></div>`;
             });
         } catch(e) { lista.innerHTML = "Error al conectar."; }
@@ -329,7 +330,7 @@
             const resGasto = await fetch(`${API_URL}/registrar-gasto`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payloadGasto) });
             
             if (resGasto.ok) { 
-                let mensajeExito = "✅ Gasto registrado correctamente en Tesorería.";
+                let mensajeExito = "Gasto registrado correctamente en Tesorería.";
                 
                 // Si es combustible, también mandamos el request paralelo a /registrar-carga-combustible
                 if (esCombustible) {
@@ -346,9 +347,9 @@
                     const dataComb = await resComb.json();
                     
                     if(resComb.ok && dataComb.rendimiento_periodo && dataComb.rendimiento_periodo !== "0.0 Km/Unidad Vol.") {
-                        mensajeExito += `\n\n⛽ Rendimiento calculado: ${dataComb.rendimiento_periodo}`;
+                        mensajeExito += `\n\nRendimiento calculado: ${dataComb.rendimiento_periodo}`;
                     } else {
-                        mensajeExito += `\n\n⛽ Primera carga registrada.`;
+                        mensajeExito += `\n\nPrimera carga registrada.`;
                     }
                 }
 
@@ -401,7 +402,7 @@
 
             if (data.data.length === 0) {
                 alert(`No hay gastos registrados para ${mes === "ALL" ? "el año " + anio : mes + "/" + anio}.`);
-                btn.innerText = "⬇️ Descargar Excel";
+                btn.innerHTML = '<i class="fa-solid fa-file-excel"></i> Descargar Excel';
                 return;
             }
 
@@ -437,7 +438,7 @@
         } catch(e) { 
             alert("Error al extraer reporte."); 
         } finally { 
-            btn.innerText = "⬇️ Descargar Excel"; 
+            btn.innerHTML = '<i class="fa-solid fa-file-excel"></i> Descargar Excel'; 
         }
     }
 

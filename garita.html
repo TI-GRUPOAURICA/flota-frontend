@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Garita de Control - Grupo Aurica</title>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="assets/css/global.css">
     <style>
         /* Estilos específicos de garita.html */
@@ -48,7 +48,7 @@
     
     <!-- PANEL DE SALIDA -->
     <div class="card">
-        <h3>🚀 Registrar Salida</h3>
+        <h3><i class="fa-solid fa-rocket"></i> Registrar Salida</h3>
         <div id="alerta-salida" class="alerta-error"></div>
         <form id="formSalida">
             <div class="form-group" style="margin-bottom: 15px;">
@@ -68,16 +68,16 @@
                     <label>Nivel de Combustible</label>
                     <select id="s_combustible" required>
                         <option value="">Seleccione...</option>
-                        <option value="10">🔴 Reserva (10%)</option>
-                        <option value="25">🟠 1/4 Tanque (25%)</option>
-                        <option value="50">🟡 Medio Tanque (50%)</option>
-                        <option value="75">🟢 3/4 Tanque (75%)</option>
-                        <option value="100">🟢 Tanque Lleno (100%)</option>
+                        <option value="10">Reserva (10%)</option>
+                        <option value="25">1/4 Tanque (25%)</option>
+                        <option value="50">Medio Tanque (50%)</option>
+                        <option value="75">3/4 Tanque (75%)</option>
+                        <option value="100">Tanque Lleno (100%)</option>
                     </select>
                 </div>
             </div>
             <div class="checklist-box">
-                <h4>📋 Checklist de Inspección (Clic para marcar falla)</h4>
+                <h4><i class="fa-solid fa-clipboard-list"></i> Checklist de Inspección (Clic para marcar falla)</h4>
                 <div class="checklist-grid" id="grid_salida"></div>
             </div>
             <div class="form-row">
@@ -88,7 +88,7 @@
                         <option value="Sede Olavide">Sede Olavide</option>
                         <option value="Sede Trapiche">Sede Trapiche</option>
                         <option value="Planta Chala">Planta Chala</option>
-                        <option value="Otros">⚠️ OTROS (Especificar)</option>
+                        <option value="Otros">OTROS (Especificar)</option>
                     </select>
                 </div>
                 <div class="form-group" id="caja_origen_detalle" style="display: none;">
@@ -112,7 +112,7 @@
 
     <!-- PANEL DE RETORNO -->
     <div class="card">
-        <h3>🏁 Registrar Retorno</h3>
+        <h3><i class="fa-solid fa-flag-checkered"></i> Registrar Retorno</h3>
         <form id="formRetorno">
             <div class="form-group" style="margin-bottom: 15px;">
                 <label>Seleccione el Viaje Abierto</label>
@@ -137,7 +137,7 @@
                 </div>
             </div>
             <div class="checklist-box" style="background: #fff8f8; border-color: #ffcccc;">
-                <h4 style="color: var(--crit-color);">🚨 Reporte de Daños (Clic si llegó con fallas)</h4>
+                <h4 style="color: var(--crit-color);"><i class="fa-solid fa-triangle-exclamation"></i> Reporte de Daños (Clic si llegó con fallas)</h4>
                 <div class="checklist-grid" id="grid_retorno"></div>
             </div>
 
@@ -145,7 +145,7 @@
             <div class="form-group" style="margin-bottom: 15px; background: #fdeaea; padding: 15px; border-radius: 8px; border: 1px solid #f5b7b1;">
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <input type="checkbox" id="r_taller" onchange="toggleMotivoTaller()" style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--crit-color);">
-                    <label style="margin:0; font-size: 13px; color: var(--crit-color); font-weight: 900;">⚠️ ENVIAR A TALLER (Reportar avería mecánica)</label>
+                    <label style="margin:0; font-size: 13px; color: var(--crit-color); font-weight: 900;"><i class="fa-solid fa-triangle-exclamation"></i> ENVIAR A TALLER (Reportar avería mecánica)</label>
                 </div>
                 <div id="caja_motivo_taller" style="display: none; margin-top: 15px;">
                     <label style="color: var(--crit-color);">Detalle la falla para el Jefe de Mantenimiento:</label>
@@ -161,7 +161,7 @@
             <div class="form-group" style="margin-bottom: 15px; background: #f9ebea; padding: 15px; border-radius: 8px; border: 1px solid #e74c3c;">
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <input type="checkbox" id="r_siniestro" style="width: 20px; height: 20px; cursor: pointer; accent-color: #c0392b;">
-                    <label style="margin:0; font-size: 13px; color: #c0392b; font-weight: 900;">🚨 OCURRIÓ UN SINIESTRO / ACCIDENTE GRAVE EN RUTA</label>
+                    <label style="margin:0; font-size: 13px; color: #c0392b; font-weight: 900;"><i class="fa-solid fa-burst"></i> OCURRIÓ UN SINIESTRO / ACCIDENTE GRAVE EN RUTA</label>
                 </div>
             </div>
             
@@ -207,10 +207,10 @@
             
             if (parte.id === 'otros') {
                 div.className = 'check-item otros-ok';
-                div.innerHTML = `📝 ${parte.nombre}`;
+                div.innerHTML = `<i class="fa-solid fa-pen"></i> ${parte.nombre}`;
             } else {
                 div.className = 'check-item ok';
-                div.innerHTML = `✅ ${parte.nombre}`;
+                div.innerHTML = `<i class="fa-solid fa-check"></i> ${parte.nombre}`;
             }
             
             div.id = `chk_${prefijo}_${parte.id}`;
@@ -234,10 +234,10 @@
                             this.dataset.observacion = result.value;
                             if (parte.id === 'otros') {
                                 this.className = 'check-item otros-falla';
-                                this.innerHTML = `⚠️ Anotado`;
+                                this.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Anotado`;
                             } else {
                                 this.className = 'check-item falla';
-                                this.innerHTML = `❌ ${parte.nombre}`;
+                                this.innerHTML = `<i class="fa-solid fa-xmark"></i> ${parte.nombre}`;
                             }
                         }
                     });
@@ -246,10 +246,10 @@
                     delete this.dataset.observacion;
                     if (parte.id === 'otros') {
                         this.className = 'check-item otros-ok';
-                        this.innerHTML = `📝 ${parte.nombre}`;
+                        this.innerHTML = `<i class="fa-solid fa-pen"></i> ${parte.nombre}`;
                     } else {
                         this.className = 'check-item ok';
-                        this.innerHTML = `✅ ${parte.nombre}`;
+                        this.innerHTML = `<i class="fa-solid fa-check"></i> ${parte.nombre}`;
                     }
                 }
             };
@@ -305,7 +305,7 @@
                 }
                 
                 if (docVencido) {
-                    select.innerHTML += `<option value="${c.id}" disabled>⛔ ${c.nombre} (Brevete Vencido: ${c.vencimiento_brevete})</option>`; 
+                    select.innerHTML += `<option value="${c.id}" disabled>[BLOQUEADO] ${c.nombre} (Brevete Vencido: ${c.vencimiento_brevete})</option>`; 
                 } else {
                     select.innerHTML += `<option value="${c.id}">${c.nombre} (Brevete: ${c.brevete})</option>`; 
                 }
@@ -334,7 +334,7 @@
                     if (proxMante > 0 && kmActual >= proxMante) docVencido = true;
 
                     if (docVencido) {
-                        select.innerHTML += `<option value="${v.cr596_flota_vehiculoid}" disabled>⛔ [${v.cr596_placa}] - ${v.cr596_nombre} (Doc/Mantenimiento Vencido)</option>`; 
+                        select.innerHTML += `<option value="${v.cr596_flota_vehiculoid}" disabled>[BLOQUEADO] [${v.cr596_placa}] - ${v.cr596_nombre} (Doc/Mantenimiento Vencido)</option>`; 
                     } else {
                         select.innerHTML += `<option value="${v.cr596_flota_vehiculoid}">[${v.cr596_placa}] - ${v.cr596_nombre}</option>`; 
                     }
@@ -414,7 +414,7 @@
         };
         try {
             const res = await fetch(`${API_URL}/registrar-salida`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-            if (res.ok) { alert("✅ Salida registrada."); document.getElementById('formSalida').reset(); document.getElementById('caja_origen_detalle').style.display = 'none'; generarGridChecklist('grid_salida', 's'); inicializarGarita(); }
+            if (res.ok) { alert("Salida registrada exitosamente."); document.getElementById('formSalida').reset(); document.getElementById('caja_origen_detalle').style.display = 'none'; generarGridChecklist('grid_salida', 's'); inicializarGarita(); }
         } catch (error) { alert("Error"); } finally { btn.innerText = "Dar Salida de Garita"; }
     });
 
@@ -466,7 +466,7 @@
 
         try {
             const res = await fetch(`${API_URL}/registrar-retorno`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-            if (res.ok) { alert("🏁 Retorno registrado."); document.getElementById('formRetorno').reset(); document.getElementById('caja_gastos').style.display = 'none'; document.getElementById('caja_motivo_taller').style.display = 'none'; generarGridChecklist('grid_retorno', 'r'); inicializarGarita(); }
+            if (res.ok) { alert("Retorno registrado exitosamente."); document.getElementById('formRetorno').reset(); document.getElementById('caja_gastos').style.display = 'none'; document.getElementById('caja_motivo_taller').style.display = 'none'; generarGridChecklist('grid_retorno', 'r'); inicializarGarita(); }
         } catch (error) { alert("Error"); } finally { btn.innerText = "Registrar Retorno a Base"; }
     });
 

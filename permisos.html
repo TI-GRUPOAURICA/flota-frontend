@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Permisos - Grupo Aurica</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="assets/css/global.css">
     <style>
         /* Estilos específicos de permisos.html */
@@ -43,7 +44,7 @@
 <div class="grid-layout">
     
     <div class="card">
-        <h3>➕ Nuevo Usuario</h3>
+        <h3><i class="fa-solid fa-user-plus"></i> Nuevo Usuario</h3>
         <form id="formPermisos">
             <div class="form-group">
                 <label>Correo Electrónico Corporativo</label>
@@ -71,7 +72,7 @@
     </div>
 
     <div class="card">
-        <h3>📋 Matriz de Accesos Autorizados</h3>
+        <h3><i class="fa-solid fa-table-list"></i> Matriz de Accesos Autorizados</h3>
         <div style="overflow-x: auto;">
             <table>
                 <thead>
@@ -138,8 +139,8 @@
                             <td><input type="checkbox" id="mod_conta_${p.id}" ${p.mod_conta ? 'checked' : ''}></td>
                             <td><input type="checkbox" id="mod_alertas_${p.id}" ${p.recibe_alertas ? 'checked' : ''}></td>
                             <td class="action-cell">
-                                <button class="btn-save" onclick="actualizarPermiso('${p.id}')" title="Guardar Cambios">💾</button>
-                                <button class="btn-delete" onclick="eliminarPermiso('${p.id}', '${p.email}')" title="Revocar Acceso">❌</button>
+                                <button class="btn-save" onclick="actualizarPermiso('${p.id}')" title="Guardar Cambios"><i class="fa-solid fa-floppy-disk"></i></button>
+                                <button class="btn-delete" onclick="eliminarPermiso('${p.id}', '${p.email}')" title="Revocar Acceso"><i class="fa-solid fa-xmark"></i></button>
                             </td>
                         </tr>
                     `;

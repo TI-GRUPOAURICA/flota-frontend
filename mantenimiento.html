@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mantenimiento - Grupo Aurica</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="assets/css/global.css">
     <style>
         /* Estilos específicos de mantenimiento.html */
@@ -105,41 +106,41 @@
             
             <!-- Alerta Siniestro -->
             <div id="alerta_siniestro" style="display:none; background: #fdedec; padding: 15px; border-radius: 8px; border-left: 4px solid #e74c3c; margin-bottom: 20px;">
-                <strong style="color: #c0392b;">🚨 VEHÍCULO SINIESTRADO</strong>
+                <strong style="color: #c0392b;"><i class="fa-solid fa-triangle-exclamation"></i> VEHÍCULO SINIESTRADO</strong>
                 <p style="margin: 5px 0 0 0; font-size: 13px;">La gestión técnica y legal de este accidente se maneja en el <b>Módulo de Siniestros</b>. El estado está bloqueado aquí.</p>
             </div>
 
             <!-- Alerta Mantenimiento -->
             <div id="alerta_taller" style="display:none; background: #fdf2e9; padding: 15px; border-radius: 8px; border-left: 4px solid #e67e22; margin-bottom: 20px;">
-                <strong style="color: #d35400;">🚨 VEHÍCULO BLOQUEADO EN TALLER</strong>
+                <strong style="color: #d35400;"><i class="fa-solid fa-triangle-exclamation"></i> VEHÍCULO BLOQUEADO EN TALLER</strong>
                 <p id="alerta_taller_texto" style="margin: 5px 0 0 0; font-size: 13px;"></p>
             </div>
 
             <div class="form-group">
                 <label>Estado Operativo</label>
                 <select id="edit_estado" onchange="toggleNotasTaller()">
-                    <option value="Disponible">✅ Disponible (Listo para salir)</option>
-                    <option value="En uso" disabled>🚚 En Ruta (Solo Garita puede cambiarlo)</option>
-                    <option value="Mantenimiento Preventivo">🔧 Mantenimiento Preventivo</option>
-                    <option value="Mantenimiento Correctivo">🛠️ Mantenimiento Correctivo</option>
-                    <option value="Siniestro" disabled>💥 Siniestro (Registrar desde Módulo Siniestros)</option>
-                    <option value="Baja Temporal">⏸️ Baja Temporal</option>
-                    <option value="Dado de Baja">❌ Dado de Baja</option>
+                    <option value="Disponible"><i class="fa-solid fa-check"></i> Disponible (Listo para salir)</option>
+                    <option value="En uso" disabled><i class="fa-solid fa-truck"></i> En Ruta (Solo Garita puede cambiarlo)</option>
+                    <option value="Mantenimiento Preventivo"><i class="fa-solid fa-wrench"></i> Mantenimiento Preventivo</option>
+                    <option value="Mantenimiento Correctivo"><i class="fa-solid fa-screwdriver-wrench"></i> Mantenimiento Correctivo</option>
+                    <option value="Siniestro" disabled><i class="fa-solid fa-burst"></i> Siniestro (Registrar desde Módulo Siniestros)</option>
+                    <option value="Baja Temporal"><i class="fa-solid fa-pause"></i> Baja Temporal</option>
+                    <option value="Dado de Baja"><i class="fa-solid fa-xmark"></i> Dado de Baja</option>
                 </select>
             </div>
 
             <div id="caja_motivo_ingreso" class="form-group" style="display:none; background:#fef9e7; padding:15px; border-radius:8px; border:1px solid #f1c40f;">
-                <label style="color:#d35400; font-size: 13px; margin-bottom: 8px;">🚨 Motivo de Ingreso a Taller</label>
+                <label style="color:#d35400; font-size: 13px; margin-bottom: 8px;"><i class="fa-solid fa-triangle-exclamation"></i> Motivo de Ingreso a Taller</label>
                 <textarea id="edit_motivo_ingreso" rows="2" style="background:#fff;"></textarea>
             </div>
 
             <div id="caja_reparacion" class="form-group" style="display:none; background:#e8f8f5; padding:15px; border-radius:8px; border:1px solid #a3e4d7;">
-                <label style="color:#27ae60; font-size: 13px; margin-bottom: 8px;">✅ Detalle de la Reparación (Auditoría)</label>
+                <label style="color:#27ae60; font-size: 13px; margin-bottom: 8px;"><i class="fa-solid fa-check-circle"></i> Detalle de la Reparación (Auditoría)</label>
                 <textarea id="edit_reparacion" rows="3" placeholder="Ej. Se cambió bomba de agua, se purgó el sistema..." style="background:#fff;"></textarea>
             </div>
 
             <div style="background: #f8f9fa; border: 1px solid #ddd; padding: 15px; border-radius: 12px; margin-bottom: 15px;">
-                <h4 style="margin: 0 0 10px 0; color: var(--text-dark); font-size: 13px;">📋 Datos del Vehículo</h4>
+                <h4 style="margin: 0 0 10px 0; color: var(--text-dark); font-size: 13px;"><i class="fa-solid fa-clipboard-list"></i> Datos del Vehículo</h4>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                     <div class="form-group" style="margin: 0;"><label>Modelo</label><input type="text" id="edit_modelo" placeholder="Ej. Hilux 4x4"></div>
                     <div class="form-group" style="margin: 0;"><label>Año de Fab.</label><input type="number" id="edit_ano" placeholder="Ej. 2022"></div>
@@ -161,7 +162,7 @@
             </div>
 
             <div class="mante-box">
-                <h4 style="margin: 0 0 10px 0; color: var(--aurica-blue); font-size: 14px;">⚙️ Programación de Mantenimiento</h4>
+                <h4 style="margin: 0 0 10px 0; color: var(--aurica-blue); font-size: 14px;"><i class="fa-solid fa-gear"></i> Programación de Mantenimiento</h4>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                     <div class="form-group" style="margin: 0;"><label>Frecuencia (Km)</label><input type="number" id="edit_freq" onkeyup="calcularProximo()"></div>
                     <div class="form-group" style="margin: 0;"><label>Último Servicio (Km)</label><input type="number" id="edit_ultimo" onkeyup="calcularProximo()"></div>
@@ -295,7 +296,7 @@
                             <span class="tag-item">AÑO: ${v.cr596_ano || '-'}</span>
                             <span class="tag-item">TANQUE: ${v.cr596_capacidadtanquelitros ? v.cr596_capacidadtanquelitros + ' L' : 'N/A'}</span>
                             <span class="tag-item">REND: ${v.cr596_rendimientoesperado ? v.cr596_rendimientoesperado + ' Km/L' : 'N/A'}</span>
-                            <span class="tag-empresa">🏢 ${empresaNombre}</span>
+                            <span class="tag-empresa"><i class="fa-solid fa-building"></i> ${empresaNombre}</span>
                         </div>
                         <div class="info-box">
                             <div class="info-item">
@@ -348,7 +349,7 @@
             const data = await res.json();
             
             if(!data.data || data.data.length === 0) {
-                tbody.innerHTML = '<tr><td style="padding:15px; text-align:center;">✅ Vehículo sin incidencias mecánicas reportadas.</td></tr>';
+                tbody.innerHTML = '<tr><td style="padding:15px; text-align:center;"><i class="fa-solid fa-check"></i> Vehículo sin incidencias mecánicas reportadas.</td></tr>';
                 return;
             }
 

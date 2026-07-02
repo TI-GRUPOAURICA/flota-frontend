@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Garita de Control - Retorno</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="assets/css/global.css">
     <style>
         /* Estilos específicos de retorno.html */
@@ -19,7 +20,7 @@
 <body>
 
 <div class="container">
-    <h2>🔙 Registro de Retorno</h2>
+    <h2><i class="fa-solid fa-flag-checkered"></i> Registro de Retorno</h2>
     <form id="formRetorno">
         
         <div class="form-group">
@@ -88,7 +89,7 @@
         const kmSalida = parseInt(textSelected.match(/Km: (\d+)/)[1]);
         
         if (payload.km_retorno < kmSalida) {
-            mensaje.innerText = "❌ Error: El Km de llegada no puede ser menor al de salida.";
+            mensaje.innerHTML = "<i class='fa-solid fa-xmark'></i> Error: El Km de llegada no puede ser menor al de salida.";
             mensaje.style.color = "red";
             btn.innerText = "Registrar Llegada";
             return;
@@ -102,18 +103,18 @@
             });
 
             if (respuesta.ok) {
-                mensaje.innerText = "✅ ¡Retorno registrado exitosamente!";
+                mensaje.innerHTML = "<i class='fa-solid fa-check'></i> ¡Retorno registrado exitosamente!";
                 mensaje.style.color = "green";
                 document.getElementById('formRetorno').reset();
                 // Opcional: Recargar la lista quitando el que ya llegó
                 setTimeout(() => location.reload(), 2000); 
             } else {
                 const errData = await respuesta.json();
-                mensaje.innerText = "❌ Error: " + errData.detail;
+                mensaje.innerHTML = "<i class='fa-solid fa-xmark'></i> Error: " + errData.detail;
                 mensaje.style.color = "red";
             }
         } catch (error) {
-            mensaje.innerText = "❌ Error de conexión con Python.";
+            mensaje.innerHTML = "<i class='fa-solid fa-xmark'></i> Error de conexión con Python.";
             mensaje.style.color = "red";
         } finally {
             if(btn.innerText !== "Registrar Llegada") btn.innerText = "Registrar Llegada";
