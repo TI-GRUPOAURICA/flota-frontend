@@ -387,6 +387,9 @@
                 let auto = memoriaVehiculos.find(x => x.cr596_flota_vehiculoid === v._cr596_vehiculo_value);
                 let placa = auto ? auto.cr596_placa : 'S/P';
                 let combTxt = (v.combustible_salida !== undefined && v.combustible_salida !== null) ? ` | Tanque: ${v.combustible_salida}%` : '';
+                if (v.combustible_salida_gas !== undefined && v.combustible_salida_gas !== null) {
+                    combTxt += ` | Gas: ${v.combustible_salida_gas}%`;
+                }
                 select.innerHTML += `<option value="${v.cr596_flota_movimientoid}">[${placa}] - ${v.cr596_nombre} (Salió: ${v.cr596_kmsalida} km${combTxt})</option>`; 
             });
         } catch(e) { console.error(e); document.getElementById('r_viaje').innerHTML = '<option>Error al cargar viajes</option>'; }

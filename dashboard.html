@@ -376,7 +376,9 @@
                     if (capTanque && capTanqueGas && rendEsperado && rendEsperadoGas) {
                         let litrosGasolina = (difGasolina / 100) * capTanque;
                         let litrosGas = (difGas / 100) * capTanqueGas;
-                        let kmEsperados = (litrosGasolina * rendEsperado) + (litrosGas * rendEsperadoGas);
+                        let autonomiaGasolina = litrosGasolina * rendEsperado;
+                        let autonomiaGas = litrosGas * rendEsperadoGas;
+                        let kmEsperados = autonomiaGasolina + autonomiaGas;
                         
                         consumoTexto = `<i class="fa-solid fa-down-left-and-up-right-to-center"></i> Mixto <i class="fa-solid fa-magnifying-glass"></i>`;
                         let esSospechoso = (kmEsperados > 0 && kmRecorridos < (kmEsperados * 0.9));
@@ -389,7 +391,8 @@
                             tooltipComb = `Normal: Energía para ${kmEsperados.toFixed(0)} Km, recorrió ${kmRecorridos} Km.`;
                         }
                         
-                        actionOnClick = `onclick="abrirAuditoriaConsumo('${placa}', ${kmRecorridos}, 'Gasolina: -${difGasolina}% | Gas: -${difGas}%', 'Km Esperados: ${kmEsperados.toFixed(0)} Km', 'dual_mixed', ${kmEsperados.toFixed(0)}, 0, ${combSalida}, ${combRetorno})"`;
+                        let ratioTextDual = `Gasolina (${autonomiaGasolina.toFixed(0)} Km) + Gas (${autonomiaGas.toFixed(0)} Km) = Total ${kmEsperados.toFixed(0)} Km`;
+                        actionOnClick = `onclick="abrirAuditoriaConsumo('${placa}', ${kmRecorridos}, 'Gasolina: -${difGasolina}% | Gas: -${difGas}%', '${ratioTextDual}', 'dual_mixed', ${kmEsperados.toFixed(0)}, 0, ${combSalida}, ${combRetorno})"`;
                     } else {
                         consumoTexto = `<i class="fa-solid fa-triangle-exclamation"></i> Faltan Datos Dual`;
                         colorConsumo = 'color: #7f8c8d; font-weight: 700; background:#f4f6f7; padding:3px 8px; border-radius:12px;';
@@ -554,6 +557,7 @@
 
         } else if (caseType === 'dual_mixed') {
             // CASO: Consumo mixto (vehículo dual)
+            document.getElementById('ac_ratio_label').innerText = 'Cálculo Autonomía:';
             let kmEsperados = parseFloat(rawRatio);
             const isSuspicious = kmEsperados > 0 && km < (kmEsperados * 0.9);
             
