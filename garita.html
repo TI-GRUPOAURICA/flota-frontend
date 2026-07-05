@@ -27,6 +27,29 @@
         .check-item.otros-ok { background: #e2e6ea; color: #383d41; border-color: #dae0e5; }
         .check-item.otros-falla { background: #fcf8e3; color: #8a6d3b; border-color: #faebcc; }
         .alerta-error { display: none; background: #fdeaea; color: var(--crit-color); padding: 15px; border-radius: 8px; font-weight: 800; font-size: 13px; margin-bottom: 15px; border-left: 5px solid var(--crit-color);}
+
+        /* Modal Combustible */
+        #modalComb { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 9999; justify-content: center; align-items: center; padding: 15px; }
+        .comb-modal-content { background: #fff; border-radius: 16px; width: 100%; max-width: 450px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .comb-modal-title { font-size: 18px; font-weight: 800; color: var(--aurica-blue); margin: 0 0 20px 0; display: flex; align-items: center; justify-content: space-between; }
+        .btn-close-modal { background: none; border: none; font-size: 20px; color: #999; cursor: pointer; }
+        
+        /* Gauge SVG */
+        .gauge-container { display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 25px; padding: 20px; background: #f8fbff; border-radius: 12px; border: 1px solid #cce0ff; user-select: none; touch-action: none; }
+        .gauge-svg { width: 200px; height: 120px; overflow: visible; cursor: pointer; }
+        .gauge-needle { transform-origin: 100px 100px; transition: transform 0.2s cubic-bezier(0.4, 0.0, 0.2, 1); pointer-events: none; }
+        .gauge-label { margin-top: -10px; font-size: 18px; font-weight: 900; color: var(--aurica-blue); }
+        .gauge-sub { font-size: 12px; color: #7f8c8d; font-weight: 700; margin-top: 5px; }
+        
+        /* Gas LEDs */
+        .gas-container { display: none; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 25px; padding: 20px; background: #fff5e6; border-radius: 12px; border: 1px solid #ffd8a8; }
+        .gas-leds { display: flex; gap: 8px; margin-top: 15px; }
+        .gas-led { width: 35px; height: 50px; border-radius: 6px; border: 2px solid #ccc; background: #f4f6f7; cursor: pointer; transition: 0.2s; }
+        .gas-led.active-red { background: #e74c3c; border-color: #c0392b; box-shadow: 0 0 8px rgba(231,76,60,0.6); }
+        .gas-led.active-green { background: #2ecc71; border-color: #27ae60; box-shadow: 0 0 8px rgba(46,204,113,0.6); }
+        
+        .btn-save-comb { width: 100%; padding: 12px; background: var(--aurica-blue); color: #fff; font-weight: 800; border: none; border-radius: 8px; cursor: pointer; font-size: 15px; transition: 0.2s; }
+        .btn-save-comb:hover { background: #004085; }
     </style>
 </head>
 <body>
@@ -65,25 +88,16 @@
                     <label>Kilometraje Actual</label>
                     <input type="number" id="s_km" required placeholder="Seleccione auto...">
                 </div>
-                <div class="form-group">
+                <div class="form-group" style="grid-column: 1 / -1;">
                     <label>Nivel de Combustible</label>
-                    <select id="s_combustible" required>
-                        <option value="">Seleccione...</option>
-                        <option value="10">Reserva (10%)</option>
-                        <option value="25">1/4 Tanque (25%)</option>
-                        <option value="50">Medio Tanque (50%)</option>
-                        <option value="75">3/4 Tanque (75%)</option>
-                    </select>
-                </div>
-                <div class="form-group dual-gas-salida" style="display: none; border: 1px solid #0056b3; padding: 5px; border-radius: 6px; background: #eef5ff;">
-                    <label style="color: #0056b3;"><i class="fa-solid fa-gas-pump"></i> Nivel de Gas</label>
-                    <select id="s_combustible_gas">
-                        <option value="0">Vacío (0 Leds)</option>
-                        <option value="25">1 Led (25%)</option>
-                        <option value="50">2 Leds (50%)</option>
-                        <option value="75">3 Leds (75%)</option>
-                        <option value="100">4 Leds (100%)</option>
-                    </select>
+                    <div style="display:flex; align-items:center; gap:15px; margin-top:5px;">
+                        <button type="button" class="btn-primary" onclick="abrirModalCombustible('salida')" style="background:#fff; color:var(--aurica-blue); border:2px solid var(--aurica-blue); padding:10px 15px; font-weight:800; display:flex; align-items:center; gap:8px;">
+                            <i class="fa-solid fa-gauge-high"></i> Registrar Niveles
+                        </button>
+                        <span id="lbl_comb_salida" style="font-size: 13px; font-weight: 800; color: #7f8c8d;">(Niveles pendientes)</span>
+                    </div>
+                    <input type="hidden" id="s_combustible" required>
+                    <input type="hidden" id="s_combustible_gas">
                 </div>
             </div>
             <div class="checklist-box">
@@ -134,26 +148,16 @@
                     <label>Kilometraje de Llegada</label>
                     <input type="number" id="r_km" required placeholder="Ej. 125150">
                 </div>
-                <div class="form-group">
+                <div class="form-group" style="grid-column: 1 / -1;">
                     <label>Combustible a la llegada</label>
-                    <select id="r_combustible" required>
-                        <option value="">Seleccione...</option>
-                        <option value="10">🔴 Reserva (10%)</option>
-                        <option value="25">🟠 1/4 Tanque (25%)</option>
-                        <option value="50">🟡 Medio Tanque (50%)</option>
-                        <option value="75">🟢 3/4 Tanque (75%)</option>
-                        <option value="100">🟢 Tanque Lleno (100%)</option>
-                    </select>
-                </div>
-                <div class="form-group dual-gas-retorno" style="display: none; border: 1px solid #0056b3; padding: 5px; border-radius: 6px; background: #eef5ff;">
-                    <label style="color: #0056b3;"><i class="fa-solid fa-gas-pump"></i> Gas (Llegada)</label>
-                    <select id="r_combustible_gas">
-                        <option value="0">Vacío (0 Leds)</option>
-                        <option value="25">1 Led (25%)</option>
-                        <option value="50">2 Leds (50%)</option>
-                        <option value="75">3 Leds (75%)</option>
-                        <option value="100">4 Leds (100%)</option>
-                    </select>
+                    <div style="display:flex; align-items:center; gap:15px; margin-top:5px;">
+                        <button type="button" class="btn-primary" onclick="abrirModalCombustible('retorno')" style="background:#fff; color:var(--aurica-blue); border:2px solid var(--aurica-blue); padding:10px 15px; font-weight:800; display:flex; align-items:center; gap:8px;">
+                            <i class="fa-solid fa-gauge-high"></i> Registrar Niveles
+                        </button>
+                        <span id="lbl_comb_retorno" style="font-size: 13px; font-weight: 800; color: #7f8c8d;">(Niveles pendientes)</span>
+                    </div>
+                    <input type="hidden" id="r_combustible" required>
+                    <input type="hidden" id="r_combustible_gas">
                 </div>
             </div>
             <div class="checklist-box" style="background: #fff8f8; border-color: #ffcccc;">
@@ -198,6 +202,68 @@
 
             <button type="submit" class="btn-submit btn-retorno" id="btnRetorno">Registrar Retorno a Base</button>
         </form>
+    </div>
+</div>
+
+<!-- MODAL DE COMBUSTIBLE INTERACTIVO -->
+<div id="modalComb">
+    <div class="comb-modal-content">
+        <h3 class="comb-modal-title">
+            <span><i class="fa-solid fa-gauge-high"></i> Registrar Niveles</span>
+            <button class="btn-close-modal" onclick="cerrarModalComb()"><i class="fa-solid fa-xmark"></i></button>
+        </h3>
+        
+        <!-- GASOLINA GAUGE -->
+        <div class="gauge-container" id="box_gasolina" onpointerdown="startDrag(event)" onpointermove="doDrag(event)" onpointerup="stopDrag()" onpointerleave="stopDrag()">
+            <label style="color: var(--aurica-blue); font-weight: 800; margin-bottom: 10px;"><i class="fa-solid fa-gas-pump"></i> Nivel de Gasolina</label>
+            <svg class="gauge-svg" id="gauge_svg_el" viewBox="0 0 200 120">
+                <!-- Arc Background (180deg) -->
+                <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#e0e0e0" stroke-width="15" stroke-linecap="round"/>
+                <!-- Color Gradient Arc -->
+                <defs>
+                    <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stop-color="#e74c3c" />
+                        <stop offset="30%" stop-color="#f1c40f" />
+                        <stop offset="100%" stop-color="#2ecc71" />
+                    </linearGradient>
+                </defs>
+                <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="url(#gaugeGrad)" stroke-width="15" stroke-linecap="round"/>
+                
+                <!-- Ticks -->
+                <line x1="20" y1="100" x2="10" y2="100" stroke="#555" stroke-width="2"/> <!-- E -->
+                <line x1="43" y1="43" x2="35" y2="35" stroke="#555" stroke-width="2"/> <!-- 1/4 -->
+                <line x1="100" y1="20" x2="100" y2="10" stroke="#555" stroke-width="2"/> <!-- 1/2 -->
+                <line x1="157" y1="43" x2="165" y2="35" stroke="#555" stroke-width="2"/> <!-- 3/4 -->
+                <line x1="180" y1="100" x2="190" y2="100" stroke="#555" stroke-width="2"/> <!-- F -->
+                
+                <text x="5" y="115" font-size="12" fill="#e74c3c" font-weight="bold">E</text>
+                <text x="185" y="115" font-size="12" fill="#2ecc71" font-weight="bold">F</text>
+                
+                <!-- Needle -->
+                <polygon id="gauge_needle" class="gauge-needle" points="96,100 104,100 100,25" fill="#333"/>
+                <circle cx="100" cy="100" r="8" fill="#333"/>
+            </svg>
+            <div class="gauge-label" id="lbl_gasolina_val">Arrastre la aguja</div>
+            <div class="gauge-sub">(Tóquelo para ajustar)</div>
+        </div>
+
+        <!-- GAS LEDS -->
+        <div class="gas-container" id="box_gas">
+            <label style="color: #d35400; font-weight: 800;"><i class="fa-solid fa-fire-flame-simple"></i> Nivel de Gas (GNV/GLP)</label>
+            <div class="gas-leds">
+                <div class="gas-led" id="led_1" onclick="setGasLevel(10)"></div>
+                <div class="gas-led" id="led_2" onclick="setGasLevel(25)"></div>
+                <div class="gas-led" id="led_3" onclick="setGasLevel(50)"></div>
+                <div class="gas-led" id="led_4" onclick="setGasLevel(75)"></div>
+                <div class="gas-led" id="led_5" onclick="setGasLevel(100)"></div>
+            </div>
+            <div class="gauge-label" id="lbl_gas_val" style="margin-top: 15px; color: #d35400;">Toque las barras</div>
+            <div class="gauge-sub" style="margin-top:0;">
+                <button type="button" onclick="setGasLevel(0)" style="background:none; border:none; color:#c0392b; text-decoration:underline; font-weight:700; cursor:pointer; margin-top:5px;">Vacío (0 Leds)</button>
+            </div>
+        </div>
+        
+        <button type="button" class="btn-save-comb" onclick="guardarCombustible()"><i class="fa-solid fa-check"></i> Confirmar Niveles</button>
     </div>
 </div>
 
@@ -367,13 +433,6 @@
         const id = document.getElementById('s_vehiculo').value;
         const auto = memoriaVehiculos.find(v => v.cr596_flota_vehiculoid === id);
         document.getElementById('s_km').value = auto ? auto.cr596_kilometrajeactual : "";
-        if (auto && auto.cr596_sistemacombustible && auto.cr596_sistemacombustible.startsWith('Dual')) {
-            document.querySelector('.dual-gas-salida').style.display = 'block';
-            document.getElementById('s_combustible_gas').required = true;
-        } else {
-            document.querySelector('.dual-gas-salida').style.display = 'none';
-            document.getElementById('s_combustible_gas').required = false;
-        }
     }
 
     async function cargarViajes() {
@@ -400,17 +459,8 @@
         const viaje = viajesAbiertos.find(v => v.cr596_flota_movimientoid === id);
         if(viaje) { 
             document.getElementById('r_vehiculo_id').value = viaje._cr596_vehiculo_value; 
-            const auto = memoriaVehiculos.find(x => x.cr596_flota_vehiculoid === viaje._cr596_vehiculo_value);
-            if (auto && auto.cr596_sistemacombustible && auto.cr596_sistemacombustible.startsWith('Dual')) {
-                document.querySelector('.dual-gas-retorno').style.display = 'block';
-                document.getElementById('r_combustible_gas').required = true;
-            } else {
-                document.querySelector('.dual-gas-retorno').style.display = 'none';
-                document.getElementById('r_combustible_gas').required = false;
-            }
         } else {
-            document.querySelector('.dual-gas-retorno').style.display = 'none';
-            document.getElementById('r_combustible_gas').required = false;
+            document.getElementById('r_vehiculo_id').value = '';
         }
     }
 
@@ -422,7 +472,7 @@
             conductor_id: document.getElementById('s_conductor').value,
             km_salida: parseInt(document.getElementById('s_km').value),
             combustible_salida: parseInt(document.getElementById('s_combustible').value),
-            combustible_salida_gas: document.querySelector('.dual-gas-salida').style.display === 'block' ? parseInt(document.getElementById('s_combustible_gas').value) : null,
+            combustible_salida_gas: document.getElementById('s_combustible_gas').value !== '' ? parseInt(document.getElementById('s_combustible_gas').value) : null,
             origen: document.getElementById('s_origen').value,
             origen_detalle: document.getElementById('s_origen_detalle').value,
             destino: document.getElementById('s_destino').value,
@@ -470,7 +520,7 @@
             vehiculo_id: document.getElementById('r_vehiculo_id').value,
             km_retorno: parseInt(document.getElementById('r_km').value),
             combustible_retorno: parseInt(document.getElementById('r_combustible').value),
-            combustible_retorno_gas: document.querySelector('.dual-gas-retorno').style.display === 'block' ? parseInt(document.getElementById('r_combustible_gas').value) : null,
+            combustible_retorno_gas: document.getElementById('r_combustible_gas').value !== '' ? parseInt(document.getElementById('r_combustible_gas').value) : null,
             reporta_gastos: document.getElementById('r_gastos').checked,
             detalle_gastos: document.getElementById('r_detalle_gastos').value,
             observaciones_retorno: document.getElementById('r_obs').value,
@@ -514,6 +564,143 @@
             if (res.ok) { alert("Retorno registrado exitosamente."); document.getElementById('formRetorno').reset(); document.getElementById('caja_gastos').style.display = 'none'; document.getElementById('caja_motivo_taller').style.display = 'none'; generarGridChecklist('grid_retorno', 'r'); inicializarGarita(); }
         } catch (error) { alert("Error"); } finally { btn.innerText = "Registrar Retorno a Base"; }
     });
+
+    // ================= LÓGICA DE MODAL DE COMBUSTIBLE =================
+    let modalTipo = null; // 'salida' o 'retorno'
+    let tempGasolina = 0;
+    let tempGas = null; // null significa no dual
+    let isDragging = false;
+
+    function abrirModalCombustible(tipo) {
+        modalTipo = tipo;
+        let vehiculoId = tipo === 'salida' ? document.getElementById('s_vehiculo').value : document.getElementById('r_vehiculo_id').value;
+        if(!vehiculoId) { alert("Primero seleccione un auto de la lista superior."); return; }
+        
+        let auto = memoriaVehiculos.find(v => v.cr596_flota_vehiculoid === vehiculoId);
+        if(!auto) return;
+
+        let esDual = auto.cr596_sistemacombustible && auto.cr596_sistemacombustible.startsWith('Dual');
+        document.getElementById('box_gas').style.display = esDual ? 'flex' : 'none';
+
+        // Cargar valores actuales si existen
+        let inGasolina = document.getElementById(tipo === 'salida' ? 's_combustible' : 'r_combustible').value;
+        let inGas = document.getElementById(tipo === 'salida' ? 's_combustible_gas' : 'r_combustible_gas').value;
+
+        tempGasolina = inGasolina ? parseInt(inGasolina) : 50; // Default 50
+        tempGas = esDual ? (inGas ? parseInt(inGas) : 100) : null;
+
+        updateGaugeUI(tempGasolina);
+        if(esDual) setGasLevel(tempGas);
+
+        document.getElementById('modalComb').style.display = 'flex';
+    }
+
+    function cerrarModalComb() {
+        document.getElementById('modalComb').style.display = 'none';
+    }
+
+    function getAngleFromEvent(e) {
+        let svg = document.getElementById('gauge_svg_el');
+        let rect = svg.getBoundingClientRect();
+        let clientX = e.clientX;
+        let clientY = e.clientY;
+        if (e.touches && e.touches.length > 0) { clientX = e.touches[0].clientX; clientY = e.touches[0].clientY; }
+        
+        let x = clientX - rect.left;
+        let y = clientY - rect.top;
+        
+        let scaleX = 200 / rect.width;
+        let scaleY = 120 / rect.height;
+        let svgX = x * scaleX;
+        let svgY = y * scaleY;
+        
+        let dx = svgX - 100;
+        let dy = 100 - svgY;
+        
+        let angle = Math.atan2(dy, dx) * 180 / Math.PI; 
+        if (angle < 0) angle = 0; 
+        if (angle > 180) angle = 180;
+        
+        return (180 - angle) / 180 * 100;
+    }
+
+    function startDrag(e) { isDragging = true; updateGaugeDrag(e); }
+    function doDrag(e) { if(isDragging) updateGaugeDrag(e); }
+    function stopDrag() { isDragging = false; }
+    
+    function updateGaugeDrag(e) {
+        if(e.cancelable && e.type !== 'pointerdown') e.preventDefault(); 
+        let p = getAngleFromEvent(e);
+        let snappedVal = 50;
+        if(p < 17.5) snappedVal = 10; 
+        else if(p < 37.5) snappedVal = 25; 
+        else if(p < 62.5) snappedVal = 50; 
+        else if(p < 87.5) snappedVal = 75; 
+        else snappedVal = 100; 
+        
+        tempGasolina = snappedVal;
+        updateGaugeUI(tempGasolina);
+    }
+
+    function updateGaugeUI(val) {
+        let angle = 0; 
+        let lbl = "";
+        if(val === 10) { angle = -70; lbl = "Reserva (10%)"; }
+        if(val === 25) { angle = -30; lbl = "1/4 Tanque (25%)"; }
+        if(val === 50) { angle = 0; lbl = "Medio Tanque (50%)"; }
+        if(val === 75) { angle = 30; lbl = "3/4 Tanque (75%)"; }
+        if(val === 100) { angle = 70; lbl = "Lleno (100%)"; }
+        
+        document.getElementById('gauge_needle').style.transform = `rotate(${angle}deg)`;
+        document.getElementById('lbl_gasolina_val').innerText = lbl;
+    }
+
+    function setGasLevel(val) {
+        tempGas = val;
+        let numLeds = 0;
+        if(val === 25) numLeds = 1;
+        if(val === 50) numLeds = 2;
+        if(val === 75) numLeds = 3;
+        if(val === 100) numLeds = 4;
+        
+        for(let i=1; i<=5; i++) {
+            let led = document.getElementById('led_'+i);
+            led.className = 'gas-led';
+            if(val === 10 && i === 1) led.className = 'gas-led active-red';
+            else if (val > 10 && i <= (numLeds + 1)) {
+                if (i === 1) led.className = 'gas-led active-red';
+                else led.className = 'gas-led active-green';
+            }
+        }
+        
+        let lbl = "Vacío (0 Leds)";
+        if(val === 10) lbl = "Reserva (1 Led Rojo)";
+        if(val === 25) lbl = "1 Led (25%)";
+        if(val === 50) lbl = "2 Leds (50%)";
+        if(val === 75) lbl = "3 Leds (75%)";
+        if(val === 100) lbl = "4 Leds (100%)";
+        
+        document.getElementById('lbl_gas_val').innerText = lbl;
+    }
+
+    function guardarCombustible() {
+        if(modalTipo === 'salida') {
+            document.getElementById('s_combustible').value = tempGasolina;
+            document.getElementById('s_combustible_gas').value = tempGas !== null ? tempGas : '';
+            let txt = `Gasolina: ${tempGasolina}%`;
+            if(tempGas !== null) txt += ` | Gas: ${tempGas}%`;
+            document.getElementById('lbl_comb_salida').innerText = txt;
+            document.getElementById('lbl_comb_salida').style.color = "var(--ok-color)";
+        } else {
+            document.getElementById('r_combustible').value = tempGasolina;
+            document.getElementById('r_combustible_gas').value = tempGas !== null ? tempGas : '';
+            let txt = `Gasolina: ${tempGasolina}%`;
+            if(tempGas !== null) txt += ` | Gas: ${tempGas}%`;
+            document.getElementById('lbl_comb_retorno').innerText = txt;
+            document.getElementById('lbl_comb_retorno').style.color = "var(--ok-color)";
+        }
+        cerrarModalComb();
+    }
 
     // LÓGICA DE CARGA SECUENCIAL PARA EVITAR ERROR DE PLACA [S/P]
     async function inicializarGarita() {
