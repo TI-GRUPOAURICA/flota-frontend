@@ -365,10 +365,13 @@
                     consumoTexto = `<i class="fa-solid fa-gas-pump"></i> Recargó en ruta`;
                     colorConsumo = "color: var(--route-color); font-weight: 700; background:#ebf5fb; padding:3px 8px; border-radius:12px; cursor:pointer;";
                     tooltipComb = `Gasolina: ${combSalida}% ➔ ${combRetorno}%. Gas: ${combSalidaGas}% ➔ ${combRetornoGas}%. Recarga detectada.`;
+                    actionOnClick = `onclick="abrirAuditoriaConsumo('${placa}', ${kmRecorridos}, 'Recarga en ruta (Gasolina: ${combSalida}%➔${combRetorno}% | Gas: ${combSalidaGas}%➔${combRetornoGas}%)', '—', 'recharge', 0, 0, ${combSalida}, ${combRetorno})"`;
                 } else if (difGasolina === 0 && difGas === 0) {
                     consumoTexto = `<i class="fa-solid fa-equals"></i> 0% (Ambos) <i class="fa-solid fa-magnifying-glass"></i>`;
                     colorConsumo = (kmRecorridos < 30) ? 'color: #7f8c8d; font-weight: 700; background:#f4f6f7; padding:3px 8px; border-radius:12px; cursor:pointer;' : 'color: var(--warn-color); font-weight: 900; background:#fff5e6; padding:3px 8px; border-radius:12px; border: 1px solid #ffd8a8; cursor:pointer;';
                     tooltipComb = `Sin variación en gasolina ni gas.`;
+                    let caseZero = (kmRecorridos < 30) ? 'zero_short' : 'zero_long';
+                    actionOnClick = `onclick="abrirAuditoriaConsumo('${placa}', ${kmRecorridos}, '0% en Ambos Tanques', '—', '${caseZero}', 0, 0, ${combSalida}, ${combRetorno})"`;
                 } else {
                     if (capTanque && capTanqueGas && rendEsperado && rendEsperadoGas) {
                         let litrosGasolina = (difGasolina / 100) * capTanque;
@@ -376,14 +379,17 @@
                         let kmEsperados = (litrosGasolina * rendEsperado) + (litrosGas * rendEsperadoGas);
                         
                         consumoTexto = `<i class="fa-solid fa-down-left-and-up-right-to-center"></i> Mixto <i class="fa-solid fa-magnifying-glass"></i>`;
+                        let esSospechoso = (kmEsperados > 0 && kmRecorridos < (kmEsperados * 0.9));
                         
-                        if (kmEsperados > 0 && kmRecorridos < (kmEsperados * 0.9)) {
+                        if (esSospechoso) {
                             colorConsumo = 'color: var(--crit-color); font-weight: 900; background:#fdeaea; padding:3px 8px; border-radius:12px; border: 1px solid #fad2d2; cursor:pointer;';
                             tooltipComb = `ALERTA: Consumió energía para ${kmEsperados.toFixed(0)} Km, pero solo recorrió ${kmRecorridos} Km.`;
                         } else {
                             colorConsumo = 'color: var(--ok-color); font-weight: 700; background:#eafaf1; padding:3px 8px; border-radius:12px; cursor:pointer;';
                             tooltipComb = `Normal: Energía para ${kmEsperados.toFixed(0)} Km, recorrió ${kmRecorridos} Km.`;
                         }
+                        
+                        actionOnClick = `onclick="abrirAuditoriaConsumo('${placa}', ${kmRecorridos}, 'Gasolina: -${difGasolina}% | Gas: -${difGas}%', 'Km Esperados: ${kmEsperados.toFixed(0)} Km', 'dual_mixed', ${kmEsperados.toFixed(0)}, 0, ${combSalida}, ${combRetorno})"`;
                     } else {
                         consumoTexto = `<i class="fa-solid fa-triangle-exclamation"></i> Faltan Datos Dual`;
                         colorConsumo = 'color: #7f8c8d; font-weight: 700; background:#f4f6f7; padding:3px 8px; border-radius:12px;';
@@ -546,6 +552,22 @@
                 box.style.background = "#eafaf1";
             }
 
+        } else if (caseType === 'dual_mixed') {
+            // CASO: Consumo mixto (vehículo dual)
+            let kmEsperados = parseFloat(rawRatio);
+            const isSuspicious = kmEsperados > 0 && km < (kmEsperados * 0.9);
+            
+            if (isSuspicious) {
+                evalSpan.innerHTML = `<i class="fa-solid fa-flag"></i> <strong>Rendimiento Anómalo en Sistema Dual.</strong> Basado en el consumo combinado de Gasolina y Gas, el vehículo gastó energía suficiente para recorrer <strong>${kmEsperados.toFixed(0)} Km</strong>, pero solo recorrió <strong>${km} Km</strong>. Esto indica una discrepancia severa de más del 10% (posible fuga, ralentí excesivo o extracción). Se recomienda revisión inmediata.`;
+                evalSpan.style.color = "var(--crit-color)";
+                box.style.borderLeftColor = "var(--crit-color)";
+                box.style.background = "#fdeaea";
+            } else {
+                evalSpan.innerHTML = `<i class="fa-solid fa-check"></i> <strong>Consumo Normal Mixto.</strong> Basado en el consumo combinado, la autonomía esperada era de <strong>${kmEsperados.toFixed(0)} Km</strong> y el vehículo recorrió <strong>${km} Km</strong>. La relación de consumo es óptima y coherente con el gasto energético de ambos tanques.`;
+                evalSpan.style.color = "var(--ok-color)";
+                box.style.borderLeftColor = "var(--ok-color)";
+                box.style.background = "#eafaf1";
+            }
         } else {
             // CASO: Consumo en % (fallback sin capacidad de tanque)
             const isSuspicious = parseFloat(rawRatio) < umbral && parseFloat(rawRatio) > 0;
