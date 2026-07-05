@@ -244,7 +244,15 @@
                 <circle cx="100" cy="100" r="8" fill="#333"/>
             </svg>
             <div class="gauge-label" id="lbl_gasolina_val">Arrastre la aguja</div>
-            <div class="gauge-sub">(Tóquelo para ajustar)</div>
+            <div class="gauge-sub">(Tóquelo para ajustar con precisión)</div>
+            
+            <div style="display:flex; gap:8px; margin-top:20px; width:100%; justify-content:center;">
+                <button type="button" onclick="setGasolinaLevel(0)" style="background:#fdeaea; color:#c0392b; border:1px solid #f5b7b1; border-radius:6px; padding:6px 12px; font-weight:700; cursor:pointer; font-size:12px;">0%</button>
+                <button type="button" onclick="setGasolinaLevel(25)" style="background:#fff5e6; color:#d35400; border:1px solid #ffd8a8; border-radius:6px; padding:6px 12px; font-weight:700; cursor:pointer; font-size:12px;">1/4</button>
+                <button type="button" onclick="setGasolinaLevel(50)" style="background:#fef9e7; color:#f1c40f; border:1px solid #f9e79f; border-radius:6px; padding:6px 12px; font-weight:700; cursor:pointer; font-size:12px;">1/2</button>
+                <button type="button" onclick="setGasolinaLevel(75)" style="background:#eafaf1; color:#27ae60; border:1px solid #a9dfbf; border-radius:6px; padding:6px 12px; font-weight:700; cursor:pointer; font-size:12px;">3/4</button>
+                <button type="button" onclick="setGasolinaLevel(100)" style="background:#d5f5e3; color:#2ecc71; border:1px solid #abebc6; border-radius:6px; padding:6px 12px; font-weight:700; cursor:pointer; font-size:12px;">100%</button>
+            </div>
         </div>
 
         <!-- GAS LEDS -->
@@ -631,28 +639,29 @@
     function updateGaugeDrag(e) {
         if(e.cancelable && e.type !== 'pointerdown') e.preventDefault(); 
         let p = getAngleFromEvent(e);
-        let snappedVal = 50;
-        if(p < 17.5) snappedVal = 10; 
-        else if(p < 37.5) snappedVal = 25; 
-        else if(p < 62.5) snappedVal = 50; 
-        else if(p < 87.5) snappedVal = 75; 
-        else snappedVal = 100; 
-        
-        tempGasolina = snappedVal;
+        tempGasolina = Math.round(p); 
         updateGaugeUI(tempGasolina);
     }
 
     function updateGaugeUI(val) {
-        let angle = 0; 
-        let lbl = "";
-        if(val === 10) { angle = -70; lbl = "Reserva (10%)"; }
-        if(val === 25) { angle = -30; lbl = "1/4 Tanque (25%)"; }
-        if(val === 50) { angle = 0; lbl = "Medio Tanque (50%)"; }
-        if(val === 75) { angle = 30; lbl = "3/4 Tanque (75%)"; }
-        if(val === 100) { angle = 70; lbl = "Lleno (100%)"; }
+        // val va de 0 a 100
+        // el angulo visual de la aguja: -90deg es E (0%), +90deg es F (100%)
+        let angle = (val / 100) * 180 - 90;
+        
+        let lbl = `${val}%`;
+        if(val <= 10) lbl += " (Reserva)";
+        else if(val > 10 && val <= 35) lbl += " (1/4 Tanque)";
+        else if(val > 35 && val <= 65) lbl += " (Medio Tanque)";
+        else if(val > 65 && val <= 85) lbl += " (3/4 Tanque)";
+        else if(val > 85) lbl += " (Lleno)";
         
         document.getElementById('gauge_needle').style.transform = `rotate(${angle}deg)`;
         document.getElementById('lbl_gasolina_val').innerText = lbl;
+    }
+
+    function setGasolinaLevel(val) {
+        tempGasolina = val;
+        updateGaugeUI(val);
     }
 
     function setGasLevel(val) {
