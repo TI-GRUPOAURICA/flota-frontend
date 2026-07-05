@@ -148,6 +148,16 @@
                     <div class="form-group" style="margin: 0;"><label>Cap. Tanque (L)</label><input type="number" id="edit_tanque" placeholder="Ej. 60"></div>
                     <div class="form-group" style="margin: 0;"><label>Rendimiento Base (Km/L)</label><input type="number" step="0.1" id="edit_rendimiento" placeholder="Ej. 12.5"></div>
                     <div class="form-group" style="margin: 0; grid-column: span 2;">
+                        <label>Sistema de Combustible</label>
+                        <select id="edit_sistemacombustible" onchange="toggleDualFields()">
+                            <option value="Simple">Combustión Simple (Solo Gasolina / Diesel)</option>
+                            <option value="Dual GLP">Dual GLP (Gasolina + GLP)</option>
+                            <option value="Dual GNV">Dual GNV (Gasolina + GNV)</option>
+                        </select>
+                    </div>
+                    <div class="form-group dual-field" style="margin: 0; display: none;"><label>Cap. Tanque Gas</label><input type="number" step="0.1" id="edit_tanquegas" placeholder="Ej. 15"></div>
+                    <div class="form-group dual-field" style="margin: 0; display: none;"><label>Rend. Gas (Km/Unidad)</label><input type="number" step="0.1" id="edit_rendimientogas" placeholder="Ej. 9.5"></div>
+                    <div class="form-group" style="margin: 0; grid-column: span 2;">
                         <label>Propietario</label>
                         <select id="edit_propietario">
                             <option value="">Seleccione...</option>
@@ -412,6 +422,10 @@
         document.getElementById('edit_tipo').value = v.cr596_tipo || "";
         document.getElementById('edit_tanque').value = v.cr596_capacidadtanquelitros || "";
         document.getElementById('edit_rendimiento').value = v.cr596_rendimientoesperado || "";
+        document.getElementById('edit_sistemacombustible').value = v.cr596_sistemacombustible || "Simple";
+        document.getElementById('edit_tanquegas').value = v.cr596_capacidadtanquegas || "";
+        document.getElementById('edit_rendimientogas').value = v.cr596_rendimientoesperadogas || "";
+        if(typeof toggleDualFields === 'function') toggleDualFields();
         document.getElementById('edit_propietario').value = v.cr596_tipopropiedad || "";
         document.getElementById('edit_freq').value = v.cr596_frecuenciamantenimiento || "";
         document.getElementById('edit_ultimo').value = v.cr596_ultimomantenimientokm || "";
@@ -465,6 +479,16 @@
         }
     }
 
+    function toggleDualFields() {
+        const sis = document.getElementById('edit_sistemacombustible').value;
+        const dualFields = document.querySelectorAll('.dual-field');
+        if (sis && sis.startsWith('Dual')) {
+            dualFields.forEach(f => f.style.display = 'block');
+        } else {
+            dualFields.forEach(f => f.style.display = 'none');
+        }
+    }
+
     function cerrarModal() { document.getElementById('modalOverlay').style.display = 'none'; }
 
     document.getElementById('formMantenimiento').addEventListener('submit', async (e) => {
@@ -480,8 +504,11 @@
             modelo: document.getElementById('edit_modelo').value || null,
             ano: document.getElementById('edit_ano').value ? parseInt(document.getElementById('edit_ano').value) : null,
             tipo: document.getElementById('edit_tipo').value || null,
+            sistema_combustible: document.getElementById('edit_sistemacombustible').value || "Simple",
             capacidad_tanque: document.getElementById('edit_tanque').value ? parseInt(document.getElementById('edit_tanque').value) : null,
             rendimiento_esperado: document.getElementById('edit_rendimiento').value ? parseFloat(document.getElementById('edit_rendimiento').value) : null,
+            capacidad_tanque_gas: document.getElementById('edit_tanquegas').value ? parseFloat(document.getElementById('edit_tanquegas').value) : null,
+            rendimiento_esperado_gas: document.getElementById('edit_rendimientogas').value ? parseFloat(document.getElementById('edit_rendimientogas').value) : null,
             tipo_propiedad: document.getElementById('edit_propietario').value ? parseInt(document.getElementById('edit_propietario').value) : null,
             frecuencia_mantenimiento: parseInt(document.getElementById('edit_freq').value) || null,
             ultimo_mantenimiento_km: parseInt(document.getElementById('edit_ultimo').value) || null,

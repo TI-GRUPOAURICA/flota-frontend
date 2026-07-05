@@ -347,56 +347,93 @@
             const combRetorno = viaje.combustible_retorno;
             let consumoTexto = "N/A"; let colorConsumo = ""; let tooltipComb = "Sin datos";
             let actionOnClick = "";
+
+            const sis = viaje.vehiculos ? viaje.vehiculos.cr596_sistemacombustible : 'Simple';
             const capTanque = viaje.vehiculos ? viaje.vehiculos.capacidad_tanque : null;
             const rendEsperado = viaje.vehiculos ? viaje.vehiculos.rendimiento_esperado : null;
-            
-            if (combSalida !== null && combRetorno !== null) {
-                tooltipComb = `Salió con: ${combSalida}% | Llegó con: ${combRetorno}%`;
-                let diferencia = combSalida - combRetorno;
+            const capTanqueGas = viaje.vehiculos ? viaje.vehiculos.cr596_capacidadtanquegas : null;
+            const rendEsperadoGas = viaje.vehiculos ? viaje.vehiculos.cr596_rendimientoesperadogas : null;
+            const combSalidaGas = viaje.combustible_salida_gas;
+            const combRetornoGas = viaje.combustible_retorno_gas;
+
+            if (sis && sis.startsWith('Dual') && combSalidaGas !== null && combRetornoGas !== null && combSalida !== null && combRetorno !== null) {
+                // LÓGICA DUAL
+                let difGasolina = combSalida - combRetorno;
+                let difGas = combSalidaGas - combRetornoGas;
                 
-                if (diferencia < 0) {
-                    // CASO: Recargó combustible en ruta (nivel llegada > nivel salida)
-                    let recargaEst = Math.abs(diferencia);
+                if (difGasolina < 0 || difGas < 0) {
                     consumoTexto = `<i class="fa-solid fa-gas-pump"></i> Recargó en ruta`;
                     colorConsumo = "color: var(--route-color); font-weight: 700; background:#ebf5fb; padding:3px 8px; border-radius:12px; cursor:pointer;";
-                    tooltipComb = `Salió: ${combSalida}% | Llegó: ${combRetorno}% (+${recargaEst}%). Indica recarga durante la ruta.`;
-                    actionOnClick = `onclick="abrirAuditoriaConsumo('${placa}', ${kmRecorridos}, 'Recarga en ruta (+${recargaEst}% estimado)', '—', 'recharge', 0, 0, ${combSalida}, ${combRetorno})"` ;
-                } else if (diferencia === 0) {
-                    // CASO: Sin variación medible (misma lectura al salir y llegar)
-                    if (kmRecorridos > 0 && kmRecorridos < 30) {
-                        // Viaje corto: la aguja del tanque no detecta variaciones pequeñas — es NORMAL
-                        consumoTexto = `<i class="fa-solid fa-equals"></i> 0% <i class="fa-solid fa-magnifying-glass"></i>`;
-                        colorConsumo = 'color: #7f8c8d; font-weight: 700; background:#f4f6f7; padding:3px 8px; border-radius:12px; cursor:pointer;';
-                        actionOnClick = `onclick="abrirAuditoriaConsumo('${placa}', ${kmRecorridos}, '0% del tanque (Sin variación)', '—', 'zero_short', 0, 0, ${combSalida}, ${combRetorno})"` ;
-                    } else {
-                        // Viaje largo o km=0: Sin cambio en el nivel es sospechoso
-                        consumoTexto = `<i class="fa-solid fa-circle-exclamation"></i> 0% <i class="fa-solid fa-magnifying-glass"></i>`;
-                        colorConsumo = 'color: var(--warn-color); font-weight: 900; background:#fff5e6; padding:3px 8px; border-radius:12px; border: 1px solid #ffd8a8; cursor:pointer;';
-                        actionOnClick = `onclick="abrirAuditoriaConsumo('${placa}', ${kmRecorridos}, '0% del tanque (Sin variación)', '—', 'zero_long', 0, 0, ${combSalida}, ${combRetorno})"` ;
-                    }
+                    tooltipComb = `Gasolina: ${combSalida}% ➔ ${combRetorno}%. Gas: ${combSalidaGas}% ➔ ${combRetornoGas}%. Recarga detectada.`;
+                } else if (difGasolina === 0 && difGas === 0) {
+                    consumoTexto = `<i class="fa-solid fa-equals"></i> 0% (Ambos) <i class="fa-solid fa-magnifying-glass"></i>`;
+                    colorConsumo = (kmRecorridos < 30) ? 'color: #7f8c8d; font-weight: 700; background:#f4f6f7; padding:3px 8px; border-radius:12px; cursor:pointer;' : 'color: var(--warn-color); font-weight: 900; background:#fff5e6; padding:3px 8px; border-radius:12px; border: 1px solid #ffd8a8; cursor:pointer;';
+                    tooltipComb = `Sin variación en gasolina ni gas.`;
                 } else {
-                    // CASO: Consumo positivo — calcular y evaluar eficiencia
-                    if (capTanque) {
-                        let litrosConsumidos = (diferencia / 100) * capTanque;
-                        let ratio = (litrosConsumidos > 0 && kmRecorridos > 0) ? (kmRecorridos / litrosConsumidos).toFixed(1) : 0;
-                        consumoTexto = `<i class="fa-solid fa-arrow-down"></i> ${litrosConsumidos.toFixed(1)} L <i class="fa-solid fa-magnifying-glass"></i>`;
-                        let umbralSospechoso = rendEsperado ? rendEsperado : 5;
-                        if (litrosConsumidos > 0 && kmRecorridos > 0 && parseFloat(ratio) < umbralSospechoso) {
+                    if (capTanque && capTanqueGas && rendEsperado && rendEsperadoGas) {
+                        let litrosGasolina = (difGasolina / 100) * capTanque;
+                        let litrosGas = (difGas / 100) * capTanqueGas;
+                        let kmEsperados = (litrosGasolina * rendEsperado) + (litrosGas * rendEsperadoGas);
+                        
+                        consumoTexto = `<i class="fa-solid fa-down-left-and-up-right-to-center"></i> Mixto <i class="fa-solid fa-magnifying-glass"></i>`;
+                        
+                        if (kmEsperados > 0 && kmRecorridos < (kmEsperados * 0.9)) {
                             colorConsumo = 'color: var(--crit-color); font-weight: 900; background:#fdeaea; padding:3px 8px; border-radius:12px; border: 1px solid #fad2d2; cursor:pointer;';
+                            tooltipComb = `ALERTA: Consumió energía para ${kmEsperados.toFixed(0)} Km, pero solo recorrió ${kmRecorridos} Km.`;
                         } else {
                             colorConsumo = 'color: var(--ok-color); font-weight: 700; background:#eafaf1; padding:3px 8px; border-radius:12px; cursor:pointer;';
+                            tooltipComb = `Normal: Energía para ${kmEsperados.toFixed(0)} Km, recorrió ${kmRecorridos} Km.`;
                         }
-                        actionOnClick = `onclick="abrirAuditoriaConsumo('${placa}', ${kmRecorridos}, '${litrosConsumidos.toFixed(1)} Litros (${diferencia}% del tanque)', '${ratio} Km/L', 'liters', ${ratio}, ${umbralSospechoso}, ${combSalida}, ${combRetorno})"` ;
                     } else {
-                        // Fallback a % si no hay capacidad de tanque registrada
-                        let ratio = (diferencia > 0 && kmRecorridos > 0) ? (kmRecorridos / diferencia).toFixed(1) : 0;
-                        consumoTexto = `<i class="fa-solid fa-arrow-down"></i> ${diferencia}% <i class="fa-solid fa-magnifying-glass"></i>`;
-                        if (diferencia > 0 && kmRecorridos > 0 && parseFloat(ratio) < 1.5) {
-                            colorConsumo = 'color: var(--crit-color); font-weight: 900; background:#fdeaea; padding:3px 8px; border-radius:12px; border: 1px solid #fad2d2; cursor:pointer;';
+                        consumoTexto = `<i class="fa-solid fa-triangle-exclamation"></i> Faltan Datos Dual`;
+                        colorConsumo = 'color: #7f8c8d; font-weight: 700; background:#f4f6f7; padding:3px 8px; border-radius:12px;';
+                        tooltipComb = `Falta configurar capacidad o rendimiento de gas/gasolina.`;
+                    }
+                }
+            } else {
+                // LÓGICA SIMPLE ORIGINAL
+                if (combSalida !== null && combRetorno !== null) {
+                    tooltipComb = `Salió con: ${combSalida}% | Llegó con: ${combRetorno}%`;
+                    let diferencia = combSalida - combRetorno;
+                    
+                    if (diferencia < 0) {
+                        let recargaEst = Math.abs(diferencia);
+                        consumoTexto = `<i class="fa-solid fa-gas-pump"></i> Recargó en ruta`;
+                        colorConsumo = "color: var(--route-color); font-weight: 700; background:#ebf5fb; padding:3px 8px; border-radius:12px; cursor:pointer;";
+                        tooltipComb = `Salió: ${combSalida}% | Llegó: ${combRetorno}% (+${recargaEst}%). Indica recarga durante la ruta.`;
+                        actionOnClick = `onclick="abrirAuditoriaConsumo('${placa}', ${kmRecorridos}, 'Recarga en ruta (+${recargaEst}% estimado)', '—', 'recharge', 0, 0, ${combSalida}, ${combRetorno})"` ;
+                    } else if (diferencia === 0) {
+                        if (kmRecorridos > 0 && kmRecorridos < 30) {
+                            consumoTexto = `<i class="fa-solid fa-equals"></i> 0% <i class="fa-solid fa-magnifying-glass"></i>`;
+                            colorConsumo = 'color: #7f8c8d; font-weight: 700; background:#f4f6f7; padding:3px 8px; border-radius:12px; cursor:pointer;';
+                            actionOnClick = `onclick="abrirAuditoriaConsumo('${placa}', ${kmRecorridos}, '0% del tanque (Sin variación)', '—', 'zero_short', 0, 0, ${combSalida}, ${combRetorno})"` ;
                         } else {
-                            colorConsumo = 'color: var(--ok-color); font-weight: 700; background:#eafaf1; padding:3px 8px; border-radius:12px; cursor:pointer;';
+                            consumoTexto = `<i class="fa-solid fa-circle-exclamation"></i> 0% <i class="fa-solid fa-magnifying-glass"></i>`;
+                            colorConsumo = 'color: var(--warn-color); font-weight: 900; background:#fff5e6; padding:3px 8px; border-radius:12px; border: 1px solid #ffd8a8; cursor:pointer;';
+                            actionOnClick = `onclick="abrirAuditoriaConsumo('${placa}', ${kmRecorridos}, '0% del tanque (Sin variación)', '—', 'zero_long', 0, 0, ${combSalida}, ${combRetorno})"` ;
                         }
-                        actionOnClick = `onclick="abrirAuditoriaConsumo('${placa}', ${kmRecorridos}, '${diferencia}% del tanque', '${ratio} Km por cada 1%', 'percent', ${ratio}, 1.5, ${combSalida}, ${combRetorno})"` ;
+                    } else {
+                        if (capTanque) {
+                            let litrosConsumidos = (diferencia / 100) * capTanque;
+                            let ratio = (litrosConsumidos > 0 && kmRecorridos > 0) ? (kmRecorridos / litrosConsumidos).toFixed(1) : 0;
+                            consumoTexto = `<i class="fa-solid fa-arrow-down"></i> ${litrosConsumidos.toFixed(1)} L <i class="fa-solid fa-magnifying-glass"></i>`;
+                            let umbralSospechoso = rendEsperado ? rendEsperado : 5;
+                            if (litrosConsumidos > 0 && kmRecorridos > 0 && parseFloat(ratio) < umbralSospechoso) {
+                                colorConsumo = 'color: var(--crit-color); font-weight: 900; background:#fdeaea; padding:3px 8px; border-radius:12px; border: 1px solid #fad2d2; cursor:pointer;';
+                            } else {
+                                colorConsumo = 'color: var(--ok-color); font-weight: 700; background:#eafaf1; padding:3px 8px; border-radius:12px; cursor:pointer;';
+                            }
+                            actionOnClick = `onclick="abrirAuditoriaConsumo('${placa}', ${kmRecorridos}, '${litrosConsumidos.toFixed(1)} Litros (${diferencia}% del tanque)', '${ratio} Km/L', 'liters', ${ratio}, ${umbralSospechoso}, ${combSalida}, ${combRetorno})"` ;
+                        } else {
+                            let ratio = (diferencia > 0 && kmRecorridos > 0) ? (kmRecorridos / diferencia).toFixed(1) : 0;
+                            consumoTexto = `<i class="fa-solid fa-arrow-down"></i> ${diferencia}% <i class="fa-solid fa-magnifying-glass"></i>`;
+                            if (diferencia > 0 && kmRecorridos > 0 && parseFloat(ratio) < 1.5) {
+                                colorConsumo = 'color: var(--crit-color); font-weight: 900; background:#fdeaea; padding:3px 8px; border-radius:12px; border: 1px solid #fad2d2; cursor:pointer;';
+                            } else {
+                                colorConsumo = 'color: var(--ok-color); font-weight: 700; background:#eafaf1; padding:3px 8px; border-radius:12px; cursor:pointer;';
+                            }
+                            actionOnClick = `onclick="abrirAuditoriaConsumo('${placa}', ${kmRecorridos}, '${diferencia}% del tanque', '${ratio} Km por cada 1%', 'percent', ${ratio}, 1.5, ${combSalida}, ${combRetorno})"` ;
+                        }
                     }
                 }
             }

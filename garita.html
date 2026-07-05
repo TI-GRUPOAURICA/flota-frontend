@@ -73,7 +73,16 @@
                         <option value="25">1/4 Tanque (25%)</option>
                         <option value="50">Medio Tanque (50%)</option>
                         <option value="75">3/4 Tanque (75%)</option>
-                        <option value="100">Tanque Lleno (100%)</option>
+                    </select>
+                </div>
+                <div class="form-group dual-gas-salida" style="display: none; border: 1px solid #0056b3; padding: 5px; border-radius: 6px; background: #eef5ff;">
+                    <label style="color: #0056b3;"><i class="fa-solid fa-gas-pump"></i> Nivel de Gas</label>
+                    <select id="s_combustible_gas">
+                        <option value="0">Vacío (0 Leds)</option>
+                        <option value="25">1 Led (25%)</option>
+                        <option value="50">2 Leds (50%)</option>
+                        <option value="75">3 Leds (75%)</option>
+                        <option value="100">4 Leds (100%)</option>
                     </select>
                 </div>
             </div>
@@ -134,6 +143,16 @@
                         <option value="50">🟡 Medio Tanque (50%)</option>
                         <option value="75">🟢 3/4 Tanque (75%)</option>
                         <option value="100">🟢 Tanque Lleno (100%)</option>
+                    </select>
+                </div>
+                <div class="form-group dual-gas-retorno" style="display: none; border: 1px solid #0056b3; padding: 5px; border-radius: 6px; background: #eef5ff;">
+                    <label style="color: #0056b3;"><i class="fa-solid fa-gas-pump"></i> Gas (Llegada)</label>
+                    <select id="r_combustible_gas">
+                        <option value="0">Vacío (0 Leds)</option>
+                        <option value="25">1 Led (25%)</option>
+                        <option value="50">2 Leds (50%)</option>
+                        <option value="75">3 Leds (75%)</option>
+                        <option value="100">4 Leds (100%)</option>
                     </select>
                 </div>
             </div>
@@ -348,6 +367,13 @@
         const id = document.getElementById('s_vehiculo').value;
         const auto = memoriaVehiculos.find(v => v.cr596_flota_vehiculoid === id);
         document.getElementById('s_km').value = auto ? auto.cr596_kilometrajeactual : "";
+        if (auto && auto.cr596_sistemacombustible && auto.cr596_sistemacombustible.startsWith('Dual')) {
+            document.querySelector('.dual-gas-salida').style.display = 'block';
+            document.getElementById('s_combustible_gas').required = true;
+        } else {
+            document.querySelector('.dual-gas-salida').style.display = 'none';
+            document.getElementById('s_combustible_gas').required = false;
+        }
     }
 
     async function cargarViajes() {
@@ -369,7 +395,20 @@
     function vincularVehiculoRetorno() {
         const id = document.getElementById('r_viaje').value;
         const viaje = viajesAbiertos.find(v => v.cr596_flota_movimientoid === id);
-        if(viaje) { document.getElementById('r_vehiculo_id').value = viaje._cr596_vehiculo_value; }
+        if(viaje) { 
+            document.getElementById('r_vehiculo_id').value = viaje._cr596_vehiculo_value; 
+            const auto = memoriaVehiculos.find(x => x.cr596_flota_vehiculoid === viaje._cr596_vehiculo_value);
+            if (auto && auto.cr596_sistemacombustible && auto.cr596_sistemacombustible.startsWith('Dual')) {
+                document.querySelector('.dual-gas-retorno').style.display = 'block';
+                document.getElementById('r_combustible_gas').required = true;
+            } else {
+                document.querySelector('.dual-gas-retorno').style.display = 'none';
+                document.getElementById('r_combustible_gas').required = false;
+            }
+        } else {
+            document.querySelector('.dual-gas-retorno').style.display = 'none';
+            document.getElementById('r_combustible_gas').required = false;
+        }
     }
 
     document.getElementById('formSalida').addEventListener('submit', async (e) => {
@@ -380,6 +419,7 @@
             conductor_id: document.getElementById('s_conductor').value,
             km_salida: parseInt(document.getElementById('s_km').value),
             combustible_salida: parseInt(document.getElementById('s_combustible').value),
+            combustible_salida_gas: document.querySelector('.dual-gas-salida').style.display === 'block' ? parseInt(document.getElementById('s_combustible_gas').value) : null,
             origen: document.getElementById('s_origen').value,
             origen_detalle: document.getElementById('s_origen_detalle').value,
             destino: document.getElementById('s_destino').value,
@@ -427,6 +467,7 @@
             vehiculo_id: document.getElementById('r_vehiculo_id').value,
             km_retorno: parseInt(document.getElementById('r_km').value),
             combustible_retorno: parseInt(document.getElementById('r_combustible').value),
+            combustible_retorno_gas: document.querySelector('.dual-gas-retorno').style.display === 'block' ? parseInt(document.getElementById('r_combustible_gas').value) : null,
             reporta_gastos: document.getElementById('r_gastos').checked,
             detalle_gastos: document.getElementById('r_detalle_gastos').value,
             observaciones_retorno: document.getElementById('r_obs').value,
