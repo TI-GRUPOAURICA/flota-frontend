@@ -381,11 +381,15 @@
                         let kmEsperados = autonomiaGasolina + autonomiaGas;
                         
                         consumoTexto = `<i class="fa-solid fa-down-left-and-up-right-to-center"></i> Mixto <i class="fa-solid fa-magnifying-glass"></i>`;
-                        let esSospechoso = (kmEsperados > 0 && kmRecorridos < (kmEsperados * 0.9));
+                        let esFraude = (kmEsperados > 0 && kmRecorridos < (kmEsperados * 0.9));
+                        let esImposible = (kmEsperados > 0 && kmRecorridos > (kmEsperados * 1.5));
                         
-                        if (esSospechoso) {
+                        if (esFraude) {
                             colorConsumo = 'color: var(--crit-color); font-weight: 900; background:#fdeaea; padding:3px 8px; border-radius:12px; border: 1px solid #fad2d2; cursor:pointer;';
-                            tooltipComb = `ALERTA: Consumió energía para ${kmEsperados.toFixed(0)} Km, pero solo recorrió ${kmRecorridos} Km.`;
+                            tooltipComb = `ALERTA (Déficit): Consumió energía para ${kmEsperados.toFixed(0)} Km, pero solo recorrió ${kmRecorridos} Km.`;
+                        } else if (esImposible) {
+                            colorConsumo = 'color: var(--warn-color); font-weight: 900; background:#fff5e6; padding:3px 8px; border-radius:12px; border: 1px solid #ffd8a8; cursor:pointer;';
+                            tooltipComb = `ANOMALÍA (Exceso): Registra ${kmRecorridos} Km, pero solo gastó para ${kmEsperados.toFixed(0)} Km.`;
                         } else {
                             colorConsumo = 'color: var(--ok-color); font-weight: 700; background:#eafaf1; padding:3px 8px; border-radius:12px; cursor:pointer;';
                             tooltipComb = `Normal: Energía para ${kmEsperados.toFixed(0)} Km, recorrió ${kmRecorridos} Km.`;
@@ -559,13 +563,19 @@
             // CASO: Consumo mixto (vehículo dual)
             document.getElementById('ac_ratio_label').innerText = 'Cálculo Autonomía:';
             let kmEsperados = parseFloat(rawRatio);
-            const isSuspicious = kmEsperados > 0 && km < (kmEsperados * 0.9);
+            const esFraude = kmEsperados > 0 && km < (kmEsperados * 0.9);
+            const esImposible = kmEsperados > 0 && km > (kmEsperados * 1.5);
             
-            if (isSuspicious) {
-                evalSpan.innerHTML = `<i class="fa-solid fa-flag"></i> <strong>Rendimiento Anómalo en Sistema Dual.</strong> Basado en el consumo combinado de Gasolina y Gas, el vehículo gastó energía suficiente para recorrer <strong>${kmEsperados.toFixed(0)} Km</strong>, pero solo recorrió <strong>${km} Km</strong>. Esto indica una discrepancia severa de más del 10% (posible fuga, ralentí excesivo o extracción). Se recomienda revisión inmediata.`;
+            if (esFraude) {
+                evalSpan.innerHTML = `<i class="fa-solid fa-flag"></i> <strong>Rendimiento Anómalo en Sistema Dual.</strong> Basado en el consumo combinado de Gasolina y Gas, el vehículo gastó energía suficiente para recorrer <strong>${kmEsperados.toFixed(0)} Km</strong>, pero solo recorrió <strong>${km} Km</strong>. Esto indica una discrepancia severa (posible fuga, ralentí excesivo o extracción). Se recomienda revisión inmediata.`;
                 evalSpan.style.color = "var(--crit-color)";
                 box.style.borderLeftColor = "var(--crit-color)";
                 box.style.background = "#fdeaea";
+            } else if (esImposible) {
+                evalSpan.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> <strong>Eficiencia Físicamente Imposible.</strong> El sistema calcula que el vehículo consumió combustible para solo <strong>${kmEsperados.toFixed(0)} Km</strong>, pero el odómetro indica que recorrió <strong>${km} Km</strong>. Esto indica que se recorrió más del 150% de la autonomía detectada. <br><br>Causas probables: <ul style="margin-top:5px; margin-bottom:0; padding-left:20px;"><li>El vehículo <strong>recargó combustible</strong> (gas o gasolina) en la ruta pero no fue declarado.</li><li><strong>Error humano en Garita</strong> al registrar el kilometraje inicial/final o los niveles de tanque.</li><li>Fallo en los sensores de nivel de combustible.</li></ul>`;
+                evalSpan.style.color = "var(--warn-color)";
+                box.style.borderLeftColor = "var(--warn-color)";
+                box.style.background = "#fff5e6";
             } else {
                 evalSpan.innerHTML = `<i class="fa-solid fa-check"></i> <strong>Consumo Normal Mixto.</strong> Basado en el consumo combinado, la autonomía esperada era de <strong>${kmEsperados.toFixed(0)} Km</strong> y el vehículo recorrió <strong>${km} Km</strong>. La relación de consumo es óptima y coherente con el gasto energético de ambos tanques.`;
                 evalSpan.style.color = "var(--ok-color)";
