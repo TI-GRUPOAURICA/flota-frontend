@@ -258,6 +258,59 @@
     </div>
 </div>
 
+<!-- Modal Detalle Siniestro -->
+<div class="modal-overlay" id="modalDetalleSiniestro">
+    <div class="modal" style="max-width: 500px;">
+        <h3 style="color: #c0392b; margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px;"><i class="fa-solid fa-burst"></i> Siniestro Activo</h3>
+        <div style="background: #fdf2f1; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 5px solid #c0392b;">
+            <p style="margin: 0 0 10px 0; font-size: 13px;"><strong>Vehículo:</strong> <span id="mds_vehiculo" style="color:#c0392b; font-weight:800;"></span></p>
+            <p style="margin: 0 0 10px 0; font-size: 13px;"><strong>Taller Asignado:</strong> <span id="mds_taller" style="font-weight:700;"></span></p>
+            <p style="margin: 0 0 10px 0; font-size: 13px;"><strong>Fecha del Accidente:</strong> <span id="mds_fecha"></span></p>
+            <p style="margin: 0; font-size: 13px;"><strong>Gravedad/Estado:</strong> <span id="mds_estado"></span></p>
+        </div>
+        <div class="form-group">
+            <label>Descripción del Siniestro:</label>
+            <div id="mds_descripcion" style="background:#f4f4f4; padding:10px; border-radius:6px; font-size:12px; color:#555; min-height:40px;"></div>
+        </div>
+        <button type="button" class="btn-cancelar" style="margin-top:10px;" onclick="document.getElementById('modalDetalleSiniestro').style.display='none'">Cerrar Panel</button>
+    </div>
+</div>
+
+<!-- Modal Detalle Taller -->
+<div class="modal-overlay" id="modalDetalleTaller">
+    <div class="modal" style="max-width: 500px;">
+        <h3 style="color: #e67e22; margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px;"><i class="fa-solid fa-screwdriver-wrench"></i> Vehículo en Taller</h3>
+        <div style="background: #fdf8f2; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 5px solid #e67e22;">
+            <p style="margin: 0 0 10px 0; font-size: 13px;"><strong>Vehículo:</strong> <span id="mdt_vehiculo" style="color:#e67e22; font-weight:800;"></span></p>
+            <p style="margin: 0; font-size: 13px;"><strong>Tipo de Mantenimiento:</strong> <span id="mdt_tipo"></span></p>
+        </div>
+        <div class="form-group">
+            <label>Notas del Jefe de Taller / Garita:</label>
+            <div id="mdt_notas" style="background:#f4f4f4; padding:10px; border-radius:6px; font-size:12px; color:#555; min-height:40px;"></div>
+        </div>
+        <button type="button" class="btn-cancelar" style="margin-top:10px;" onclick="document.getElementById('modalDetalleTaller').style.display='none'">Cerrar Panel</button>
+    </div>
+</div>
+
+<!-- Modal Detalle Sede -->
+<div class="modal-overlay" id="modalDetalleSede">
+    <div class="modal" style="max-width: 500px;">
+        <h3 style="color: #27ae60; margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px;"><i class="fa-solid fa-building-circle-check"></i> Vehículo en Sede</h3>
+        <div style="background: #f4f9f5; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 5px solid #27ae60;">
+            <p style="margin: 0 0 10px 0; font-size: 13px;"><strong>Vehículo:</strong> <span id="mdc_vehiculo" style="color:#27ae60; font-weight:800;"></span></p>
+            <p style="margin: 0 0 10px 0; font-size: 13px;"><strong>Sede Actual:</strong> <span id="mdc_sede" style="font-weight:700;"></span></p>
+            <p style="margin: 0 0 10px 0; font-size: 13px;"><strong>Último Conductor:</strong> <span id="mdc_conductor"></span></p>
+            <p style="margin: 0 0 10px 0; font-size: 13px;"><strong>Fecha de Retorno a Base:</strong> <span id="mdc_fecha_retorno"></span></p>
+            <p style="margin: 0; font-size: 13px;"><strong>Kilometraje Actual:</strong> <span id="mdc_km"></span> Km</p>
+        </div>
+        <div class="form-group">
+            <label>Novedades del Último Viaje (Llegada):</label>
+            <div id="mdc_observaciones" style="background:#f4f4f4; padding:10px; border-radius:6px; font-size:12px; color:#555; min-height:40px;"></div>
+        </div>
+        <button type="button" class="btn-cancelar" style="margin-top:10px;" onclick="document.getElementById('modalDetalleSede').style.display='none'">Cerrar Panel</button>
+    </div>
+</div>
+
 <script>
     // 🔒 GUARD: Verificar sesión activa
     (function(){var s=JSON.parse(sessionStorage.getItem('flotapro_session')||'null');if(!s||(Date.now()-s.timestamp>28800000)){sessionStorage.removeItem('flotapro_session');window.location.href='index.html';}})();
@@ -271,19 +324,22 @@
 
     async function inicializarDashboard() {
         try {
-            const [resFlota, resViajes, resSiniestros] = await Promise.all([
+            const [resFlota, resViajes, resSiniestros, resHistorial] = await Promise.all([
                 fetch(`${API_URL}/estado-flota`),
                 fetch(`${API_URL}/viajes-abiertos`),
-                fetch(`${API_URL}/siniestros`)
+                fetch(`${API_URL}/siniestros`),
+                fetch(`${API_URL}/historial-rutas`)
             ]);
             
             const dataFlota = await resFlota.json();
             const dataViajes = await resViajes.json();
             const dataSiniestros = await resSiniestros.json();
+            const dataHistorial = await resHistorial.json();
             
             const lista = dataFlota.data;
             const viajesActivos = dataViajes.data || [];
             const siniestrosAll = dataSiniestros.data || [];
+            historialGlobal = dataHistorial.data || [];
 
             let disponible = 0, enRuta = 0, taller = 0, siniestros = 0, vencidos = 0;
             const tbody = document.getElementById('tablaEstatus');
@@ -304,22 +360,25 @@
                 const proxMante = v.cr596_proximomantenimientokm || 0;
                 if (proxMante > 0 && kmActual >= proxMante) docVencido = true;
 
+                const vDataJson = encodeURIComponent(JSON.stringify(v)).replace(/'/g, "%27");
+
                 if(estado === "Siniestro") { 
                     siniestros++; txtEstado = "Siniestrado"; claseDot = "status-2"; 
                     const sinAbierto = siniestrosAll.find(s => s.vehiculo_id === v.cr596_flota_vehiculoid && s.estado !== "Cerrado");
                     const nombreTaller = sinAbierto && sinAbierto.nombre_taller ? sinAbierto.nombre_taller : 'No asignado';
-                    htmlUbicacion = `<span style="color:#c0392b; font-weight:700;"><i class="fa-solid fa-warehouse"></i> Taller: ${nombreTaller}</span>`;
+                    const sinJson = encodeURIComponent(JSON.stringify(sinAbierto || {})).replace(/'/g, "%27");
+                    htmlUbicacion = `<button style="background:#c0392b; color:white; border:none; padding:4px 10px; border-radius:15px; font-size:11px; font-weight:800; cursor:pointer;" onclick="verDetalleSiniestro('${sinJson}', '${v.cr596_placa}')"><i class="fa-solid fa-warehouse"></i> Taller: ${nombreTaller}</button>`;
                 }
                 else if(["Mantenimiento Correctivo", "Mantenimiento Preventivo"].includes(estado)) { 
                     taller++; txtEstado = estado; claseDot = "status-2"; 
-                    htmlUbicacion = `<span style="color:#e67e22; font-weight:700;"><i class="fa-solid fa-screwdriver-wrench"></i> Taller Mecánico</span>`;
+                    htmlUbicacion = `<button style="background:#e67e22; color:white; border:none; padding:4px 10px; border-radius:15px; font-size:11px; font-weight:800; cursor:pointer;" onclick="verDetalleTaller('${vDataJson}')"><i class="fa-solid fa-screwdriver-wrench"></i> Taller Mecánico</button>`;
                 }
                 else if(estado === "En uso" || estado == 144280002 || estado === "144280002") { 
                     enRuta++; txtEstado = "En Ruta"; claseDot = "status-1"; 
-                    const viaje = viajesActivos.find(viaje => viaje.vehiculo_id === v.cr596_flota_vehiculoid);
+                    const viaje = viajesActivos.find(viaje => viaje.cr596_flota_movimientoid && viaje._cr596_vehiculo_value === v.cr596_flota_vehiculoid);
                     if (viaje) {
                         const vJson = encodeURIComponent(JSON.stringify(viaje)).replace(/'/g, "%27");
-                        htmlUbicacion = `<button style="background:var(--aurica-blue); color:white; border:none; padding:4px 10px; border-radius:15px; font-size:11px; font-weight:800; cursor:pointer;" onclick="verDetalleRuta('${vJson}', '${v.cr596_placa}')"><i class="fa-solid fa-map-location-dot"></i> En Tránsito ➔ ${viaje.destino}</button>`;
+                        htmlUbicacion = `<button style="background:var(--aurica-blue); color:white; border:none; padding:4px 10px; border-radius:15px; font-size:11px; font-weight:800; cursor:pointer;" onclick="verDetalleRuta('${vJson}', '${v.cr596_placa}')"><i class="fa-solid fa-map-location-dot"></i> En Tránsito ➔ ${viaje.destino || 'Sin Destino'}</button>`;
                     } else {
                         htmlUbicacion = `<span style="color:var(--aurica-blue); font-weight:700;"><i class="fa-solid fa-road"></i> En Ruta</span>`;
                     }
@@ -330,7 +389,13 @@
                 }
                 else if(estado === "Disponible" || estado == 144280000 || estado === "144280000") { 
                     disponible++; txtEstado = "Disponible"; claseDot = "status-0"; 
-                    htmlUbicacion = `<span style="color:#27ae60; font-weight:700;"><i class="fa-solid fa-building"></i> Sede / Cochera</span>`;
+                    const ultimoViaje = historialGlobal.find(h => h._cr596_vehiculo_value === v.cr596_flota_vehiculoid);
+                    let sedeActual = 'Sede Central';
+                    if (ultimoViaje && ultimoViaje.origen) {
+                        sedeActual = ultimoViaje.origen === 'Otros' && ultimoViaje.origen_detalle ? ultimoViaje.origen_detalle : ultimoViaje.origen;
+                    }
+                    const ultJson = encodeURIComponent(JSON.stringify(ultimoViaje || {})).replace(/'/g, "%27");
+                    htmlUbicacion = `<button style="background:#27ae60; color:white; border:none; padding:4px 10px; border-radius:15px; font-size:11px; font-weight:800; cursor:pointer;" onclick="verDetalleSede('${ultJson}', '${v.cr596_placa}', '${sedeActual}')"><i class="fa-solid fa-building"></i> ${sedeActual}</button>`;
                 }
                 else { 
                     taller++; txtEstado = estado || "Desconocido"; claseDot = "status-2"; 
@@ -968,6 +1033,51 @@
         } catch(e) {
             console.error("Error al mostrar detalle ruta:", e);
             alert("No se pudo cargar el detalle de la ruta.");
+        }
+    }
+
+    function verDetalleSiniestro(siniestroJson, placa) {
+        try {
+            const sin = JSON.parse(decodeURIComponent(siniestroJson));
+            document.getElementById('mds_vehiculo').innerText = placa;
+            document.getElementById('mds_taller').innerText = sin.nombre_taller || 'No asignado';
+            document.getElementById('mds_fecha').innerText = sin.fecha_reporte ? new Date(sin.fecha_reporte).toLocaleDateString() : 'Desconocida';
+            document.getElementById('mds_estado').innerText = sin.estado || 'Reportado';
+            document.getElementById('mds_descripcion').innerText = sin.descripcion || 'Sin descripción detallada.';
+            document.getElementById('modalDetalleSiniestro').style.display = 'flex';
+        } catch(e) {
+            console.error("Error al mostrar detalle siniestro:", e);
+        }
+    }
+
+    function verDetalleTaller(vehiculoJson) {
+        try {
+            const v = JSON.parse(decodeURIComponent(vehiculoJson));
+            document.getElementById('mdt_vehiculo').innerText = v.cr596_placa;
+            document.getElementById('mdt_tipo').innerText = v.cr596_estadooperativo || 'Mantenimiento';
+            document.getElementById('mdt_notas').innerText = v.notas_mantenimiento || 'Sin observaciones de garita ni del taller.';
+            document.getElementById('modalDetalleTaller').style.display = 'flex';
+        } catch(e) {
+            console.error("Error al mostrar detalle taller:", e);
+        }
+    }
+
+    function verDetalleSede(viajeJson, placa, sede) {
+        try {
+            const viaje = JSON.parse(decodeURIComponent(viajeJson));
+            document.getElementById('mdc_vehiculo').innerText = placa;
+            document.getElementById('mdc_sede').innerText = sede;
+            document.getElementById('mdc_conductor').innerText = viaje.conductores ? viaje.conductores.nombre : 'Desconocido';
+            document.getElementById('mdc_fecha_retorno').innerText = viaje.fecha_retorno ? new Date(viaje.fecha_retorno).toLocaleString() : 'Desconocida';
+            
+            // Buscar kilometraje actual del vehiculo en la tabla principal o usar el de retorno
+            const km = viaje.km_retorno || viaje.km_salida || 0;
+            document.getElementById('mdc_km').innerText = km.toLocaleString();
+            
+            document.getElementById('mdc_observaciones').innerText = viaje.observaciones_retorno || 'Sin novedades reportadas al retorno.';
+            document.getElementById('modalDetalleSede').style.display = 'flex';
+        } catch(e) {
+            console.error("Error al mostrar detalle sede:", e);
         }
     }
 
