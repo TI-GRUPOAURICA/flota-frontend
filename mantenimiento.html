@@ -493,12 +493,37 @@
 
     document.getElementById('formMantenimiento').addEventListener('submit', async (e) => {
         e.preventDefault();
+        
+        const estadoActual = document.getElementById('edit_estado').value;
+        const estadosAuditables = ["Mantenimiento Preventivo", "Mantenimiento Correctivo", "Baja Temporal", "Dado de Baja"];
+        let motivoAuditoria = null;
+
+        // Si cambia a un estado auditable (inactivo/taller)
+        if (estadoActual !== estadoOriginal && estadosAuditables.includes(estadoActual)) {
+            const { value: motivo } = await Swal.fire({
+                title: 'Auditoría de Cambio',
+                text: `El vehículo pasará a ${estadoActual}. Ingrese el motivo:`,
+                input: 'text',
+                inputPlaceholder: 'Ej. Falta de repuestos, Programado por KM...',
+                showCancelButton: true,
+                confirmButtonText: 'Registrar',
+                cancelButtonText: 'Cancelar',
+                inputValidator: (value) => {
+                    if (!value) return 'El motivo es obligatorio para auditoría';
+                }
+            });
+
+            if (!motivo) return; // Se canceló la acción
+            motivoAuditoria = motivo;
+        }
+
         const btn = document.getElementById('btnGuardar');
         btn.innerText = "Guardando y Auditando...";
 
         const payload = {
             vehiculo_id: document.getElementById('edit_id').value,
             estado_operativo: document.getElementById('edit_estado').value,
+            motivo_cambio_estado: motivoAuditoria,
             notas_mantenimiento: document.getElementById('edit_motivo_ingreso').value || null,
             detalle_reparacion: document.getElementById('edit_reparacion').value || null,
             modelo: document.getElementById('edit_modelo').value || null,
