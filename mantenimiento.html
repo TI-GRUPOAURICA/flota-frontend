@@ -131,7 +131,7 @@
             </div>
 
             <div id="caja_motivo_ingreso" class="form-group" style="display:none; background:#fef9e7; padding:15px; border-radius:8px; border:1px solid #f1c40f;">
-                <label style="color:#d35400; font-size: 13px; margin-bottom: 8px;"><i class="fa-solid fa-triangle-exclamation"></i> Motivo de Ingreso a Taller</label>
+                <label style="color:#d35400; font-size: 13px; margin-bottom: 8px;"><i class="fa-solid fa-triangle-exclamation"></i> Motivo (Taller / Auditoría de Estado)</label>
                 <textarea id="edit_motivo_ingreso" rows="2" style="background:#fff;"></textarea>
             </div>
 
@@ -405,10 +405,11 @@
         } else {
             document.getElementById('alerta_siniestro').style.display = 'none';
             document.getElementById('edit_estado').disabled = false;
-            if (["Mantenimiento Correctivo", "Mantenimiento Preventivo", 144280001, "144280001", 144280003, "144280003"].includes(estadoOriginal)) { 
+            const estadosInactivos = ["Mantenimiento Correctivo", "Mantenimiento Preventivo", "Baja Temporal", "Dado de Baja", 144280001, "144280001", 144280003, "144280003"];
+            if (estadosInactivos.includes(estadoOriginal)) { 
                 document.getElementById('alerta_taller').style.display = 'block'; 
-                const motivo = v.notas_mantenimiento ? v.notas_mantenimiento : 'Ingresado al taller sin un diagnóstico inicial especificado.';
-                document.getElementById('alerta_taller_texto').innerHTML = `Este vehículo no puede salir de base hasta que termine sus reparaciones y sea devuelto al estado "Disponible".<br><br><b>Detalle / Motivo de Ingreso:</b> <span style="color:#333; font-weight:600;">${motivo}</span>`;
+                const motivo = v.notas_mantenimiento ? v.notas_mantenimiento : 'Sin motivo / diagnóstico inicial especificado.';
+                document.getElementById('alerta_taller_texto').innerHTML = `Este vehículo se encuentra INACTIVO y no puede salir de base hasta que sea devuelto al estado "Disponible".<br><br><b>Motivo Registrado:</b> <span style="color:#333; font-weight:600;">${motivo}</span>`;
             } else { 
                 document.getElementById('alerta_taller').style.display = 'none'; 
             }
@@ -447,26 +448,27 @@
         const txtMotivo = document.getElementById('edit_motivo_ingreso');
         const txtReparacion = document.getElementById('edit_reparacion');
 
-        const isOriginalTaller = ["Mantenimiento Correctivo", "Mantenimiento Preventivo"].includes(estadoOriginal);
-        const isActualTaller = ["Mantenimiento Correctivo", "Mantenimiento Preventivo"].includes(estadoActual);
+        const estadosAuditables = ["Mantenimiento Correctivo", "Mantenimiento Preventivo", "Baja Temporal", "Dado de Baja"];
+        const isOriginalAuditable = estadosAuditables.includes(estadoOriginal);
+        const isActualAuditable = estadosAuditables.includes(estadoActual);
 
-        if (isOriginalTaller && !isActualTaller) {
-            // LIBERANDO EL VEHÍCULO
+        if (isOriginalAuditable && !isActualAuditable) {
+            // LIBERANDO EL VEHÍCULO (Ej: De Baja/Taller a Disponible)
             cajaMotivo.style.display = 'block';
             txtMotivo.readOnly = true; 
             
             cajaReparacion.style.display = 'block';
             txtReparacion.required = true; 
-        } else if (isActualTaller && !isOriginalTaller) {
-            // MANDANDO A TALLER MANUALMENTE
+        } else if (isActualAuditable && !isOriginalAuditable) {
+            // MANDANDO A ESTADO INACTIVO MANUALMENTE
             cajaMotivo.style.display = 'block';
             txtMotivo.readOnly = false; 
             txtMotivo.required = true;
             
             cajaReparacion.style.display = 'none';
             txtReparacion.required = false;
-        } else if (isActualTaller && isOriginalTaller) {
-            // SIGUE EN TALLER
+        } else if (isActualAuditable && isOriginalAuditable) {
+            // SIGUE EN ESTADO INACTIVO
             cajaMotivo.style.display = 'block';
             txtMotivo.readOnly = false; 
             txtMotivo.required = false; 
@@ -495,36 +497,13 @@
     document.getElementById('formMantenimiento').addEventListener('submit', async (e) => {
         e.preventDefault();
         
-        const estadoActual = document.getElementById('edit_estado').value;
-        const estadosAuditables = ["Mantenimiento Preventivo", "Mantenimiento Correctivo", "Baja Temporal", "Dado de Baja"];
-        let motivoAuditoria = null;
-
-        // Si cambia a un estado auditable (inactivo/taller)
-        if (estadoActual !== estadoOriginal && estadosAuditables.includes(estadoActual)) {
-            const { value: motivo } = await Swal.fire({
-                title: 'Auditoría de Cambio',
-                text: `El vehículo pasará a ${estadoActual}. Ingrese el motivo:`,
-                input: 'text',
-                inputPlaceholder: 'Ej. Falta de repuestos, Programado por KM...',
-                showCancelButton: true,
-                confirmButtonText: 'Registrar',
-                cancelButtonText: 'Cancelar',
-                inputValidator: (value) => {
-                    if (!value) return 'El motivo es obligatorio para auditoría';
-                }
-            });
-
-            if (!motivo) return; // Se canceló la acción
-            motivoAuditoria = motivo;
-        }
-
         const btn = document.getElementById('btnGuardar');
         btn.innerText = "Guardando y Auditando...";
 
         const payload = {
             vehiculo_id: document.getElementById('edit_id').value,
             estado_operativo: document.getElementById('edit_estado').value,
-            motivo_cambio_estado: motivoAuditoria,
+            motivo_cambio_estado: document.getElementById('edit_motivo_ingreso').value || null,
             notas_mantenimiento: document.getElementById('edit_motivo_ingreso').value || null,
             detalle_reparacion: document.getElementById('edit_reparacion').value || null,
             modelo: document.getElementById('edit_modelo').value || null,
