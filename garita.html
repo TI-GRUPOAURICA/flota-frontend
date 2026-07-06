@@ -104,6 +104,12 @@
                 <h4><i class="fa-solid fa-clipboard-list"></i> Checklist de Inspección (Clic para marcar falla)</h4>
                 <div class="checklist-grid" id="grid_salida"></div>
             </div>
+            
+            <div class="checklist-box" id="caja_validacion_docs" style="display:none; background: #fff8dc; border-color: #f1c40f;">
+                <h4 style="color: #d35400;"><i class="fa-solid fa-id-card"></i> Auditoría Física de Documentos (Obligatorio)</h4>
+                <div style="font-size: 11px; color: #7f8c8d; margin-bottom: 10px;">Marque las casillas confirmando que validó físicamente la presencia de estos documentos vigentes en el vehículo.</div>
+                <div class="checklist-grid" id="grid_docs"></div>
+            </div>
             <div class="form-row">
                 <div class="form-group">
                     <label>Punto de Origen / Sede</label>
@@ -456,6 +462,63 @@
         const id = document.getElementById('s_vehiculo').value;
         const auto = memoriaVehiculos.find(v => v.cr596_flota_vehiculoid === id);
         document.getElementById('s_km').value = auto ? auto.cr596_kilometrajeactual : "";
+        generarChecklistDocumentos(auto);
+    }
+
+    function generarChecklistDocumentos(auto) {
+        const caja = document.getElementById('caja_validacion_docs');
+        const grid = document.getElementById('grid_docs');
+        grid.innerHTML = '';
+        
+        if (!auto) {
+            caja.style.display = 'none';
+            return;
+        }
+
+        caja.style.display = 'block';
+
+        const docs = [
+            { id: 'doc_soat', nombre: 'SOAT Físico/Digital' },
+            { id: 'doc_tarjeta', nombre: 'Tarjeta de Propiedad' },
+            { id: 'doc_rt', nombre: 'Revisión Técnica' }
+        ];
+
+        // 144280000 = Sí en el campo lunas polarizadas de Dataverse/Supabase
+        if (auto.cr596_lunaspolarizadas === 144280000 || auto.cr596_lunaspolarizadas === "144280000") {
+            docs.push({ id: 'doc_lunas', nombre: 'Permiso Lunas Polarizadas' });
+        }
+
+        docs.forEach(doc => {
+            const div = document.createElement('div');
+            div.style.display = 'flex';
+            div.style.alignItems = 'center';
+            div.style.gap = '8px';
+            div.style.background = '#fff';
+            div.style.padding = '8px';
+            div.style.borderRadius = '6px';
+            div.style.border = '1px solid #d1d8e0';
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.id = doc.id;
+            checkbox.required = true;
+            checkbox.style.width = '18px';
+            checkbox.style.height = '18px';
+            checkbox.style.cursor = 'pointer';
+
+            const label = document.createElement('label');
+            label.htmlFor = doc.id;
+            label.innerText = doc.nombre;
+            label.style.margin = '0';
+            label.style.fontSize = '12px';
+            label.style.fontWeight = '700';
+            label.style.color = '#34495e';
+            label.style.cursor = 'pointer';
+
+            div.appendChild(checkbox);
+            div.appendChild(label);
+            grid.appendChild(div);
+        });
     }
 
     async function cargarViajes() {
@@ -513,6 +576,7 @@
             chk_capo: document.getElementById('chk_s_capo').dataset.estado === 'true',
             chk_cinturon: document.getElementById('chk_s_cinturon').dataset.estado === 'true',
             chk_otros: document.getElementById('chk_s_otros').dataset.estado === 'true',
+            docs_validados: true,
             detalles_checklist: {
                 brisas: document.getElementById('chk_s_brisas').dataset.observacion || "",
                 parachoques: document.getElementById('chk_s_parachoques').dataset.observacion || "",

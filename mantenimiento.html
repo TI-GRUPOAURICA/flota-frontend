@@ -240,12 +240,15 @@
         const tarjetas = document.querySelectorAll('.card');
         tarjetas.forEach(t => {
             const html = t.innerHTML;
-            const tieneRojo = html.includes('status red') || html.includes('bg-red');
-            const tieneAmarillo = html.includes('status yellow') || html.includes('bg-yellow');
+            const tieneRojo = html.includes('status red');
+            const tieneAmarillo = html.includes('status yellow');
+            
+            // Buscar las palabras clave que generan los badges de inactividad
+            const esInactivo = html.includes('TALLER/CRÍTICO') || html.includes('SINIESTRO') || html.includes('Baja Temporal') || html.includes('Dado de Baja');
 
             if (tipo === 'todos') { t.style.display = 'flex'; } 
             else if (tipo === 'vencer') { t.style.display = (tieneAmarillo || tieneRojo) ? 'flex' : 'none'; } 
-            else if (tipo === 'criticos') { t.style.display = (tieneRojo || html.includes('Inoperativo')) ? 'flex' : 'none'; }
+            else if (tipo === 'criticos') { t.style.display = (tieneRojo || esInactivo) ? 'flex' : 'none'; }
         });
     }
 
