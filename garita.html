@@ -416,22 +416,37 @@
             select.innerHTML = '<option value="">Seleccione vehículo en base...</option>';
             memoriaVehiculos.forEach(v => {
                 const est = v.cr596_estadooperativo;
-                if(est === "Disponible" || est == 144280000 || est === "144280000") { 
-                    let docVencido = false;
-                    const hoy = new Date();
-                    const fechas = [v.cr596_vencimientosoat, v.cr596_vencimientorevisiontecnica, v.cr596_vencimientoseguro, v.cr596_vencimientogps];
-                    for (let f of fechas) {
-                        if (f && new Date(f) < hoy) { docVencido = true; break; }
-                    }
-                    const kmActual = v.cr596_kilometrajeactual || 0;
-                    const proxMante = v.cr596_proximomantenimientokm || 0;
-                    if (proxMante > 0 && kmActual >= proxMante) docVencido = true;
+                let docVencido = false;
+                const hoy = new Date();
+                
+                // Validación de Documentos
+                const fechas = [v.cr596_vencimientosoat, v.cr596_vencimientorevisiontecnica, v.cr596_vencimientoseguro, v.cr596_vencimientogps];
+                for (let f of fechas) {
+                    if (f && new Date(f) < hoy) { docVencido = true; break; }
+                }
+                
+                // Validación de Mantenimiento por Kilometraje
+                const kmActual = v.cr596_kilometrajeactual || 0;
+                const proxMante = v.cr596_proximomantenimientokm || 0;
+                if (proxMante > 0 && kmActual >= proxMante) docVencido = true;
 
-                    if (docVencido) {
-                        select.innerHTML += `<option value="${v.cr596_flota_vehiculoid}" disabled>[BLOQUEADO] [${v.cr596_placa}] - ${v.cr596_nombre} (Doc/Mantenimiento Vencido)</option>`; 
-                    } else {
-                        select.innerHTML += `<option value="${v.cr596_flota_vehiculoid}">[${v.cr596_placa}] - ${v.cr596_nombre}</option>`; 
-                    }
+                // Verificamos si el estado base permite su disponibilidad
+                let isDisponible = (est === "Disponible" || est == 144280000 || est === "144280000");
+
+                if (!isDisponible) {
+                    // El vehículo tiene un estado de indisponibilidad (Siniestro, Mantenimiento, En ruta)
+                    let estadoLabel = est;
+                    // Normalizamos los nombres para que se vean mejor en la interfaz
+                    if(est === "Mantenimiento Correctivo" || est === "Mantenimiento Preventivo") estadoLabel = "Taller";
+                    if(est === "En uso" || est === "En Ruta") estadoLabel = "En Ruta";
+                    
+                    select.innerHTML += `<option value="${v.cr596_flota_vehiculoid}" disabled>[BLOQUEADO] [${v.cr596_placa}] - ${v.cr596_nombre} (Estado: ${estadoLabel})</option>`;
+                } else if (docVencido) {
+                    // Vehículo disponible pero con documentos/mantenimiento vencido
+                    select.innerHTML += `<option value="${v.cr596_flota_vehiculoid}" disabled>[BLOQUEADO] [${v.cr596_placa}] - ${v.cr596_nombre} (Doc/Mantenimiento Vencido)</option>`; 
+                } else {
+                    // Vehículo 100% libre para despacho
+                    select.innerHTML += `<option value="${v.cr596_flota_vehiculoid}">[${v.cr596_placa}] - ${v.cr596_nombre}</option>`; 
                 }
             });
         } catch(e) { console.error(e); document.getElementById('s_vehiculo').innerHTML = '<option>Error al cargar veh\u00edculos</option>'; }
