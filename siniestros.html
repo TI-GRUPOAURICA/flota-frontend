@@ -144,12 +144,16 @@
             <input type="hidden" id="u_is_garita">
             <div class="form-group">
                 <label>Nuevo Estado</label>
-                <select id="u_estado">
+                <select id="u_estado" onchange="toggleNombreTallerSiniestro()">
                     <option value="Reportado">Reportado</option>
                     <option value="En Trámite Seguro">En Trámite Seguro</option>
                     <option value="Taller Siniestro">Taller Siniestro</option>
                     <option value="Cerrado">Cerrado (Resuelto)</option>
                 </select>
+            </div>
+            <div class="form-group" id="caja_nombre_taller" style="display: none; background: #eafaf1; padding: 10px; border-radius: 6px; border: 1px solid #a9dfbf;">
+                <label style="color: #27ae60; margin-bottom: 5px;"><i class="fa-solid fa-warehouse"></i> Nombre del Taller Asignado <span style="color:#e74c3c">*</span></label>
+                <input type="text" id="u_nombre_taller" placeholder="Ej. Taller Multimarca Motors...">
             </div>
             <div class="form-group">
                 <label id="lbl_observacion">Observaciones / Detalle del Estado <span style="color:#e74c3c">*</span></label>
@@ -274,10 +278,12 @@
                     btnDoc = urls.map((url, i) => `<a href="${url}" target="_blank" class="btn-ver-doc" style="margin-right: 4px; margin-bottom: 4px;"><i class="fa-solid fa-file"></i> Doc ${i+1}</a>`).join('');
                 }
                 
+                let badgeTaller = s.nombre_taller ? `<br><span style="background:#27ae60; color:white; font-size:10px; font-weight:900; padding:2px 5px; border-radius:5px;"><i class="fa-solid fa-warehouse"></i> ${s.nombre_taller}</span>` : '';
+                
                 document.getElementById('tabla_cerrados').innerHTML += `
                     <tr>
                         <td style="font-weight:600; color:#555;">${fh}</td>
-                        <td style="font-weight:800; color:var(--aurica-blue);">${placa}</td>
+                        <td style="font-weight:800; color:var(--aurica-blue);">${placa}${badgeTaller}</td>
                         <td>${conductorNombre}</td>
                         <td style="max-width:300px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${s.descripcion}">${s.descripcion}</td>
                         <td>${btnDoc}</td>
@@ -294,10 +300,15 @@
                 if (s.descripcion && s.descripcion.includes("Reportado desde Garita")) {
                     badgeGarita = `<div style="background:var(--crit-color); color:white; font-size:10px; font-weight:900; padding:3px 8px; border-radius:10px; display:inline-block; margin-bottom:5px;"><i class="fa-solid fa-bell"></i> ALERTA GARITA</div>`;
                 }
+                
+                let badgeTaller = '';
+                if (s.nombre_taller) {
+                    badgeTaller = `<div style="background:#27ae60; color:white; font-size:10px; font-weight:900; padding:3px 8px; border-radius:10px; display:inline-block; margin-bottom:5px; margin-left:4px;"><i class="fa-solid fa-warehouse"></i> ${s.nombre_taller}</div>`;
+                }
 
                 const cardHTML = `
                     <div class="s-card" style="border-left-color: ${colorBorde}; cursor: pointer;" onclick="abrirModal('${s.id}')">
-                        ${badgeGarita}
+                        ${badgeGarita}${badgeTaller}
                         <div class="s-fecha"><i class="fa-solid fa-calendar-days"></i> ${f} | <i class="fa-solid fa-user"></i> ${conductorNombre}</div>
                         <div class="s-vehiculo">${placa}</div>
                         <div class="s-desc">${s.descripcion}</div>
@@ -517,6 +528,20 @@
         const placa = s.vehiculos ? s.vehiculos.placa : '';
         document.getElementById('m_detalle').innerText = `Vehículo: ${placa} | Ocurrido: ${new Date(s.fecha_ocurrencia).toLocaleDateString()}`;
         document.getElementById('modalSiniestro').style.display = 'flex';
+        toggleNombreTallerSiniestro();
+    }
+
+    function toggleNombreTallerSiniestro() {
+        const estado = document.getElementById('u_estado').value;
+        const caja = document.getElementById('caja_nombre_taller');
+        const input = document.getElementById('u_nombre_taller');
+        if (estado === 'Taller Siniestro') {
+            caja.style.display = 'block';
+            input.required = true;
+        } else {
+            caja.style.display = 'none';
+            input.required = false;
+        }
     }
 
     function cerrarModal() { document.getElementById('modalSiniestro').style.display = 'none'; }
@@ -545,11 +570,15 @@
             }
         }
         
+        let finalObservacion = document.getElementById('u_observacion').value;
+        let nombreTaller = document.getElementById('u_nombre_taller').value;
+
         const payload = {
             id: document.getElementById('u_id').value,
             estado: document.getElementById('u_estado').value,
             url_documentos: urlDocs,
-            observacion: document.getElementById('u_observacion').value,
+            observacion: finalObservacion,
+            nombre_taller: (document.getElementById('u_estado').value === 'Taller Siniestro' && nombreTaller) ? nombreTaller : null,
             sobrescribir_descripcion: document.getElementById('u_is_garita').value === 'true'
         };
         
