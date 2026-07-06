@@ -376,7 +376,7 @@
                 if (inc.origen === 'Mantenimiento') colorTexto = '#27ae60'; // Verde
                 if (inc.origen === 'Siniestro' || inc.origen === 'Auditoría de Estado') colorTexto = '#8e44ad'; // Morado
 
-                const kmTag = inc.kilometraje_incidente ? `<span style="background:#eee; color:#333; padding:2px 6px; border-radius:4px; font-size:10px; margin-right:5px;"><i class="fa-solid fa-gauge-high"></i> ${inc.kilometraje_incidente.toLocaleString()} Km</span>` : '';
+                const kmTag = (inc.kilometraje_incidente !== undefined && inc.kilometraje_incidente !== null) ? `<span style="background:#eee; color:#333; padding:2px 6px; border-radius:4px; font-size:10px; margin-right:5px;"><i class="fa-solid fa-gauge-high"></i> ${Number(inc.kilometraje_incidente).toLocaleString()} Km</span>` : '';
                 
                 tbody.innerHTML += `
                     <tr style="border-bottom:1px solid #ddd;">
