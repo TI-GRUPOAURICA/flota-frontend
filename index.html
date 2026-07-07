@@ -19,13 +19,15 @@
         }
 
         .login-left-panel {
-            flex: 1;
+            flex: 0 0 45%;
             background-color: var(--aurica-blue);
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             position: relative;
+            padding: 2rem;
+            box-sizing: border-box;
         }
 
         .login-right-panel {
@@ -35,36 +37,36 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            padding: 2rem;
+            box-sizing: border-box;
         }
 
         .main-logo-container {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 20px;
         }
 
         .main-logo-container img.main-logo {
-            max-width: 500px;
-            width: 90%;
+            max-width: 450px;
+            width: 100%;
             height: auto;
+            margin-bottom: 0;
+            filter: brightness(0) invert(1);
         }
 
         .sub-logos-container {
-            margin-top: 25px;
-            background: white;
-            padding: 10px 25px;
-            border-radius: 50px;
+            margin-top: -1.5rem;
             display: flex;
             justify-content: center;
             align-items: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
 
         .sub-logos-container img {
-            height: 60px;
-            width: auto;
-            max-width: 350px;
+            max-width: 280px;
+            width: 100%;
+            height: auto;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
         }
 
         .login-box-right {
