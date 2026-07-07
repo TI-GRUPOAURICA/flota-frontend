@@ -1,6 +1,6 @@
 const CACHE_NAME = 'flotapro-cache-v1';
 const urlsToCache = [
-  './index.html',
+  '/',
   './assets/css/global.css'
 ];
 
