@@ -8,6 +8,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800;900&display=swap" rel="stylesheet">
     <script src="https://alcdn.msauth.net/browser/2.30.0/js/msal-browser.min.js"></script>
     <link rel="stylesheet" href="assets/css/global.css">
+
+    <!-- PWA Settings -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#345D9D">
+    <link rel="apple-touch-icon" href="assets/img/icon-192x192.png">
     <style>
         /* Estilos específicos de index.html */
         body { padding: 0 !important; margin: 0 !important; overflow-x: hidden; }
@@ -498,6 +503,17 @@
                 console.error("Error obteniendo permisos:", error);
                 renderUI(null, email, cards); // Usará el fallback de ser admin
             }
+        }
+
+        // Registro del Service Worker para PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').then(registration => {
+                    console.log('ServiceWorker registrado con éxito: ', registration.scope);
+                }, err => {
+                    console.log('Fallo al registrar el ServiceWorker: ', err);
+                });
+            });
         }
     </script>
 </body>
