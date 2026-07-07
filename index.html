@@ -18,7 +18,7 @@
         body { padding: 0 !important; margin: 0 !important; overflow-x: hidden; }
 
         #login-view {
-            display: flex;
+            display: none; /* Oculto por defecto para evitar parpadeo */
             width: 100vw;
             height: 100vh;
         }
@@ -418,10 +418,13 @@
 
         const msalInstance = new msal.PublicClientApplication(msalConfig);
 
-        window.onload = () => {
-            const accounts = msalInstance.getAllAccounts();
-            if (accounts.length > 0) { mostrarPortal(accounts[0].username.toLowerCase()); }
-        };
+        // Verificación inmediata para evitar el parpadeo de la pantalla de login
+        const accounts = msalInstance.getAllAccounts();
+        if (accounts.length > 0) { 
+            mostrarPortal(accounts[0].username.toLowerCase()); 
+        } else {
+            document.getElementById('login-view').style.display = 'flex';
+        }
 
         async function iniciarSesionMicrosoft() {
             try {
