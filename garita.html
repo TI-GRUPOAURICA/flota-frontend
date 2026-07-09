@@ -342,15 +342,26 @@
                         }
                     });
                 } else {
-                    this.dataset.estado = 'true';
-                    delete this.dataset.observacion;
-                    if (parte.id === 'otros') {
-                        this.className = 'check-item otros-ok';
-                        this.innerHTML = `<i class="fa-solid fa-pen"></i> ${parte.nombre}`;
-                    } else {
-                        this.className = 'check-item ok';
-                        this.innerHTML = `<i class="fa-solid fa-check"></i> ${parte.nombre}`;
-                    }
+                    Swal.fire({
+                        title: `Detalle reportado: ${parte.nombre}`,
+                        html: `<b>Observación:</b> ${this.dataset.observacion || "Sin detalle"}`,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Cerrar (Mantener Falla)',
+                        cancelButtonText: 'Quitar Falla (Desmarcar)'
+                    }).then((result) => {
+                        if (result.dismiss === Swal.DismissReason.cancel) {
+                            this.dataset.estado = 'true';
+                            delete this.dataset.observacion;
+                            if (parte.id === 'otros') {
+                                this.className = 'check-item otros-ok';
+                                this.innerHTML = `<i class="fa-solid fa-pen"></i> ${parte.nombre}`;
+                            } else {
+                                this.className = 'check-item ok';
+                                this.innerHTML = `<i class="fa-solid fa-check"></i> ${parte.nombre}`;
+                            }
+                        }
+                    });
                 }
             };
             contenedor.appendChild(div);
