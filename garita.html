@@ -540,18 +540,56 @@
         } catch(e) { console.error(e); document.getElementById('r_viaje').innerHTML = '<option>Error al cargar viajes</option>'; }
     }
 
+    function aplicarChecklistRetorno(chk) {
+        partesVehiculo.forEach(parte => {
+            const div = document.getElementById(`chk_r_${parte.id}`);
+            if (!div) return;
+            
+            const estadoOk = chk[parte.id] !== false;
+            const observacion = chk.detalles && chk.detalles[parte.id] ? chk.detalles[parte.id] : "";
+            
+            if (!estadoOk || (parte.id === 'otros' && observacion !== "")) {
+                div.dataset.estado = 'false';
+                div.dataset.observacion = observacion;
+                if (parte.id === 'otros') {
+                    div.className = 'check-item otros-falla';
+                    div.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Anotado (Salida)`;
+                } else {
+                    div.className = 'check-item falla';
+                    div.innerHTML = `<i class="fa-solid fa-xmark"></i> ${parte.nombre} (Salida)`;
+                }
+            }
+        });
+    }
+
     function vincularVehiculoRetorno() {
         const id = document.getElementById('r_viaje').value;
         const viaje = viajesAbiertos.find(v => v.cr596_flota_movimientoid === id);
+        generarGridChecklist('grid_retorno', 'r'); // Reset
         if(viaje) { 
             document.getElementById('r_vehiculo_id').value = viaje._cr596_vehiculo_value; 
+            document.getElementById('r_km').value = viaje.cr596_kmsalida || "";
+            if (viaje.checklist_salida) {
+                aplicarChecklistRetorno(viaje.checklist_salida);
+            }
         } else {
             document.getElementById('r_vehiculo_id').value = '';
+            document.getElementById('r_km').value = '';
         }
     }
 
     document.getElementById('formSalida').addEventListener('submit', async (e) => {
         e.preventDefault();
+        
+        const kmSalidaInput = parseInt(document.getElementById('s_km').value);
+        const auto = memoriaVehiculos.find(v => v.cr596_flota_vehiculoid === document.getElementById('s_vehiculo').value);
+        const kmActual = auto ? (auto.cr596_kilometrajeactual || 0) : 0;
+        
+        if (kmSalidaInput < kmActual) {
+            Swal.fire('Error', `El kilometraje de salida (${kmSalidaInput}) no puede ser menor al kilometraje actual del vehículo (${kmActual}).`, 'error');
+            return;
+        }
+        
         const btn = document.getElementById('btnSalida'); btn.innerText = "Procesando...";
         const payload = {
             vehiculo_id: document.getElementById('s_vehiculo').value,
@@ -601,6 +639,16 @@
 
     document.getElementById('formRetorno').addEventListener('submit', async (e) => {
         e.preventDefault();
+
+        const kmRetornoInput = parseInt(document.getElementById('r_km').value);
+        const viaje = viajesAbiertos.find(v => v.cr596_flota_movimientoid === document.getElementById('r_viaje').value);
+        const kmSalida = viaje ? (viaje.cr596_kmsalida || 0) : 0;
+        
+        if (kmRetornoInput < kmSalida) {
+            Swal.fire('Error', `El kilometraje de retorno (${kmRetornoInput}) no puede ser menor al kilometraje de salida (${kmSalida}).`, 'error');
+            return;
+        }
+
         const btn = document.getElementById('btnRetorno'); btn.innerText = "Procesando...";
         const payload = {
             movimiento_id: document.getElementById('r_viaje').value,
