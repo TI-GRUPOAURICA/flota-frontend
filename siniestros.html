@@ -45,20 +45,45 @@
     </style>
 </head>
 <body>
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <img src="assets/img/logo-aurica.png" alt="Grupo Aurica" onerror="this.onerror=null; this.src='https://placehold.co/180x50/345D9D/FFF?text=GRUPO+AURICA';">
+            </div>
+            <nav class="sidebar-menu">
+                <a href="dashboard.html" class="sidebar-item"><i class="fa-solid fa-chart-pie"></i> <span>Dashboard Real-Time</span></a>
+                <a href="mantenimiento.html" class="sidebar-item"><i class="fa-solid fa-wrench"></i> <span>Gestión de Flota</span></a>
+                <a href="garita.html" class="sidebar-item"><i class="fa-solid fa-rocket"></i> <span>Control de Garita</span></a>
+                <a href="tesoreria.html" class="sidebar-item"><i class="fa-solid fa-wallet"></i> <span>Control de Gastos</span></a>
+                <a href="admin.html" class="sidebar-item"><i class="fa-solid fa-users"></i> <span>Administración</span></a>
+                <a href="siniestros.html" class="sidebar-item active"><i class="fa-solid fa-triangle-exclamation"></i> <span>Gestión Siniestros</span></a>
+            </nav>
+            <div class="sidebar-footer">
+                <button class="btn-logout-sidebar" onclick="sessionStorage.removeItem('flotapro_session'); window.location.href='/';">
+                    <i class="fa-solid fa-sign-out-alt"></i> <span>Cerrar Sesión</span>
+                </button>
+            </div>
+        </aside>
 
-<div class="top-bar">
-    <div class="header-title">
-        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-        <div>
-            <h2>Gestión de Siniestros</h2>
-            <p>Registro y seguimiento de accidentes y seguros</p>
-        </div>
-    </div>
-    <div style="display: flex; gap: 10px;">
-        <button class="btn-primary" style="background: #27ae60; color: white;" onclick="abrirModalExportar()"><i class="fa-solid fa-file-export"></i> Descargar Reporte</button>
-        <button class="btn-primary" onclick="window.location.href='/'">Volver al Portal</button>
-    </div>
-</div>
+        <!-- Main Content -->
+        <main class="main-wrapper">
+            <header class="top-bar">
+                <div class="top-bar-left">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:10px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                    <div>
+                        <h2>Gestión de Siniestros</h2>
+                        <p>Registro y seguimiento de accidentes y seguros</p>
+                    </div>
+                </div>
+                <div class="top-bar-right" style="display: flex; align-items: center; gap: 10px;">
+                    <button class="btn-primary" style="background: #27ae60; color: white; margin-right: 15px;" onclick="abrirModalExportar()"><i class="fa-solid fa-file-export"></i> Descargar Reporte</button>
+                    <i class="fa-regular fa-circle-user" style="font-size: 20px;"></i>
+                    <span id="userEmailTop" style="font-weight: 600; font-size: 14px;">Usuario</span>
+                </div>
+            </header>
+
+            <div class="page-content">
 
 <div class="container">
     <!-- Formulario de Registro -->
@@ -205,7 +230,16 @@
 
 <script>
     // 🔒 GUARD: Verificar sesión activa
-    (function(){var s=JSON.parse(sessionStorage.getItem('flotapro_session')||'null');if(!s||(Date.now()-s.timestamp>28800000)){sessionStorage.removeItem('flotapro_session');window.location.href='/';}})();
+    (function(){
+        var s=JSON.parse(sessionStorage.getItem('flotapro_session')||'null');
+        if(!s||(Date.now()-s.timestamp>28800000)){
+            sessionStorage.removeItem('flotapro_session');
+            window.location.href='/';
+        } else {
+            const emailSpan = document.getElementById('userEmailTop');
+            if (emailSpan) emailSpan.innerText = s.email;
+        }
+    })();
 
     const API_URL = "https://flota-backend-xecu.onrender.com";
     let siniestrosData = [];
@@ -594,8 +628,10 @@
         } catch (error) { alert("Error al conectar."); } finally { btn.innerText = "Guardar Cambios"; }
     });
 
-    inicializar();
+    window.onload = inicializar;
 </script>
-
+            </div> <!-- End page-content -->
+        </main> <!-- End main-wrapper -->
+    </div> <!-- End app-layout -->
 </body>
 </html>

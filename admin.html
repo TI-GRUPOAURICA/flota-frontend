@@ -12,28 +12,49 @@
     </style>
 </head>
 <body>
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <img src="assets/img/logo-aurica.png" alt="Grupo Aurica" onerror="this.onerror=null; this.src='https://placehold.co/180x50/345D9D/FFF?text=GRUPO+AURICA';">
+            </div>
+            <nav class="sidebar-menu">
+                <a href="dashboard.html" class="sidebar-item"><i class="fa-solid fa-chart-pie"></i> <span>Dashboard Real-Time</span></a>
+                <a href="mantenimiento.html" class="sidebar-item"><i class="fa-solid fa-wrench"></i> <span>Gestión de Flota</span></a>
+                <a href="garita.html" class="sidebar-item"><i class="fa-solid fa-rocket"></i> <span>Control de Garita</span></a>
+                <a href="tesoreria.html" class="sidebar-item"><i class="fa-solid fa-wallet"></i> <span>Control de Gastos</span></a>
+                <a href="admin.html" class="sidebar-item active"><i class="fa-solid fa-users"></i> <span>Administración</span></a>
+                <a href="siniestros.html" class="sidebar-item"><i class="fa-solid fa-triangle-exclamation"></i> <span>Gestión Siniestros</span></a>
+            </nav>
+            <div class="sidebar-footer">
+                <button class="btn-logout-sidebar" onclick="sessionStorage.removeItem('flotapro_session'); window.location.href='/';">
+                    <i class="fa-solid fa-sign-out-alt"></i> <span>Cerrar Sesión</span>
+                </button>
+            </div>
+        </aside>
 
-<div class="top-bar">
-    <div class="top-bar-left">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-        <div>
-            <h2>Administración de Personal</h2>
-            <p style="margin: 3px 0 0 0; font-size: 13px; opacity: 0.9;">Gestión de Conductores y Vigencia de Brevetes</p>
-        </div>
-    </div>
-    <div style="display: flex; gap: 10px;">
-        <button id="btnGestionPermisos" class="btn-primary" onclick="window.location.href='permisos.html'" style="background: rgba(255,255,255,0.2); color: white; display: none;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="M12 8v4"></path><path d="M12 16h.01"></path></svg>
-            Gestión de Permisos
-        </button>
-        <button class="btn-primary" onclick="window.location.href='/'">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"></path><polyline points="12 19 5 12 12 5"></polyline></svg>
-            Panel Principal
-        </button>
-    </div>
-</div>
+        <!-- Main Content -->
+        <main class="main-wrapper">
+            <header class="top-bar">
+                <div class="top-bar-left">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:10px;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                    <div>
+                        <h2>Administración de Personal</h2>
+                        <p style="margin: 3px 0 0 0; font-size: 13px; opacity: 0.9;">Gestión de Conductores y Vigencia de Brevetes</p>
+                    </div>
+                </div>
+                <div class="top-bar-right" style="display: flex; align-items: center; gap: 10px;">
+                    <button id="btnGestionPermisos" class="btn-primary" onclick="window.location.href='permisos.html'" style="background: rgba(255,255,255,0.2); color: white; display: none; margin-right: 15px;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="M12 8v4"></path><path d="M12 16h.01"></path></svg>
+                        Gestión de Permisos
+                    </button>
+                    <i class="fa-regular fa-circle-user" style="font-size: 20px;"></i>
+                    <span id="userEmailTop" style="font-weight: 600; font-size: 14px;">Usuario</span>
+                </div>
+            </header>
 
-<div class="grid-layout">
+            <div class="page-content">
+                <div class="grid-layout">
     
     <div class="card">
         <h3><i class="fa-solid fa-user-plus"></i> Nuevo Conductor</h3>
@@ -88,6 +109,9 @@
         sessionStorage.removeItem('flotapro_session');
         window.location.href='/';
     } else {
+        const emailSpan = document.getElementById('userEmailTop');
+        if (emailSpan) emailSpan.innerText = sessionData.email;
+        
         // SUPER ADMIN CHECK
         const SUPER_ADMINS = ['ti@metalabsac.com', 'mpalva@metalabsac.com'];
         if (SUPER_ADMINS.includes(sessionData.email)) {
@@ -181,8 +205,11 @@
     }
 
     // Inicializar
-    cargarConductores();
+    window.onload = cargarConductores;
 </script>
-
+            </div> <!-- End page-content -->
+        </div> <!-- End grid-layout -->
+    </main> <!-- End main-wrapper -->
+</div> <!-- End app-layout -->
 </body>
 </html>
