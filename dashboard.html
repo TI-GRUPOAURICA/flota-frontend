@@ -35,7 +35,7 @@
                 <a href="siniestros.html" class="sidebar-item"><i class="fa-solid fa-triangle-exclamation"></i> <span>Gestión Siniestros</span></a>
             </nav>
             <div class="sidebar-footer">
-                <button class="btn-logout-sidebar" onclick="sessionStorage.removeItem('flotapro_session'); window.location.href='/';">
+                <button class="btn-logout-sidebar" onclick="sessionStorage.removeItem('flotapro_session'); window.location.href='/?logout=true';">
                     <i class="fa-solid fa-sign-out-alt"></i> <span>Cerrar Sesión</span>
                 </button>
             </div>
@@ -1114,7 +1114,9 @@
         } catch(e) {
             console.error("Error al mostrar detalle sede:", e);
         }
-        // Auto-init
+    }
+
+    // Auto-init
     window.onload = inicializarDashboard;
 </script>
             </div> <!-- End page-content -->
