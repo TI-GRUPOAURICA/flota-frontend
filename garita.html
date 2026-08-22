@@ -4,15 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Garita de Control - Grupo Aurica</title>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Garita de Control - Grupo Aurica</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="assets/css/global.css">
     <style>
         /* Estilos específicos de garita.html para Tablet 10.1" */
-        .grid-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; width: 100%; }
-        @media (max-width: 992px) {
-            .grid-layout { grid-template-columns: 1fr; }
+        /* Estilos de Tabs para Garita */
+        .garita-tabs { display: flex; gap: 15px; margin-bottom: 25px; width: 100%; }
+        .garita-tab-btn { flex: 1; padding: 18px 25px; font-size: 18px; font-weight: 800; border-radius: var(--radius-md); background: white; border: 2px solid var(--aurica-gray-light); color: var(--text-muted); cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 12px; box-shadow: var(--shadow-sm); }
+        .garita-tab-btn:hover { border-color: var(--aurica-blue-light); color: var(--aurica-blue); transform: translateY(-2px); }
+        .garita-tab-btn.active { background: var(--aurica-blue); color: white; border-color: var(--aurica-blue); box-shadow: var(--shadow-md); }
+        .garita-panel { display: none; width: 100%; }
+        .garita-panel.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        @media (max-width: 768px) {
+            .garita-tabs { flex-direction: column; }
         }
         
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
@@ -57,193 +71,6 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#345D9D">
     <link rel="apple-touch-icon" href="assets/img/icon-192x192.png">
-</head>
-<body>
-    <div class="app-layout">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="sidebar-logo">
-                <img src="assets/img/logo-aurica.png" alt="Grupo Aurica" onerror="this.onerror=null; this.src='https://placehold.co/180x50/345D9D/FFF?text=GRUPO+AURICA';">
-            </div>
-            <nav class="sidebar-menu">
-                <a href="dashboard.html" class="sidebar-item"><i class="fa-solid fa-chart-pie"></i> <span>Dashboard Real-Time</span></a>
-                <a href="mantenimiento.html" class="sidebar-item"><i class="fa-solid fa-wrench"></i> <span>Gestión de Flota</span></a>
-                <a href="garita.html" class="sidebar-item active"><i class="fa-solid fa-rocket"></i> <span>Control de Garita</span></a>
-                <a href="tesoreria.html" class="sidebar-item"><i class="fa-solid fa-wallet"></i> <span>Control de Gastos</span></a>
-                <a href="admin.html" class="sidebar-item"><i class="fa-solid fa-users"></i> <span>Administración</span></a>
-                <a href="siniestros.html" class="sidebar-item"><i class="fa-solid fa-triangle-exclamation"></i> <span>Gestión Siniestros</span></a>
-            </nav>
-            <div class="sidebar-footer">
-                <button class="btn-logout-sidebar" onclick="sessionStorage.removeItem('flotapro_session'); window.location.href='/?logout=true';">
-                    <i class="fa-solid fa-sign-out-alt"></i> <span>Cerrar Sesión</span>
-                </button>
-            </div>
-        </aside>
-
-        <!-- Main Content -->
-        <main class="main-wrapper">
-            <header class="top-bar">
-                <div class="top-bar-left">
-                    <i class="fa-solid fa-rocket" style="font-size: 28px;"></i>
-                    <div>
-                        <h2>Control de Garita</h2>
-                        <p>Registro de Salidas y Retornos de Flota</p>
-                    </div>
-                </div>
-                <div class="top-bar-right" style="display: flex; align-items: center; gap: 10px;">
-                    <i class="fa-regular fa-circle-user" style="font-size: 20px;"></i>
-                    <span id="userEmailTop" style="font-weight: 600; font-size: 14px;">Usuario</span>
-                </div>
-            </header>
-
-            <div class="page-content">
-                <div class="grid-layout">
-    
-    <!-- PANEL DE SALIDA -->
-    <div class="card">
-        <h3><i class="fa-solid fa-rocket"></i> Registrar Salida</h3>
-        <div id="alerta-salida" class="alerta-error"></div>
-        <form id="formSalida">
-            <div class="form-group" style="margin-bottom: 15px;">
-                <label>Vehículo a despachar</label>
-                <select id="s_vehiculo" required onchange="autocompletarKilometraje()"><option value="">Cargando...</option></select>
-            </div>
-            <div class="form-group" style="margin-bottom: 15px;">
-                <label>Conductor Autorizado</label>
-                <select id="s_conductor" required><option value="">Cargando...</option></select>
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Kilometraje Actual</label>
-                    <input type="number" id="s_km" required placeholder="Seleccione auto...">
-                </div>
-                <div class="form-group" style="grid-column: 1 / -1;">
-                    <label>Nivel de Combustible</label>
-                    <div style="display:flex; align-items:center; gap:15px; margin-top:5px;">
-                        <button type="button" class="btn-primary" onclick="abrirModalCombustible('salida')" style="border: 2px solid var(--aurica-gold); color: var(--aurica-gold);">
-                            <i class="fa-solid fa-gauge-high"></i> Registrar Niveles
-                        </button>
-                        <span id="lbl_comb_salida" style="font-size: 13px; font-weight: 600; color: var(--text-muted);"> (Pendiente)</span>
-                    </div>
-                    <input type="hidden" id="s_combustible" required>
-                    <input type="hidden" id="s_combustible_gas">
-                </div>
-            </div>
-            <div class="checklist-box">
-                <h4><i class="fa-solid fa-clipboard-list"></i> Checklist de Inspección (Clic para marcar falla)</h4>
-                <div class="checklist-grid" id="grid_salida"></div>
-            </div>
-            
-            <div class="checklist-box" id="caja_validacion_docs" style="display:none; background: var(--warn-bg); border-color: #faecc9;">
-                <h4 style="color: var(--warn-color);"><i class="fa-solid fa-id-card"></i> Auditoría Física de Documentos (Obligatorio)</h4>
-                <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 15px;">Marque confirmando que validó físicamente los documentos.</div>
-                <div class="checklist-grid" id="grid_docs"></div>
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Punto de Origen / Sede</label>
-                    <select id="s_origen" required onchange="toggleOrigenEspecifico()">
-                        <option value="">Seleccione origen...</option>
-                        <option value="Sede Olavide">Sede Olavide</option>
-                        <option value="Sede Trapiche">Sede Trapiche</option>
-                        <option value="Planta Chala">Planta Chala</option>
-                        <option value="Otros">OTROS (Especificar)</option>
-                    </select>
-                </div>
-                <div class="form-group" id="caja_origen_detalle" style="display: none;">
-                    <label style="color: var(--warn-color);">Dirección de Origen</label>
-                    <input type="text" id="s_origen_detalle" placeholder="Ej. Casa Conductor">
-                </div>
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Destino Autorizado</label>
-                    <input type="text" id="s_destino" required placeholder="Ej. Banco, Mina...">
-                </div>
-                <div class="form-group">
-                    <label>Observaciones (Opcional)</label>
-                    <input type="text" id="s_obs" placeholder="Novedades menores...">
-                </div>
-            </div>
-            <button type="submit" class="btn-submit" id="btnSalida">Dar Salida de Garita</button>
-        </form>
-    </div>
-
-    <!-- PANEL DE RETORNO -->
-    <div class="card">
-        <h3><i class="fa-solid fa-flag-checkered"></i> Registrar Retorno</h3>
-        <form id="formRetorno">
-            <div class="form-group" style="margin-bottom: 15px;">
-                <label>Seleccione el Viaje Abierto</label>
-                <select id="r_viaje" required onchange="vincularVehiculoRetorno()"><option value="">Cargando viajes...</option></select>
-                <input type="hidden" id="r_vehiculo_id">
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Kilometraje de Llegada</label>
-                    <input type="number" id="r_km" required placeholder="Ej. 125150">
-                </div>
-                <div class="form-group" style="grid-column: 1 / -1;">
-                    <label>Combustible a la llegada</label>
-                    <div style="display:flex; align-items:center; gap:15px; margin-top:5px;">
-                        <button type="button" class="btn-primary" onclick="abrirModalCombustible('retorno')" style="border: 2px solid var(--aurica-gold); color: var(--aurica-gold);">
-                            <i class="fa-solid fa-gauge-high"></i> Registrar Niveles
-                        </button>
-                        <span id="lbl_comb_retorno" style="font-size: 13px; font-weight: 600; color: var(--text-muted);"> (Pendiente)</span>
-                    </div>
-                    <input type="hidden" id="r_combustible" required>
-                    <input type="hidden" id="r_combustible_gas">
-                </div>
-            </div>
-            <div class="checklist-box" style="background: var(--crit-bg); border-color: #ffdada;">
-                <h4 style="color: var(--crit-color);"><i class="fa-solid fa-triangle-exclamation"></i> Reporte de Daños (Clic si llegó con fallas)</h4>
-                <div class="checklist-grid" id="grid_retorno"></div>
-            </div>
-
-            <!-- BOTÓN DE AVERÍA MEJORADO CON CAJA CONDICIONAL -->
-            <div class="form-group" style="margin-bottom: 20px; background: var(--crit-bg); padding: 18px; border-radius: var(--radius-sm); border: 1px solid #ffdada;">
-                <div style="display: flex; align-items: center; gap: 12px;">
-                    <input type="checkbox" id="r_taller" onchange="toggleMotivoTaller()" style="width: 24px; height: 24px; cursor: pointer; accent-color: var(--crit-color); min-height: auto;">
-                    <label for="r_taller" style="margin:0; font-size: 14px; color: var(--crit-color); font-weight: 700; cursor: pointer;"><i class="fa-solid fa-triangle-exclamation"></i> ENVIAR A TALLER (Avería Mecánica)</label>
-                </div>
-                <div id="caja_motivo_taller" style="display: none; margin-top: 15px;">
-                    <label style="color: var(--crit-color);">Detalle la falla para el Jefe de Mantenimiento:</label>
-                    <input type="text" id="r_motivo_taller" placeholder="Ej. Llanta reventada, motor recalentado..." style="border-color: #f5b7b1;">
-                </div>
-            </div>
-
-            <div class="form-group" style="margin-bottom: 20px; display: flex; align-items: center; gap: 12px; background: var(--warn-bg); padding: 18px; border-radius: var(--radius-sm); border: 1px solid #faecc9;">
-                <input type="checkbox" id="r_gastos" onchange="toggleGastos()" style="width: 24px; height: 24px; cursor: pointer; accent-color: var(--warn-color); min-height: auto;">
-                <label for="r_gastos" style="margin:0; font-size: 14px; color: var(--warn-color); font-weight: 700; cursor: pointer;">¿Trajo boletas de gastos? (Peaje, cochera)</label>
-            </div>
-            
-            <div class="form-group" style="margin-bottom: 20px; background: var(--crit-bg); padding: 18px; border-radius: var(--radius-sm); border: 1px solid var(--crit-color);">
-                <div style="display: flex; align-items: center; gap: 12px;">
-                    <input type="checkbox" id="r_siniestro" style="width: 24px; height: 24px; cursor: pointer; accent-color: var(--crit-color); min-height: auto;">
-                    <label for="r_siniestro" style="margin:0; font-size: 14px; color: var(--crit-color); font-weight: 700; cursor: pointer;"><i class="fa-solid fa-burst"></i> OCURRIÓ UN SINIESTRO GRAVE EN RUTA</label>
-                </div>
-            </div>
-            
-            <div class="form-row">
-                <div class="form-group" id="caja_gastos" style="display: none;">
-                    <label style="color: var(--warn-color);">Detalle del Gasto</label>
-                    <input type="text" id="r_detalle_gastos" placeholder="Ej. Peaje S/16.00">
-                </div>
-                <div class="form-group">
-                    <label>Novedades de la Ruta / Viaje</label>
-                    <input type="text" id="r_obs" placeholder="Problemas de ruta, demoras...">
-                </div>
-            </div>
-
-            <button type="submit" class="btn-guardar" id="btnRetorno">Registrar Retorno a Base</button>
-        </form>
-    </div>
-</div>
-
-<!-- MODAL DE COMBUSTIBLE INTERACTIVO -->
-<div id="modalComb">
-    <div class="comb-modal-content">
-        <h3 class="comb-modal-title">
             <span><i class="fa-solid fa-gauge-high"></i> Registrar Niveles</span>
             <button class="btn-close-modal" onclick="cerrarModalComb()"><i class="fa-solid fa-xmark"></i></button>
         </h3>
@@ -324,6 +151,21 @@
     })();
 
     const API_URL = "https://flota-backend-xecu.onrender.com";
+
+    function switchGaritaTab(tab) {
+        document.getElementById('btnTabSalida').classList.remove('active');
+        document.getElementById('btnTabRetorno').classList.remove('active');
+        document.getElementById('panelSalida').classList.remove('active');
+        document.getElementById('panelRetorno').classList.remove('active');
+        
+        if (tab === 'salida') {
+            document.getElementById('btnTabSalida').classList.add('active');
+            document.getElementById('panelSalida').classList.add('active');
+        } else {
+            document.getElementById('btnTabRetorno').classList.add('active');
+            document.getElementById('panelRetorno').classList.add('active');
+        }
+    }
     let memoriaVehiculos = [];
     let viajesAbiertos = [];
 
