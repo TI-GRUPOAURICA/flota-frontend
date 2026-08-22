@@ -160,13 +160,11 @@ h1, h2, h3, h4, h5, h6 {
     display: flex;
     flex-direction: column;
     overflow-y: auto;
-    background: var(--aurica-bg);
+    background: #f4f6f9; /* Color gris claro muy sutil */
     position: relative;
 }
 .page-content {
-    padding: 30px 5%;
-    max-width: 1600px;
-    margin: 0 auto;
+    padding: 0 25px 30px 25px;
     width: 100%;
     box-sizing: border-box;
 }
@@ -181,8 +179,6 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Contenedores Genéricos */
 .container { 
-    max-width: 1200px; 
-    margin: auto; 
     width: 100%;
 }
 
@@ -190,8 +186,6 @@ h1, h2, h3, h4, h5, h6 {
     display: grid; 
     grid-template-columns: 1fr 2fr; 
     gap: 25px; 
-    max-width: 1200px; 
-    margin: auto; 
 }
 @media(max-width: 900px) {
     .dashboard-grid { grid-template-columns: 1fr; }
@@ -205,14 +199,13 @@ h1, h2, h3, h4, h5, h6 {
     gap: 15px; 
     background: var(--aurica-blue); 
     color: white; 
-    padding: 20px 5%; 
-    margin: 0; 
-    border-radius: 0; 
-    width: 100%;
+    padding: 15px 25px; 
+    margin: 15px 25px; 
+    border-radius: 12px; 
     box-sizing: border-box;
     box-shadow: var(--shadow-md);
     position: sticky;
-    top: 0;
+    top: 15px;
     z-index: 5;
 }
 .top-bar-left { 
