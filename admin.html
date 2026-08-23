@@ -14,6 +14,7 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#345D9D">
     <link rel="apple-touch-icon" href="assets/img/icon-192x192.png">
+    <script src="assets/js/security.js"></script>
 </head>
 <body>
     <div class="app-layout">
@@ -22,13 +23,14 @@
             <div class="sidebar-logo">
                 <img src="assets/img/logo-aurica.png" alt="Grupo Aurica" onerror="this.onerror=null; this.src='https://placehold.co/180x50/345D9D/FFF?text=GRUPO+AURICA';">
             </div>
-            <nav class="sidebar-menu">
-                <a href="dashboard.html" class="sidebar-item"><i class="fa-solid fa-chart-pie"></i> <span>Dashboard Real-Time</span></a>
-                <a href="mantenimiento.html" class="sidebar-item"><i class="fa-solid fa-wrench"></i> <span>Gestión de Flota</span></a>
-                <a href="garita.html" class="sidebar-item"><i class="fa-solid fa-rocket"></i> <span>Control de Garita</span></a>
-                <a href="tesoreria.html" class="sidebar-item"><i class="fa-solid fa-wallet"></i> <span>Control de Gastos</span></a>
-                <a href="admin.html" class="sidebar-item active"><i class="fa-solid fa-users"></i> <span>Administración</span></a>
-                <a href="siniestros.html" class="sidebar-item"><i class="fa-solid fa-triangle-exclamation"></i> <span>Gestión Siniestros</span></a>
+                        <nav class="sidebar-menu">
+                <a href="dashboard.html" id="navDashboard" class="sidebar-item"><i class="fa-solid fa-chart-pie"></i> <span>Dashboard Real-Time</span></a>
+                <a href="mantenimiento.html" id="navMantenimiento" class="sidebar-item"><i class="fa-solid fa-wrench"></i> <span>Gestión de Flota</span></a>
+                <a href="garita.html" id="navGarita" class="sidebar-item"><i class="fa-solid fa-rocket"></i> <span>Control de Garita</span></a>
+                <a href="tesoreria.html" id="navTesoreria" class="sidebar-item"><i class="fa-solid fa-wallet"></i> <span>Control de Gastos</span></a>
+                <a href="admin.html" id="navAdmin" class="sidebar-item active"><i class="fa-solid fa-users"></i> <span>Administración</span></a>
+                <a href="siniestros.html" id="navSiniestros" class="sidebar-item"><i class="fa-solid fa-triangle-exclamation"></i> <span>Gestión Siniestros</span></a>
+                <a href="permisos.html" id="navPermisos" class="sidebar-item"><i class="fa-solid fa-shield-halved"></i> <span>Gestión de Permisos</span></a>
             </nav>
             <div class="sidebar-footer">
                 <button class="btn-logout-sidebar" onclick="localStorage.removeItem('flotapro_session'); window.location.href='/?logout=true';">
@@ -48,10 +50,7 @@
                     </div>
                 </div>
                 <div class="top-bar-right" style="display: flex; align-items: center; gap: 10px;">
-                    <button id="btnGestionPermisos" class="btn-primary" onclick="window.location.href='permisos.html'" style="background: rgba(255,255,255,0.2); color: white; display: none; margin-right: 15px;">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="M12 8v4"></path><path d="M12 16h.01"></path></svg>
-                        Gestión de Permisos
-                    </button>
+                    
                     <i class="fa-regular fa-circle-user" style="font-size: 20px;"></i>
                     <span id="userEmailTop" style="font-weight: 600; font-size: 14px;">Usuario</span>
                 </div>
@@ -102,27 +101,6 @@
 </div>
 
 <script>
-    // 🔒 GUARD: Verificar sesión activa
-    const sessionStr = localStorage.getItem('flotapro_session');
-    let sessionData = null;
-    if (sessionStr) {
-        sessionData = JSON.parse(sessionStr);
-    }
-    
-    if(!sessionData || (Date.now() - sessionData.timestamp > 28800000)) {
-        localStorage.removeItem('flotapro_session');
-        window.location.href='/';
-    } else {
-        const emailSpan = document.getElementById('userEmailTop');
-        if (emailSpan) emailSpan.innerText = sessionData.email;
-        
-        // SUPER ADMIN CHECK
-        const SUPER_ADMINS = ['ti@metalabsac.com', 'mpalva@metalabsac.com'];
-        if (SUPER_ADMINS.includes(sessionData.email)) {
-            document.getElementById('btnGestionPermisos').style.display = 'flex';
-        }
-    }
-
     const API_URL = "https://flota-backend-xecu.onrender.com";
 
     async function cargarConductores() {

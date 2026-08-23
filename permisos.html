@@ -19,16 +19,50 @@
         .action-cell { display: flex; gap: 5px; justify-content: center; }
         input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; }
     </style>
+    <script src="assets/js/security.js"></script>
 </head>
 <body>
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <img src="assets/img/logo-aurica.png" alt="Grupo Aurica" onerror="this.onerror=null; this.src='https://placehold.co/180x50/345D9D/FFF?text=GRUPO+AURICA';">
+            </div>
+            <nav class="sidebar-menu">
+                <a href="dashboard.html" id="navDashboard" class="sidebar-item"><i class="fa-solid fa-chart-pie"></i> <span>Dashboard Real-Time</span></a>
+                <a href="mantenimiento.html" id="navMantenimiento" class="sidebar-item"><i class="fa-solid fa-wrench"></i> <span>Gestión de Flota</span></a>
+                <a href="garita.html" id="navGarita" class="sidebar-item"><i class="fa-solid fa-rocket"></i> <span>Control de Garita</span></a>
+                <a href="tesoreria.html" id="navTesoreria" class="sidebar-item"><i class="fa-solid fa-wallet"></i> <span>Control de Gastos</span></a>
+                <a href="admin.html" id="navAdmin" class="sidebar-item"><i class="fa-solid fa-users"></i> <span>Administración</span></a>
+                <a href="siniestros.html" id="navSiniestros" class="sidebar-item"><i class="fa-solid fa-triangle-exclamation"></i> <span>Gestión Siniestros</span></a>
+                <a href="permisos.html" id="navPermisos" class="sidebar-item active"><i class="fa-solid fa-shield-halved"></i> <span>Gestión de Permisos</span></a>
+            </nav>
+            <div class="sidebar-footer">
+                <button class="btn-logout-sidebar" onclick="localStorage.removeItem('flotapro_session'); window.location.href='/?logout=true';">
+                    <i class="fa-solid fa-sign-out-alt"></i> <span>Cerrar Sesión</span>
+                </button>
+            </div>
+        </aside>
 
-<div class="top-bar">
-    <div class="top-bar-left">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="M12 8v4"></path><path d="M12 16h.01"></path></svg>
-        <div>
-            <h2>Gestión de Accesos por Módulo</h2>
-            <p style="margin: 3px 0 0 0; font-size: 13px; opacity: 0.9;">Control de permisos corporativos mediante Entra ID</p>
-        </div>
+        <!-- Main Content -->
+        <main class="main-wrapper">
+            <header class="top-bar">
+                <div class="top-bar-left">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:10px;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="M12 8v4"></path><path d="M12 16h.01"></path></svg>
+                    <div>
+                        <h2>Gestión de Accesos por Módulo</h2>
+                        <p style="margin: 3px 0 0 0; font-size: 13px; opacity: 0.9;">Control de permisos corporativos mediante Entra ID</p>
+                    </div>
+                </div>
+                <div class="top-bar-right" style="display: flex; align-items: center; gap: 10px;">
+                    <i class="fa-regular fa-circle-user" style="font-size: 20px;"></i>
+                    <span id="userEmailTop" style="font-weight: 600; font-size: 14px;">Usuario</span>
+                </div>
+            </header>
+            
+            <div class="page-content">
+
+
     </div>
     <div style="display: flex; gap: 10px;">
         <button class="btn-primary" onclick="window.location.href='admin.html'">
@@ -99,23 +133,6 @@
 </div>
 
 <script>
-    // 🔒 GUARD: Verificar sesión activa y permisos de SUPER ADMIN
-    const sessionStr = localStorage.getItem('flotapro_session');
-    let sessionData = null;
-    if (sessionStr) {
-        sessionData = JSON.parse(sessionStr);
-    }
-    
-    const SUPER_ADMINS = ['ti@metalabsac.com', 'mpalva@metalabsac.com'];
-    
-    if(!sessionData || (Date.now() - sessionData.timestamp > 28800000)) {
-        localStorage.removeItem('flotapro_session');
-        window.location.href='/';
-    } else if (!SUPER_ADMINS.includes(sessionData.email)) {
-        alert("Acceso denegado: Privilegios insuficientes.");
-        window.location.href='/';
-    }
-
     const API_URL = "https://flota-backend-xecu.onrender.com";
 
     async function cargarPermisos() {
@@ -242,5 +259,8 @@
     cargarPermisos();
 </script>
 
+            </div>
+        </main>
+    </div>
 </body>
 </html>
