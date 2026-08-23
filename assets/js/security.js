@@ -40,7 +40,18 @@
     };
 
     const currentPath = window.location.pathname;
-    const currentPage = currentPath.substring(currentPath.lastIndexOf('/') + 1) || 'dashboard.html';
+    let currentPage = currentPath.substring(currentPath.lastIndexOf('/') + 1) || 'dashboard.html';
+    if (currentPage && !currentPage.endsWith('.html')) {
+        currentPage += '.html';
+    }
+    
+    // Si no hay permisos almacenados en absoluto, forzar un re-login para obtenerlos
+    if (!permisosStr || Object.keys(permisos).length === 0) {
+        localStorage.removeItem('flotapro_session');
+        localStorage.removeItem('flotapro_permisos');
+        window.location.href = '/';
+        return;
+    }
 
     // Verificar si la página actual está protegida y si el usuario tiene permiso
     const requiredPermission = routePermissions[currentPage];
