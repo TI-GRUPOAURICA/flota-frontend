@@ -366,6 +366,13 @@
                 const data = await response.json();
                 if (data.status === "success") {
                     localStorage.setItem('flotapro_permisos', JSON.stringify(data.data));
+                } else {
+                    alert("Acceso denegado: Tu usuario no tiene permisos asignados en el sistema.");
+                    localStorage.removeItem('flotapro_session');
+                    if (msalInstance.getAllAccounts().length > 0) {
+                        msalInstance.logoutRedirect();
+                    }
+                    return;
                 }
             } catch (error) {
                 console.error("Error obteniendo permisos:", error);
