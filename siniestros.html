@@ -64,7 +64,7 @@
                 <a href="siniestros.html" class="sidebar-item active"><i class="fa-solid fa-triangle-exclamation"></i> <span>Gestión Siniestros</span></a>
             </nav>
             <div class="sidebar-footer">
-                <button class="btn-logout-sidebar" onclick="sessionStorage.removeItem('flotapro_session'); window.location.href='/?logout=true';">
+                <button class="btn-logout-sidebar" onclick="localStorage.removeItem('flotapro_session'); window.location.href='/?logout=true';">
                     <i class="fa-solid fa-sign-out-alt"></i> <span>Cerrar Sesión</span>
                 </button>
             </div>
@@ -235,9 +235,9 @@
 <script>
     // 🔒 GUARD: Verificar sesión activa
     (function(){
-        var s=JSON.parse(sessionStorage.getItem('flotapro_session')||'null');
+        var s=JSON.parse(localStorage.getItem('flotapro_session')||'null');
         if(!s||(Date.now()-s.timestamp>28800000)){
-            sessionStorage.removeItem('flotapro_session');
+            localStorage.removeItem('flotapro_session');
             window.location.href='/';
         } else {
             const emailSpan = document.getElementById('userEmailTop');

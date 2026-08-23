@@ -127,6 +127,80 @@
         }
 
         /* Responsive login */
+        .btn-local-admin {
+            background: white;
+            color: var(--aurica-blue);
+            border: 1px solid var(--aurica-gray-light);
+            padding: 16px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-sm);
+            width: 100%;
+            margin-top: 15px;
+        }
+
+        .btn-local-admin:hover {
+            border-color: var(--aurica-blue-light);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        #local-login-form {
+            display: none;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 25px;
+            padding-top: 25px;
+            border-top: 1px dashed var(--aurica-gray-light);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .local-input {
+            width: 100%;
+            padding: 16px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--aurica-blue-light);
+            background-color: #EBF3FA; /* Light blue from image */
+            font-size: 16px;
+            color: var(--aurica-blue);
+            box-sizing: border-box;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .local-input:focus {
+            border-color: var(--aurica-blue);
+        }
+
+        .btn-ingresar-local {
+            background: var(--aurica-blue);
+            color: white;
+            border: none;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 800;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            width: 100%;
+            transition: 0.3s;
+        }
+
+        .btn-ingresar-local:hover {
+            background: var(--aurica-blue-hover);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         @media (max-width: 900px) {
             #login-view {
                 flex-direction: column;
@@ -165,9 +239,22 @@
                     <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg" alt="Microsoft">
                     Iniciar sesión con Microsoft
                 </button>
+                
+                <button class="btn-local-admin" onclick="toggleLocalLogin()">
+                    <i class="fa-solid fa-lock" style="color: var(--text-muted);"></i> Acceso Administrador (Local)
+                </button>
+
+                <div id="local-login-form">
+                    <input type="email" id="local_email" class="local-input" placeholder="admin@grupoaurica.com">
+                    <input type="password" id="local_password" class="local-input" placeholder="••••••••••">
+                    <button class="btn-ingresar-local" onclick="iniciarSesionLocal()">Ingresar local</button>
+                </div>
             </div>
         </div>
     </div>
+    
+    <!-- Font Awesome (for lock icon) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 
 
@@ -179,6 +266,10 @@
                 clientId: "e0067a91-7c99-4c69-8ded-462444192826",
                 authority: "https://login.microsoftonline.com/104ca696-0629-4bad-9210-a7233a858def",
                 redirectUri: redirect
+            },
+            cache: {
+                cacheLocation: "localStorage",
+                storeAuthStateInCookie: false
             }
         };
 
@@ -189,8 +280,8 @@
         // Manejar cierre de sesión si viene con el parámetro ?logout=true
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('logout') === 'true') {
-            sessionStorage.removeItem('flotapro_session');
-            sessionStorage.removeItem('flotapro_permisos');
+            localStorage.removeItem('flotapro_session');
+            localStorage.removeItem('flotapro_permisos');
             if (accounts.length > 0) {
                 const logoutRequest = { account: accounts[0] };
                 msalInstance.logoutPopup(logoutRequest).then(() => {
@@ -201,7 +292,20 @@
             }
         } else {
             // Flujo normal de login
-            if (accounts.length > 0) { 
+            // VERIFICAR localStorage PRIMERO
+            const sessionData = localStorage.getItem('flotapro_session');
+            let sessionEmail = null;
+            if (sessionData) {
+                try {
+                    const parsed = JSON.parse(sessionData);
+                    if (parsed.email) sessionEmail = parsed.email;
+                } catch(e) {}
+            }
+
+            if (sessionEmail) {
+                // If local session exists, bypass login screen
+                redirigirADashboard(sessionEmail, true);
+            } else if (accounts.length > 0) { 
                 redirigirADashboard(accounts[0].username.toLowerCase()); 
             } else {
                 document.getElementById('login-view').style.display = 'flex';
@@ -215,9 +319,45 @@
             } catch (error) { alert("La autenticación falló."); }
         }
 
+        function toggleLocalLogin() {
+            const form = document.getElementById('local-login-form');
+            form.style.display = form.style.display === 'flex' ? 'none' : 'flex';
+        }
+
+        async function iniciarSesionLocal() {
+            const email = document.getElementById('local_email').value.trim();
+            const password = document.getElementById('local_password').value;
+            if (!email || !password) {
+                alert("Ingrese correo y contraseña");
+                return;
+            }
+
+            const API_URL = "https://flota-backend-xecu.onrender.com";
+            // For local development it will fallback to http://localhost:8000 (wait, frontend uses production URL everywhere by default)
+            const URL_FETCH = window.location.origin.includes('localhost') ? "http://127.0.0.1:8000" : API_URL;
+
+            try {
+                const response = await fetch(`${URL_FETCH}/login-local`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email, password: password })
+                });
+
+                if (response.ok) {
+                    redirigirADashboard(email.toLowerCase());
+                } else {
+                    const errorData = await response.json();
+                    alert("Error: " + (errorData.detail || "Credenciales incorrectas"));
+                }
+            } catch (error) {
+                console.error(error);
+                alert("Error de conexión con el servidor.");
+            }
+        }
+
         async function redirigirADashboard(email) {
-            // 🔒 SESIÓN: Guardar en sessionStorage para validar en módulos
-            sessionStorage.setItem('flotapro_session', JSON.stringify({ email: email, timestamp: Date.now() }));
+            // 🔒 SESIÓN: Guardar en localStorage para validar en módulos
+            localStorage.setItem('flotapro_session', JSON.stringify({ email: email, timestamp: Date.now() }));
 
             // 4. OBTENER PERMISOS DESDE EL BACKEND (Solo la primera vez, se puede cachear si se desea)
             const API_URL = "https://flota-backend-xecu.onrender.com";
@@ -225,7 +365,7 @@
                 const response = await fetch(`${API_URL}/permisos/${email}`);
                 const data = await response.json();
                 if (data.status === "success") {
-                    sessionStorage.setItem('flotapro_permisos', JSON.stringify(data.data));
+                    localStorage.setItem('flotapro_permisos', JSON.stringify(data.data));
                 }
             } catch (error) {
                 console.error("Error obteniendo permisos:", error);
