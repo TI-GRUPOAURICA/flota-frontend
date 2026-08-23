@@ -8,17 +8,18 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="assets/css/global.css">
     <style>
-        /* Estilos específicos de permisos.html */
         .checkbox-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
         .checkbox-item { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; }
-
         td.email-cell { text-align: left; }
         .btn-save { background: transparent; border: 1px solid var(--ok-color); color: var(--ok-color); padding: 6px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; transition: 0.2s; width: auto;}
         .btn-save:hover { background: var(--ok-color); color: white;}
-        
         .action-cell { display: flex; gap: 5px; justify-content: center; }
         input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; }
     </style>
+    <!-- PWA Settings -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#345D9D">
+    <link rel="apple-touch-icon" href="assets/img/icon-192x192.png">
     <script src="assets/js/security.js"></script>
 </head>
 <body>
@@ -59,78 +60,66 @@
                     <span id="userEmailTop" style="font-weight: 600; font-size: 14px;">Usuario</span>
                 </div>
             </header>
-            
+
             <div class="page-content">
+                <div class="grid-layout">
+                    
+                    <div class="card">
+                        <h3><i class="fa-solid fa-user-plus"></i> Nuevo Usuario</h3>
+                        <form id="formPermisos">
+                            <div class="form-group">
+                                <label>Correo Electrónico Corporativo</label>
+                                <input type="email" id="u_email" required placeholder="usuario@auricasac.com">
+                            </div>
+                            
+                            <label style="display: block; margin: 15px 0 10px 0; font-weight: 800; font-size: 12px; color: var(--text-dark);">Seleccionar Módulos Permitidos</label>
+                            <div class="checkbox-group">
+                                <label class="checkbox-item"><input type="checkbox" id="chk_dash"> Dashboard</label>
+                                <label class="checkbox-item"><input type="checkbox" id="chk_mante"> Gestión Flota</label>
+                                <label class="checkbox-item"><input type="checkbox" id="chk_garita"> Garita</label>
+                                <label class="checkbox-item"><input type="checkbox" id="chk_teso"> Tesorería</label>
+                                <label class="checkbox-item"><input type="checkbox" id="chk_admin"> Administración</label>
+                                <label class="checkbox-item"><input type="checkbox" id="chk_siniestros"> Siniestros</label>
+                                <label class="checkbox-item"><input type="checkbox" id="chk_conta"> Contabilidad</label>
+                            </div>
+                            
+                            <label style="display: block; margin: 15px 0 10px 0; font-weight: 800; font-size: 12px; color: var(--crit-color);">Alertas de Vencimiento</label>
+                            <div class="checkbox-group" style="margin-bottom: 20px;">
+                                <label class="checkbox-item" style="color:var(--crit-color);"><input type="checkbox" id="chk_alertas"> Recibe Correos de Alerta (15 días)</label>
+                            </div>
+                            
+                            <button type="submit" id="btnGuardar">Registrar Accesos</button>
+                        </form>
+                    </div>
 
-
-    </div>
-    <div style="display: flex; gap: 10px;">
-        <button class="btn-primary" onclick="window.location.href='admin.html'">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"></path><polyline points="12 19 5 12 12 5"></polyline></svg>
-            Volver a Admin
-        </button>
-        <button class="btn-primary" onclick="window.location.href='/'" style="background: rgba(255,255,255,0.2); color: white;">
-            Panel Principal
-        </button>
-    </div>
-</div>
-
-<div class="grid-layout">
-    
-    <div class="card">
-        <h3><i class="fa-solid fa-user-plus"></i> Nuevo Usuario</h3>
-        <form id="formPermisos">
-            <div class="form-group">
-                <label>Correo Electrónico Corporativo</label>
-                <input type="email" id="u_email" required placeholder="usuario@auricasac.com">
+                    <div class="card">
+                        <h3><i class="fa-solid fa-table-list"></i> Matriz de Accesos Autorizados</h3>
+                        <div style="overflow-x: auto;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th style="text-align: left;">Usuario / Email</th>
+                                        <th>Dashboard</th>
+                                        <th>Flota</th>
+                                        <th>Garita</th>
+                                        <th>Tesoreria</th>
+                                        <th>Admin</th>
+                                        <th>Siniestros</th>
+                                        <th>Conta</th>
+                                        <th style="color:var(--crit-color);">Alertas Email</th>
+                                        <th>Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tablaPermisos">
+                                    <tr><td colspan="9" style="text-align: center;">Cargando base de datos...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
-            
-            <label style="display: block; margin: 15px 0 10px 0; font-weight: 800; font-size: 12px; color: var(--text-dark);">Seleccionar Módulos Permitidos</label>
-            <div class="checkbox-group">
-                <label class="checkbox-item"><input type="checkbox" id="chk_dash"> Dashboard</label>
-                <label class="checkbox-item"><input type="checkbox" id="chk_mante"> Gestión Flota</label>
-                <label class="checkbox-item"><input type="checkbox" id="chk_garita"> Garita</label>
-                <label class="checkbox-item"><input type="checkbox" id="chk_teso"> Tesorería</label>
-                <label class="checkbox-item"><input type="checkbox" id="chk_admin"> Administración</label>
-                <label class="checkbox-item"><input type="checkbox" id="chk_siniestros"> Siniestros</label>
-                <label class="checkbox-item"><input type="checkbox" id="chk_conta"> Contabilidad</label>
-            </div>
-            
-            <label style="display: block; margin: 15px 0 10px 0; font-weight: 800; font-size: 12px; color: var(--crit-color);">Alertas de Vencimiento</label>
-            <div class="checkbox-group" style="margin-bottom: 20px;">
-                <label class="checkbox-item" style="color:var(--crit-color);"><input type="checkbox" id="chk_alertas"> Recibe Correos de Alerta (15 días)</label>
-            </div>
-            
-            <button type="submit" id="btnGuardar">Registrar Accesos</button>
-        </form>
+        </main>
     </div>
-
-    <div class="card">
-        <h3><i class="fa-solid fa-table-list"></i> Matriz de Accesos Autorizados</h3>
-        <div style="overflow-x: auto;">
-            <table>
-                <thead>
-                    <tr>
-                        <th style="text-align: left;">Usuario / Email</th>
-                        <th>Dashboard</th>
-                        <th>Flota</th>
-                        <th>Garita</th>
-                        <th>Tesoreria</th>
-                        <th>Admin</th>
-                        <th>Siniestros</th>
-                        <th>Conta</th>
-                        <th style="color:var(--crit-color);">Alertas Email</th>
-                        <th>Acción</th>
-                    </tr>
-                </thead>
-                <tbody id="tablaPermisos">
-                    <tr><td colspan="9" style="text-align: center;">Cargando base de datos...</td></tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-</div>
 
 <script>
     const API_URL = "https://flota-backend-xecu.onrender.com";
@@ -258,9 +247,5 @@
     // Inicializar
     cargarPermisos();
 </script>
-
-            </div>
-        </main>
-    </div>
 </body>
 </html>
