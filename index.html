@@ -305,15 +305,26 @@
             if (sessionEmail) {
                 // If local session exists, bypass login screen
                 redirigirADashboard(sessionEmail, true);
-            } else if (accounts.length > 0) { 
-                redirigirADashboard(accounts[0].username.toLowerCase()); 
             } else {
+                msalInstance.handleRedirectPromise().then((response) => {
+                    if (response) {
+                        redirigirADashboard(response.account.username);
+                    } else {
+                        const currentAccounts = msalInstance.getAllAccounts();
+                        if (currentAccounts.length > 0) {
+                            if (!localStorage.getItem('flotapro_auth_error')) {
+                                redirigirADashboard(currentAccounts[0].username);
+                            }
+                        }
+                    }
+                });
                 document.getElementById('login-view').style.display = 'flex';
             }
         }
 
         async function iniciarSesionMicrosoft() {
             try {
+                localStorage.removeItem('flotapro_auth_error');
                 const loginResponse = await msalInstance.loginPopup({ scopes: ["User.Read"] });
                 redirigirADashboard(loginResponse.account.username.toLowerCase());
             } catch (error) { alert("La autenticación falló."); }
@@ -369,6 +380,8 @@
                 } else {
                     alert("Acceso denegado: Tu usuario no tiene permisos asignados en el sistema.");
                     localStorage.removeItem('flotapro_session');
+                    localStorage.setItem('flotapro_auth_error', 'true');
+                    document.getElementById('loadingOverlay').style.display = 'none';
                     if (msalInstance.getAllAccounts().length > 0) {
                         msalInstance.logoutRedirect();
                     }
